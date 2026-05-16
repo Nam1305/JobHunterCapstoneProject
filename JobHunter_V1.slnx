@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="JobHunter.Domain/JobHunter.Domain.csproj" />
+  <Project Path="JobHunter.Service/JobHunter.Service.csproj" />
+  <Project Path="JobHunter.WebAPI/JobHunter.WebAPI.csproj" Id="0c78a60a-4810-4d3f-a2e6-58547fa90989" />
+</Solution>
