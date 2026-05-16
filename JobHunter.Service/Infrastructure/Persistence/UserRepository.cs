@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using JobHunter.Service.Interface.Persistence;
 
 namespace JobHunter.Service.Infrastructure.Persistence
 {
-    internal class UserRepository
+    internal class UserRepository : IUserRepository
     {
     }
 }
