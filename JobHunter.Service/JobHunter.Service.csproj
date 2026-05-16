@@ -10,15 +10,4 @@
     <ProjectReference Include="..\JobHunter.Domain\JobHunter.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Infrastructure\Persistence\" />
-    <Folder Include="Interface\Service\" />
-    <Folder Include="Interface\UseCase\" />
-    <Folder Include="Interface\Persistence\" />
-    <Folder Include="Config\" />
-    <Folder Include="Constant\" />
-    <Folder Include="UseCase\" />
-    <Folder Include="Service\" />
-  </ItemGroup>
-
 </Project>
