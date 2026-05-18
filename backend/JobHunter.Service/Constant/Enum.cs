@@ -7,4 +7,11 @@ namespace JobHunter.Service.Constant
     internal class Enum
     {
     }
+
+    public enum UserRoleEnum
+    {
+        Admin,
+        HR,
+        Candidate
+    }
 }

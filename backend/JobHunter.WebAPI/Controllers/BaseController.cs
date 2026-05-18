@@ -4,23 +4,26 @@ using Microsoft.AspNetCore.Mvc;
 namespace JobHunter.WebAPI.Controllers
 {
     [ApiController]
-    public class BaseController : Controller
+    public abstract class BaseController : ControllerBase
     {
-        public BaseController()
-        {
-        }
         [NonAction]
-        public IActionResult HandleException(Exception ex)
+        protected IActionResult Fail(
+            int statusCode,
+            string message,
+            string? errorCode = null,
+            IEnumerable<string>? errors = null)
         {
-            var errorResponse = new ResponseBase<string>
+            var errorResponse = new ResponseBase<object?>
             {
                 Success = false,
-                Message = "An unexpected error occurred.",
-                Status = 500,
+                Status = statusCode,
+                Message = message,
+                ErrorCode = errorCode ?? "ERROR",
+                Errors = errors?.ToList() ?? [],
                 Data = null
             };
-            return StatusCode(errorResponse.Status, errorResponse);
 
+            return StatusCode(statusCode, errorResponse);
         }
     }
 }

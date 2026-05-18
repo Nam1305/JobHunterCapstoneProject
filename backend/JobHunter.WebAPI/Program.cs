@@ -1,4 +1,6 @@
+using JobHunter.Service.Config;
 using JobHunter.Service.Infrastructure.Persistence;
+using JobHunter.WebAPI.Middlewares;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,10 +8,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddTransient<ExceptionMiddleware>();
+builder.Services.AddCorsConfig(builder.Configuration);
+builder.Services.AddJwtConfig(builder.Configuration);
 builder.Services.AddDbContext<JobhunterContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
@@ -23,12 +30,17 @@ if (!app.Environment.IsEnvironment("Testing"))
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.MapOpenApi();
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<ExceptionMiddleware>();
+
+app.UseCors(CorsConfiguration.CorsPolicy);
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

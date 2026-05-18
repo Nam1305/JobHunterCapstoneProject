@@ -15,12 +15,12 @@ namespace JobHunter.Service.DTOs
         }
 
 
-        public ResponseBase(T Data)
+        public ResponseBase(T data)
         {
             Success = true;
             Status = 200;
             Message = "Success.";
-            Data = Data;
+            Data = data;
         }
 
         [JsonPropertyName("success")]

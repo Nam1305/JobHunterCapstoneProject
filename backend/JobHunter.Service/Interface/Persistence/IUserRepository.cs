@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace JobHunter.Service.Interface.Persistence
 {
-    internal class IUserRepository
+    public interface IUserRepository
     {
+        Task<JobHunter.Service.Infrastructure.Persistence.User?> GetUserByEmail(string email);
+
+        Task<JobHunter.Service.Infrastructure.Persistence.User?> GetUserById(Guid userId);
     }
 }
