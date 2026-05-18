@@ -1,17 +1,14 @@
-﻿
+﻿using JobHunter.Domain;
+
 namespace JobHunter.Service.Infrastructure.Persistence;
 
-public partial class RefreshToken
+public partial class RefreshToken : BaseEntity
 {
-    public Guid Id { get; set; }
-
     public Guid UserId { get; set; }
 
     public string Token { get; set; } = null!;
 
     public DateTime ExpiresAt { get; set; }
-
-    public DateTime? CreatedAt { get; set; }
 
     public virtual User User { get; set; } = null!;
 }

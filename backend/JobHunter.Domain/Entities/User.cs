@@ -1,11 +1,9 @@
-﻿
+﻿using JobHunter.Domain;
 
 namespace JobHunter.Service.Infrastructure.Persistence;
 
-public partial class User
+public partial class User : BaseEntity
 {
-    public Guid Id { get; set; }
-
     public string Name { get; set; } = null!;
 
     public string? Phone { get; set; }
@@ -16,11 +14,7 @@ public partial class User
 
     public string? Avatar { get; set; }
 
-    public string? Role { get; set; }
-
-    public DateTime? CreatedAt { get; set; }
-
-    public DateTime? UpdatedAt { get; set; }
+    public UserRole? Role { get; set; }
 
     public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 }
