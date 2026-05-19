@@ -16,6 +16,7 @@ public static class ServiceCollectionExtensions
        
         // Use cases
         services.AddScoped<IAuthUseCase, AuthUseCase>();
+        services.AddScoped<IUserUseCase, UserUseCase>();
         
         return services;
     }
