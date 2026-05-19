@@ -1,6 +1,4 @@
 using JobHunter.Domain;
-using JobHunter.Service.Constant;
-
 namespace JobHunter.Service.DTOs.Auth
 {
     public class CurrentUserDto
