@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace JobHunter.Service.DTOs
 {
@@ -33,12 +30,9 @@ namespace JobHunter.Service.DTOs
         public string Message { get; set; }
 
         [JsonPropertyName("errorCode")]
-        public string ErrorCode { get; set; }
-
-        [JsonPropertyName("errors")]
-        public List<string> Errors { get; set; }
+        public string? ErrorCode { get; set; }
 
         [JsonPropertyName("data")]
-        public T Data { get; set; }
+        public T? Data { get; set; }
     }
 }
