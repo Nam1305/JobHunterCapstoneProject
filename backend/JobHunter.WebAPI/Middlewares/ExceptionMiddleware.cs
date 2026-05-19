@@ -39,7 +39,6 @@ namespace JobHunter.WebAPI.Middlewares
                     Status = statusCode,
                     Message = message,
                     ErrorCode = errorCode,
-                    Errors = [ex.Message],
                     Data = null
                 };
 
