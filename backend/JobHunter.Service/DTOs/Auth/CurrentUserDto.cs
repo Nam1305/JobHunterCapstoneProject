@@ -1,3 +1,4 @@
+using JobHunter.Domain;
 using JobHunter.Service.Constant;
 
 namespace JobHunter.Service.DTOs.Auth
@@ -6,7 +7,7 @@ namespace JobHunter.Service.DTOs.Auth
     {
         public Guid Id { get; set; }
 
-        public string FullName { get; set; } = null!;
+        public string Name { get; set; } = null!;
 
         public string? Phone { get; set; }
 
@@ -14,6 +15,6 @@ namespace JobHunter.Service.DTOs.Auth
 
         public string? Avatar { get; set; }
 
-        public UserRoleEnum? Role { get; set; } = null!;
+        public UserRole? Role { get; set; } = null!;
     }
 }

@@ -7,9 +7,6 @@ namespace JobHunter.Service.Interface.Persistence;
 public interface ITokenRepository
 {
     Task SaveRefreshToken(Guid userId, string refreshToken);
-    Task RevokeRefreshToken(Guid tokenId);
-    string GenerateAccessToken(CurrentUserDto user);
-    string GenerateRefreshToken();
-    ClaimsPrincipal ValidateAccessToken(string token);
-    // Task<RefreshToken?> GetRefreshToken(string token);
+    Task RevokeRefreshToken(string refreshToken);
+    Task<RefreshToken?> GetValidRefreshToken(string refreshToken);
 }

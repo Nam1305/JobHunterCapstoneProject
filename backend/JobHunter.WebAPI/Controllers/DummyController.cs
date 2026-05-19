@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JobHunter.WebAPI.Controllers
 {
     [Route("api/[controller]")]
-    public class DummyController : BaseController
+    public class DummyController : ControllerBase
     {
         [HttpGet]
         [ProducesResponseType(typeof(ResponseBase<DummyResponse>), StatusCodes.Status200OK)]
