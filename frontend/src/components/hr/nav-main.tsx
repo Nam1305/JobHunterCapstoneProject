@@ -13,12 +13,14 @@ import {
 
 export function NavMain({
   items,
+  rootUrl,
 }: {
   items: {
     title: string
     url: string
     icon?: React.ReactNode
   }[]
+  rootUrl: string
 }) {
   const pathname = usePathname()
 
@@ -28,7 +30,7 @@ export function NavMain({
         <SidebarMenu>
           {items.map((item) => {
             const isActive =
-              item.url === "/hr"
+              item.url === rootUrl
                 ? pathname === item.url
                 : pathname === item.url || pathname.startsWith(`${item.url}/`)
 

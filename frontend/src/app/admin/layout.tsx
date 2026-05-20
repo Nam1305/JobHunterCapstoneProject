@@ -1,61 +1,43 @@
-import { AppSidebar } from "@/components/hr/app-sidebar"
 import { SiteHeader } from "@/components/dashboard/site-header"
+import { AppSidebar } from "@/components/hr/app-sidebar"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import {
-  BriefcaseBusinessIcon,
   Building2Icon,
   LayoutDashboardIcon,
-  MessageSquareIcon,
-  SparklesIcon,
   UserRoundIcon,
   UsersIcon,
 } from "lucide-react"
 
-const hrUser = {
-  name: "HR User",
-  email: "hr@example.com",
+const adminUser = {
+  name: "Admin User",
+  email: "admin@example.com",
   avatar: "/avatars/shadcn.jpg",
 }
 
-const hrMenuItems = [
+const adminMenuItems = [
   {
     title: "Dashboard",
-    url: "/hr",
+    url: "/admin",
     icon: <LayoutDashboardIcon />,
   },
   {
-    title: "Tìm ứng viên tiềm năng",
-    url: "/hr/tim-ung-vien-tiem-nang",
-    icon: <SparklesIcon />,
-  },
-  {
-    title: "Quản lí ứng viên",
-    url: "/hr/quan-li-ung-vien",
+    title: "Quản lí tài khoản",
+    url: "/admin/quan-li-tai-khoan",
     icon: <UsersIcon />,
   },
   {
-    title: "Đăng tin tuyển dụng",
-    url: "/hr/dang-tin-tuyen-dung",
-    icon: <BriefcaseBusinessIcon />,
-  },
-  {
-    title: "Thông tin công ty",
-    url: "/hr/thong-tin-cong-ty",
+    title: "Quản lí công ty",
+    url: "/admin/quan-li-cong-ty",
     icon: <Building2Icon />,
   },
   {
-    title: "Chat",
-    url: "/hr/chat",
-    icon: <MessageSquareIcon />,
-  },
-  {
     title: "Tài khoản của tôi",
-    url: "/hr/tai-khoan-cua-toi",
+    url: "/admin/tai-khoan-cua-toi",
     icon: <UserRoundIcon />,
   },
 ]
 
-export default function HRLayout({
+export default function AdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
@@ -70,10 +52,10 @@ export default function HRLayout({
       }
     >
       <AppSidebar
-        brandName="HR Portal"
-        items={hrMenuItems}
-        rootUrl="/hr"
-        user={hrUser}
+        brandName="Admin Portal"
+        items={adminMenuItems}
+        rootUrl="/admin"
+        user={adminUser}
         variant="inset"
       />
       <SidebarInset>
