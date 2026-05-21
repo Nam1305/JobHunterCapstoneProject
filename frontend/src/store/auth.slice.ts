@@ -6,6 +6,7 @@ import {
 import type { CurrentUser } from "@/types/user";
 import api from "@/api/api";
 import type { AxiosError } from "axios";
+import type { ResponseEntity } from "@/types/base";
 
 interface AuthState {
   user: CurrentUser | null;
@@ -28,10 +29,10 @@ export const fetchCurrentUser = createAsyncThunk<
 >("auth/fetchUser", async (_, { rejectWithValue }) => {
   try {
     // Use the imported 'api' instance instead of browser fetch
-    const response = await api.get<CurrentUser>("/users/me");
+    const response = await api.get<ResponseEntity<CurrentUser>>("/users/me");
 
     // Axios automatically handles response.ok and throws an error on 4xx/5xx
-    return response.data; // Axios response places the data in the 'data' property
+    return response.data.data; // API wraps the user in ResponseEntity.data
   } catch (err) {
     const error = err as AxiosError;
     // Determine the error message to send as the rejection payload

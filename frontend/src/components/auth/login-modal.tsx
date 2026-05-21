@@ -1,7 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2Icon } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -22,6 +24,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { GoogleIcon } from "@/components/auth/google-icon";
+import { useLogin } from "@/api/auth.api";
+import { fetchCurrentUser } from "@/store/auth.slice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { closeModal, openRegisterModal } from "@/store/modal.slice";
 
@@ -35,14 +39,41 @@ type FormValues = z.infer<typeof formSchema>;
 export function LoginModal() {
   const dispatch = useAppDispatch();
   const openModal = useAppSelector((state) => state.modal.openModal);
+  const loginMutation = useLogin();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: { email: "", password: "" },
   });
 
-  const onSubmit = () => {
-    return;
+  const onSubmit = (values: FormValues) => {
+    loginMutation.mutate(values, {
+      onSuccess: async () => {
+        try {
+          await dispatch(fetchCurrentUser()).unwrap();
+          dispatch(closeModal());
+          form.reset();
+          toast.success("Đăng nhập thành công");
+        } catch {
+          const message = "Đăng nhập thành công nhưng không thể tải thông tin tài khoản.";
+
+          form.setError("root", {
+            message,
+          });
+          toast.error(message);
+        }
+      },
+      onError: (error) => {
+        const message =
+          error.response?.data.message ||
+          "Đăng nhập thất bại. Vui lòng thử lại.";
+
+        form.setError("root", {
+          message,
+        });
+        toast.error(message);
+      },
+    });
   };
 
   return (
@@ -98,9 +129,26 @@ export function LoginModal() {
               )}
             />
 
-            <Button type="submit" className="w-full">
-              Đăng nhập
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loginMutation.isPending}
+            >
+              {loginMutation.isPending ? (
+                <>
+                  <Loader2Icon className="animate-spin" />
+                  Đang đăng nhập...
+                </>
+              ) : (
+                "Đăng nhập"
+              )}
             </Button>
+
+            {form.formState.errors.root?.message ? (
+              <p className="text-center text-sm text-destructive">
+                {form.formState.errors.root.message}
+              </p>
+            ) : null}
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">

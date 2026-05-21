@@ -8,6 +8,7 @@ import { StoreProvider } from "@/providers/store-provider";
 import { QueryProvider } from "@/providers/query-provider";
 import { LoginModal } from "@/components/auth/login-modal";
 import { RegisterModal } from "@/components/auth/register-modal";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
@@ -35,6 +36,7 @@ export default function RootLayout({
                 {children}
                 <LoginModal />
                 <RegisterModal />
+                <Toaster position="bottom-right" richColors />
               </TooltipProvider>
             </ThemeProvider>
           </QueryProvider>
