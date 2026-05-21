@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using JobHunter.Domain;
+using JobHunter.Domain.Entities;
 using JobHunter.Service.DTOs.Auth;
 using JobHunter.Service.Infrastructure.Persistence;
 using JobHunter.Service.Interface.Persistence;

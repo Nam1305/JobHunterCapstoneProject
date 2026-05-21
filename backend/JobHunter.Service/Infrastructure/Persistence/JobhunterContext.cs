@@ -1,4 +1,5 @@
 ﻿using JobHunter.Domain;
+using JobHunter.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace JobHunter.Service.Infrastructure.Persistence;

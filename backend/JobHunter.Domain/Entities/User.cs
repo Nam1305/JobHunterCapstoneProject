@@ -1,6 +1,6 @@
 ﻿using JobHunter.Domain;
 
-namespace JobHunter.Service.Infrastructure.Persistence;
+namespace JobHunter.Domain.Entities;
 
 public partial class User : BaseEntity
 {

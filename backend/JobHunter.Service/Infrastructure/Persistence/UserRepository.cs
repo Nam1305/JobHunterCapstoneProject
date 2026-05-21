@@ -1,4 +1,6 @@
-﻿using JobHunter.Service.Interface.Persistence;
+﻿
+using JobHunter.Domain.Entities;
+using JobHunter.Service.Interface.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace JobHunter.Service.Infrastructure.Persistence
