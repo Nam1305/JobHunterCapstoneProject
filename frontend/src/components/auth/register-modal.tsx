@@ -1,9 +1,13 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useGoogleLogin } from "@react-oauth/google";
+import { Loader2Icon } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import * as z from "zod";
 
+import { useGoogleLoginMutation } from "@/api/auth.api";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,8 +24,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { GoogleIcon } from "@/components/auth/google-icon";
+import { Input } from "@/components/ui/input";
+import { fetchCurrentUser } from "@/store/auth.slice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { closeModal, openLoginModal } from "@/store/modal.slice";
 
@@ -43,6 +48,7 @@ type FormValues = z.infer<typeof formSchema>;
 export function RegisterModal() {
   const dispatch = useAppDispatch();
   const openModal = useAppSelector((state) => state.modal.openModal);
+  const googleLoginMutation = useGoogleLoginMutation();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -58,6 +64,60 @@ export function RegisterModal() {
   const onSubmit = () => {
     return;
   };
+
+  const handleAuthenticated = async () => {
+    try {
+      await dispatch(fetchCurrentUser()).unwrap();
+      dispatch(closeModal());
+      form.reset();
+      toast.success("Đăng nhập Google thành công");
+    } catch {
+      const message =
+        "Đăng nhập thành công nhưng không thể tải thông tin tài khoản.";
+
+      form.setError("root", {
+        message,
+      });
+      toast.error(message);
+    }
+  };
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: (tokenResponse) => {
+      googleLoginMutation.mutate(
+        { access_token: tokenResponse.access_token },
+        {
+          onSuccess: handleAuthenticated,
+          onError: (error) => {
+            const message =
+              error.response?.data.message ||
+              "Đăng nhập Google thất bại. Vui lòng thử lại.";
+
+            form.setError("root", {
+              message,
+            });
+            toast.error(message);
+          },
+        },
+      );
+    },
+    onError: () => {
+      const message = "Đăng nhập Google thất bại. Vui lòng thử lại.";
+
+      form.setError("root", {
+        message,
+      });
+      toast.error(message);
+    },
+    onNonOAuthError: () => {
+      const message = "Đăng nhập Google thất bại. Vui lòng thử lại.";
+
+      form.setError("root", {
+        message,
+      });
+      toast.error(message);
+    },
+  });
 
   return (
     <Dialog
@@ -173,6 +233,12 @@ export function RegisterModal() {
               Đăng ký
             </Button>
 
+            {form.formState.errors.root?.message ? (
+              <p className="text-center text-sm text-destructive">
+                {form.formState.errors.root.message}
+              </p>
+            ) : null}
+
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
@@ -184,9 +250,21 @@ export function RegisterModal() {
               </div>
             </div>
 
-            <Button type="button" variant="outline" className="w-full">
-              <GoogleIcon />
-              Đăng nhập với Google
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              disabled={googleLoginMutation.isPending}
+              onClick={() => googleLogin()}
+            >
+              {googleLoginMutation.isPending ? (
+                <Loader2Icon className="animate-spin" />
+              ) : (
+                <GoogleIcon />
+              )}
+              {googleLoginMutation.isPending
+                ? "Đang đăng nhập..."
+                : "Đăng nhập với Google"}
             </Button>
           </form>
         </Form>

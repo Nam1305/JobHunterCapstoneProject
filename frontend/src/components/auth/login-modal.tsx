@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useGoogleLogin } from "@react-oauth/google";
 import { Loader2Icon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -22,9 +23,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { GoogleIcon } from "@/components/auth/google-icon";
-import { useLogin } from "@/api/auth.api";
+import { Input } from "@/components/ui/input";
+import { useGoogleLoginMutation, useLogin } from "@/api/auth.api";
 import { fetchCurrentUser } from "@/store/auth.slice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { closeModal, openRegisterModal } from "@/store/modal.slice";
@@ -40,29 +41,33 @@ export function LoginModal() {
   const dispatch = useAppDispatch();
   const openModal = useAppSelector((state) => state.modal.openModal);
   const loginMutation = useLogin();
+  const googleLoginMutation = useGoogleLoginMutation();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: { email: "", password: "" },
   });
 
+  const handleAuthenticated = async (successMessage: string) => {
+    try {
+      await dispatch(fetchCurrentUser()).unwrap();
+      dispatch(closeModal());
+      form.reset();
+      toast.success(successMessage);
+    } catch {
+      const message =
+        "Đăng nhập thành công nhưng không thể tải thông tin tài khoản.";
+
+      form.setError("root", {
+        message,
+      });
+      toast.error(message);
+    }
+  };
+
   const onSubmit = (values: FormValues) => {
     loginMutation.mutate(values, {
-      onSuccess: async () => {
-        try {
-          await dispatch(fetchCurrentUser()).unwrap();
-          dispatch(closeModal());
-          form.reset();
-          toast.success("Đăng nhập thành công");
-        } catch {
-          const message = "Đăng nhập thành công nhưng không thể tải thông tin tài khoản.";
-
-          form.setError("root", {
-            message,
-          });
-          toast.error(message);
-        }
-      },
+      onSuccess: () => handleAuthenticated("Đăng nhập thành công"),
       onError: (error) => {
         const message =
           error.response?.data.message ||
@@ -75,6 +80,43 @@ export function LoginModal() {
       },
     });
   };
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: (tokenResponse) => {
+      googleLoginMutation.mutate(
+        { access_token: tokenResponse.access_token },
+        {
+          onSuccess: () => handleAuthenticated("Đăng nhập Google thành công"),
+          onError: (error) => {
+            const message =
+              error.response?.data.message ||
+              "Đăng nhập Google thất bại. Vui lòng thử lại.";
+
+            form.setError("root", {
+              message,
+            });
+            toast.error(message);
+          },
+        },
+      );
+    },
+    onError: () => {
+      const message = "Đăng nhập Google thất bại. Vui lòng thử lại.";
+
+      form.setError("root", {
+        message,
+      });
+      toast.error(message);
+    },
+    onNonOAuthError: () => {
+      const message = "Đăng nhập Google thất bại. Vui lòng thử lại.";
+
+      form.setError("root", {
+        message,
+      });
+      toast.error(message);
+    },
+  });
 
   return (
     <Dialog
@@ -161,9 +203,21 @@ export function LoginModal() {
               </div>
             </div>
 
-            <Button type="button" variant="outline" className="w-full">
-              <GoogleIcon />
-              Đăng nhập với Google
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              disabled={loginMutation.isPending || googleLoginMutation.isPending}
+              onClick={() => googleLogin()}
+            >
+              {googleLoginMutation.isPending ? (
+                <Loader2Icon className="animate-spin" />
+              ) : (
+                <GoogleIcon />
+              )}
+              {googleLoginMutation.isPending
+                ? "Đang đăng nhập..."
+                : "Đăng nhập với Google"}
             </Button>
           </form>
         </Form>

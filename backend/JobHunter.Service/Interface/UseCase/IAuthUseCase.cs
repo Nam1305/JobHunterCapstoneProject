@@ -6,7 +6,8 @@ namespace JobHunter.Service.Interface.UseCase;
 
 public interface IAuthUseCase
 {
-    Task<TokenResultDto?> Login(LoginDto request);
+    Task<TokenResultDto> Login(LoginDto request);
+    Task<TokenResultDto> GoogleLogin(GoogleLoginRequest request);
     Task RevokeRefreshToken(string refreshToken);
-    Task<TokenResultDto?> RefreshToken(string refreshToken);
+    Task<TokenResultDto> RefreshToken(string refreshToken);
 }
