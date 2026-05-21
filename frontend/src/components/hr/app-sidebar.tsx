@@ -3,7 +3,7 @@
 import * as React from "react"
 
 import { NavMain } from "@/components/hr/nav-main"
-import { NavUser } from "@/components/hr/nav-user"
+import { NavUser } from "@/components/auth/nav-user"
 import {
   Sidebar,
   SidebarContent,
