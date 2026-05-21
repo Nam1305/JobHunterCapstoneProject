@@ -1,7 +1,8 @@
 import Link from "next/link"
-import { BriefcaseBusiness, FileText, Home, UserRound } from "lucide-react"
+import { BriefcaseBusiness, FileText, Home } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { LoginModalButton } from "@/components/auth/login-modal-button"
 
 const navItems = [
   { href: "/", label: "Trang chủ", icon: Home },
@@ -36,12 +37,7 @@ export default function UserLayout({
             ))}
           </div>
 
-          <Button asChild>
-            <Link href="/dang-nhap">
-              <UserRound />
-              Đăng nhập
-            </Link>
-          </Button>
+          <LoginModalButton />
         </nav>
       </header>
 

@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils";
 import { StoreProvider } from "@/providers/store-provider";
 import { QueryProvider } from "@/providers/query-provider";
+import { LoginModal } from "@/components/auth/login-modal";
+import { RegisterModal } from "@/components/auth/register-modal";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
@@ -23,12 +25,17 @@ export default function RootLayout({
     <html
       lang="vi"
       className={cn("antialiased", fontMono.variable, "font-sans", inter.variable)}
+      suppressHydrationWarning
     >
       <body>
         <StoreProvider>
           <QueryProvider>
             <ThemeProvider>
-              <TooltipProvider>{children}</TooltipProvider>
+              <TooltipProvider>
+                {children}
+                <LoginModal />
+                <RegisterModal />
+              </TooltipProvider>
             </ThemeProvider>
           </QueryProvider>
         </StoreProvider>
