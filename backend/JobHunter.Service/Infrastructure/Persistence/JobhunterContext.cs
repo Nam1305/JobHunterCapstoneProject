@@ -56,6 +56,8 @@ public partial class JobhunterContext : DbContext
 
             entity.HasIndex(e => e.Email, "users_email_key").IsUnique();
 
+            entity.HasIndex(e => e.GoogleId, "users_google_id_key").IsUnique();
+
             entity.Property(e => e.Id)
                 .HasDefaultValueSql("gen_random_uuid()")
                 .HasColumnName("id");
@@ -68,6 +70,9 @@ public partial class JobhunterContext : DbContext
             entity.Property(e => e.Email)
                 .HasMaxLength(255)
                 .HasColumnName("email");
+            entity.Property(e => e.GoogleId)
+                .HasMaxLength(255)
+                .HasColumnName("google_id");
             entity.Property(e => e.Name)
                 .HasMaxLength(255)
                 .HasColumnName("name");

@@ -25,6 +25,14 @@ public class AuthController : ControllerBase
         return new ResponseBase<string>("Đăng nhập thành công");
     }
 
+    [HttpPost("google")]
+    public async Task<ActionResult<ResponseBase<string>>> GoogleLogin([FromBody] GoogleLoginRequest request)
+    {
+        var result = await _authUseCase.GoogleLogin(request);
+        SetTokenCookies.SetTokenCookiesToResponse(Response, result.AccessToken, result.RefreshToken);
+        return new ResponseBase<string>("Đăng nhập Google thành công");
+    }
+
     [HttpPost("logout")]
     public async Task<ActionResult<ResponseBase<string>>> Logout()
     {

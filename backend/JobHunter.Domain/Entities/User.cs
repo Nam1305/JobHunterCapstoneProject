@@ -10,6 +10,8 @@ public partial class User : BaseEntity
 
     public string Email { get; set; } = null!;
 
+    public string? GoogleId { get; set; }
+
     public string Password { get; set; } = null!;
 
     public string? Avatar { get; set; }

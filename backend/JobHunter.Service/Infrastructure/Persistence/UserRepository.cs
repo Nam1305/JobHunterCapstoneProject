@@ -21,5 +21,23 @@ namespace JobHunter.Service.Infrastructure.Persistence
         {
             return _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
         }
+
+        public Task<User?> GetUserByGoogleIdOrEmail(string googleId, string email)
+        {
+            return _context.Users.FirstOrDefaultAsync(x => x.GoogleId == googleId || x.Email == email);
+        }
+
+        public async Task<User> AddUser(User user)
+        {
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+            return user;
+        }
+
+        public async Task UpdateUser(User user)
+        {
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
     }
 }

@@ -1,6 +1,8 @@
 using JobHunter.Service.Infrastructure.Persistence;
 using JobHunter.Service.Interface.Persistence;
+using JobHunter.Service.Interface.Service;
 using JobHunter.Service.Interface.UseCase;
+using JobHunter.Service.Service;
 using JobHunter.Service.UseCase;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,6 +19,9 @@ public static class ServiceCollectionExtensions
         // Use cases
         services.AddScoped<IAuthUseCase, AuthUseCase>();
         services.AddScoped<IUserUseCase, UserUseCase>();
+        
+        // Services
+        services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
         
         return services;
     }

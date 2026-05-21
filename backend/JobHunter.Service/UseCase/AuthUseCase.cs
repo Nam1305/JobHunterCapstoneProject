@@ -1,9 +1,12 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
+using JobHunter.Domain;
 using JobHunter.Service.DTOs.Auth;
 using JobHunter.Service.Infrastructure.Persistence;
 using JobHunter.Service.Interface.Persistence;
+using JobHunter.Service.Interface.Service;
 using JobHunter.Service.Interface.UseCase;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -14,12 +17,18 @@ public class AuthUseCase : IAuthUseCase
 {
     private readonly ITokenRepository _tokenRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IGoogleAuthService _googleAuthService;
     private readonly IConfiguration _configuration;
     
-    public AuthUseCase(ITokenRepository tokenRepository, IUserRepository userRepository, IConfiguration configuration)
+    public AuthUseCase(
+        ITokenRepository tokenRepository,
+        IUserRepository userRepository,
+        IGoogleAuthService googleAuthService,
+        IConfiguration configuration)
     {
         _tokenRepository = tokenRepository;
         _userRepository = userRepository;
+        _googleAuthService = googleAuthService;
         _configuration = configuration;
     }
     
@@ -30,7 +39,7 @@ public class AuthUseCase : IAuthUseCase
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // FIX: Guid to string
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Name, user.Name),
-            new Claim(ClaimTypes.Role, user.Role.ToString()), // Critical for [Authorize(Roles = "Admin")]
+            new Claim(ClaimTypes.Role, user.Role?.ToString() ?? string.Empty), // Critical for [Authorize(Roles = "Admin")]
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(
                 JwtRegisteredClaimNames.Iat,
@@ -39,9 +48,8 @@ public class AuthUseCase : IAuthUseCase
             )
         };
 
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"])
-        );
+        var jwtSecret = _configuration["Jwt:Secret"] ?? throw new InvalidOperationException("Jwt:Secret is not configured");
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
 
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -59,17 +67,37 @@ public class AuthUseCase : IAuthUseCase
     private string GenerateRefreshToken()
     {
         var randomNumber = new byte[64];
-        using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
+        using (var rng = RandomNumberGenerator.Create())
         {
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
         }
     }
+
+    private static string GenerateRandomPassword()
+    {
+        return Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+    }
+
+    private async Task<TokenResultDto> GenerateAndStoreTokens(User user)
+    {
+        var accessToken = GenerateAccessToken(user);
+        var refreshToken = GenerateRefreshToken();
+
+        await _tokenRepository.SaveRefreshToken(user.Id, refreshToken);
+
+        return new TokenResultDto
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+        };
+    }
     
     private ClaimsPrincipal ValidateAccessToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]);
+        var jwtSecret = _configuration["Jwt:Secret"] ?? throw new InvalidOperationException("Jwt:Secret is not configured");
+        var key = Encoding.UTF8.GetBytes(jwtSecret);
 
         try
         {
@@ -97,7 +125,7 @@ public class AuthUseCase : IAuthUseCase
         }
     }
     
-    public async Task<TokenResultDto?> Login(LoginDto request)
+    public async Task<TokenResultDto> Login(LoginDto request)
     {
         var user = await _userRepository.GetUserByEmail(request.Email);
         if (user == null ||
@@ -106,17 +134,52 @@ public class AuthUseCase : IAuthUseCase
             throw new KeyNotFoundException("Không tìm thấy thông tin tài khoản");
         }
 
-        
-        var accessToken = GenerateAccessToken(user);
-        var refreshToken =  GenerateRefreshToken();
-        
-        await _tokenRepository.SaveRefreshToken(user.Id, refreshToken);
-        
-        return new TokenResultDto
+        return await GenerateAndStoreTokens(user);
+    }
+
+    public async Task<TokenResultDto> GoogleLogin(GoogleLoginRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.AccessToken))
         {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken,
-        };
+            throw new ArgumentException("Không tìm thấy Google access token");
+        }
+
+        var payload = await _googleAuthService.GetUserInfoAsync(request.AccessToken);
+        var email = payload.Email;
+        var googleId = payload.Subject;
+
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(googleId))
+        {
+            throw new UnauthorizedAccessException("Google access token không hợp lệ");
+        }
+
+        if (!payload.EmailVerified)
+        {
+            throw new UnauthorizedAccessException("Email Google chưa được xác thực");
+        }
+
+        var user = await _userRepository.GetUserByGoogleIdOrEmail(googleId, email);
+
+        if (user == null)
+        {
+            user = await _userRepository.AddUser(new User
+            {
+                Email = email,
+                GoogleId = googleId,
+                Name = string.IsNullOrWhiteSpace(payload.Name) ? email.Split('@')[0] : payload.Name,
+                Avatar = payload.Picture,
+                Password = Utils.PasswordHashing.HashPassword(GenerateRandomPassword()),
+                Role = UserRole.Candidate
+            });
+        }
+        else if (string.IsNullOrWhiteSpace(user.GoogleId) || user.Avatar != payload.Picture)
+        {
+            user.GoogleId = googleId;
+            user.Avatar = payload.Picture;
+            await _userRepository.UpdateUser(user);
+        }
+
+        return await GenerateAndStoreTokens(user);
     }
 
     public async Task RevokeRefreshToken(string refreshToken)
@@ -124,7 +187,7 @@ public class AuthUseCase : IAuthUseCase
         await _tokenRepository.RevokeRefreshToken(refreshToken);
     }
 
-    public async Task<TokenResultDto?> RefreshToken(string refreshToken)
+    public async Task<TokenResultDto> RefreshToken(string refreshToken)
     {
         // Validate token from database
         var storedToken = await _tokenRepository.GetValidRefreshToken(refreshToken);
