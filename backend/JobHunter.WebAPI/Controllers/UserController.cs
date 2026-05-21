@@ -27,4 +27,11 @@ public class UserController : ControllerBase
 
         return new ResponseBase<CurrentUserDto>(user);
     }
+
+    [HttpPost("register")]
+    public async Task<ActionResult<ResponseBase<string>>> Register([FromBody] RegisterRequestDto request)
+    {
+        await _userUseCase.Register(request);
+        return new ResponseBase<string>("User registered successfully");
+    }
 }

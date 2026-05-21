@@ -9,3 +9,9 @@ export interface CurrentUser {
   role: UserRole | null;
 }
 
+export interface RegisterRequest {
+  email: string
+  password: string
+  phone: string
+  name: string
+}

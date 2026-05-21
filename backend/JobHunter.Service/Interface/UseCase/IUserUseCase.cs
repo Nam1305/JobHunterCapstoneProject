@@ -5,4 +5,6 @@ namespace JobHunter.Service.Interface.UseCase;
 public interface IUserUseCase
 {
     Task<CurrentUserDto> GetCurrentUser(Guid userId);
+
+    Task Register(RegisterRequestDto request);
 }
