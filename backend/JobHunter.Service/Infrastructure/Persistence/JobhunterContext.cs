@@ -74,6 +74,9 @@ public partial class JobhunterContext : DbContext
             entity.Property(e => e.GoogleId)
                 .HasMaxLength(255)
                 .HasColumnName("google_id");
+            entity.Property(e => e.IsDelete)
+                .HasColumnName("is_delete")
+                .HasDefaultValue(false);
             entity.Property(e => e.Name)
                 .HasMaxLength(255)
                 .HasColumnName("name");

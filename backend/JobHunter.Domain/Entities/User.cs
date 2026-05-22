@@ -12,6 +12,8 @@ public partial class User : BaseEntity
 
     public string? GoogleId { get; set; }
 
+    public bool IsDelete { get; set; } = false;
+
     public string Password { get; set; } = null!;
 
     public string? Avatar { get; set; }
