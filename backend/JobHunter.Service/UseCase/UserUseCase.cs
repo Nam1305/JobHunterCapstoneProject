@@ -1,5 +1,6 @@
 using JobHunter.Domain;
 using JobHunter.Domain.Entities;
+using JobHunter.Service.DTOs;
 using JobHunter.Service.DTOs.Auth;
 using JobHunter.Service.DTOs.User;
 using JobHunter.Service.Interface.Persistence;
@@ -26,6 +27,30 @@ public class UserUseCase : IUserUseCase
         }
 
         return MapToCurrentUserDto(user);
+    }
+
+    public async Task<PageResult<CurrentUserDto>> GetUsers(string? search, int page, int pageSize)
+    {
+        if (page < 1)
+        {
+            throw new ArgumentException("Page must be greater than 0");
+        }
+
+        if (pageSize < 1)
+        {
+            throw new ArgumentException("Page size must be greater than 0");
+        }
+
+        var users = await _userRepository.GetUsers(search, page, pageSize);
+        var totalCount = await _userRepository.CountUsers(search);
+
+        return new PageResult<CurrentUserDto>
+        {
+            Items = users.Select(MapToCurrentUserDto).ToList(),
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
     }
 
     public async Task Register(RegisterRequestDto request)

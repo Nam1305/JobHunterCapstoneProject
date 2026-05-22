@@ -19,6 +19,16 @@ public class UserController : ControllerBase
         _userUseCase = userUseCase;
     }
 
+    [HttpGet]
+    public async Task<ActionResult<ResponseBase<PageResult<CurrentUserDto>>>> GetUsers(
+        [FromQuery] string? search,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var users = await _userUseCase.GetUsers(search, page, pageSize);
+        return new ResponseBase<PageResult<CurrentUserDto>>(users);
+    }
+
     [HttpGet("me")]
     [Authorize]
     public async Task<ActionResult<ResponseBase<CurrentUserDto>>> GetCurrentUser()

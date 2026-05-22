@@ -10,6 +10,10 @@ namespace JobHunter.Service.Interface.Persistence
 
         Task<User?> GetUserByGoogleIdOrEmail(string googleId, string email);
 
+        Task<List<User>> GetUsers(string? search, int page, int pageSize);
+
+        Task<int> CountUsers(string? search);
+
         Task<User> AddUser(User user);
 
         Task UpdateUser(User user);
