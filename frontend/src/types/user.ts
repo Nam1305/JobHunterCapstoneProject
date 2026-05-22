@@ -15,3 +15,12 @@ export interface RegisterRequest {
   phone: string
   name: string
 }
+
+export interface Userinfo {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string;
+  avatar: string | null;
+  role: UserRole | null;
+}
