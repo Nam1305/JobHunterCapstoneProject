@@ -38,6 +38,7 @@ const roleOptions = ["Admin", "HR", "Candidate"] satisfies UserRole[]
 const formSchema = z.object({
   name: z.string().min(1, "Vui lòng nhập tên"),
   phone: z.string().min(1, "Vui lòng nhập số điện thoại"),
+  email: z.string().email("Vui lòng nhập email hợp lệ"),
   password: z.string(),
   avatar: z.string(),
   role: z.enum(roleOptions).nullable(),
@@ -56,6 +57,7 @@ function getDefaultValues(): UserModalValues {
   return {
     name: "",
     phone: "",
+    email: "",
     password: "",
     avatar: "",
     role: null,
@@ -103,6 +105,25 @@ export function UserModal({
                   <FormLabel>Họ và tên</FormLabel>
                   <FormControl>
                     <Input placeholder="Nguyen Van An" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="nguyenvanan@example.com"
+                      autoComplete="email"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -22,7 +22,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 
-import { useDeleteUserMutation, useUsersQuery } from "@/api/user.api"
+import { useCreateUserMutation, useDeleteUserMutation, useUsersQuery } from "@/api/user.api"
 import {
   UserModal,
   type UserModalValues,
@@ -59,6 +59,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import type { Userinfo } from "@/types/user"
+import { useQueryClient } from "@tanstack/react-query"
 
 interface UserColumnActions {
   onCreate: () => void
@@ -184,11 +185,13 @@ export function UserInfoDataTable() {
     pageIndex: 0,
     pageSize: 10,
   })
+  const queryClient = useQueryClient()
   const [search, setSearch] = React.useState("")
   const [debouncedSearch, setDebouncedSearch] = React.useState("")
   const [isUserModalOpen, setIsUserModalOpen] = React.useState(false)
   const [userToDelete, setUserToDelete] = React.useState<Userinfo | null>(null)
   const deleteUserMutation = useDeleteUserMutation()
+  const createUserMutation = useCreateUserMutation()
 
   React.useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -199,21 +202,33 @@ export function UserInfoDataTable() {
     return () => window.clearTimeout(timeoutId)
   }, [search])
 
-  const handleCreate = React.useCallback(() => {
+  function handleCreate() { 
     setIsUserModalOpen(true)
-  }, [])
+  }
 
-  const handleDelete = React.useCallback((user: Userinfo) => {
+  const handleDelete = (user: Userinfo) => {
     setUserToDelete(user)
-  }, [])
+  }
 
-  const handleSubmitUser = React.useCallback(
+  const handleSubmitUser = 
     (values: UserModalValues) => {
-      console.log("Create user", values)
+      createUserMutation.mutate(
+        {
+          ...values,
+        },
+        {
+          onSuccess: () => {
+            toast.success("Tạo tài khoản thành công")
+            queryClient.invalidateQueries({ queryKey: ["users"] })
+            setIsUserModalOpen(false)
+          },
+          onError: () => {
+            toast.error("Không thể tạo tài khoản")
+          },
+        }
+      )
       setIsUserModalOpen(false)
-    },
-    []
-  )
+    }
 
   const userColumns = React.useMemo(
     () =>
@@ -228,9 +243,9 @@ export function UserInfoDataTable() {
     page: pagination.pageIndex + 1,
     pageSize: pagination.pageSize,
   })
-  const { refetch: refetchUsers } = usersQuery
+  // const { refetch: refetchUsers } = usersQuery
 
-  const handleConfirmDelete = React.useCallback(() => {
+  const handleConfirmDelete = () => {
     if (!userToDelete) {
       return
     }
@@ -239,13 +254,13 @@ export function UserInfoDataTable() {
       onSuccess: () => {
         toast.success("Xóa tài khoản thành công")
         setUserToDelete(null)
-        refetchUsers()
+        queryClient.invalidateQueries({ queryKey: ["users"] })
       },
       onError: () => {
         toast.error("Không thể xóa tài khoản")
       },
     })
-  }, [deleteUserMutation, refetchUsers, userToDelete])
+  }
 
   const pageResult = usersQuery.data?.data
   const data = pageResult?.items ?? []
@@ -276,6 +291,7 @@ export function UserInfoDataTable() {
         open={isUserModalOpen}
         onOpenChange={setIsUserModalOpen}
         onSubmit={handleSubmitUser}
+        isSubmitting={createUserMutation.isPending}
       />
       <AlertDialog
         open={Boolean(userToDelete)}

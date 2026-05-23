@@ -47,7 +47,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    // [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<ResponseBase<CurrentUserDto>>> UpdateUser(Guid id, [FromBody] UpdateUserRequestDto request)
     {
         var user = await _userUseCase.UpdateUser(id, request);
@@ -55,10 +55,18 @@ public class UserController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    // [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<ResponseBase<string>>> DeleteUser(Guid id)
     {
         await _userUseCase.DeleteUser(id);
         return new ResponseBase<string>("User deleted successfully");
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<ResponseBase<CurrentUserDto>>> CreateUser([FromBody] CreateUserDto request)
+    {
+        var user = await _userUseCase.CreateUser(request);
+        return new ResponseBase<CurrentUserDto>(user);
     }
 }

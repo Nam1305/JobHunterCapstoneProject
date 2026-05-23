@@ -124,11 +124,6 @@ public class UserUseCase : IUserUseCase
             user.Avatar = request.Avatar;
         }
 
-        if (request.Role.HasValue)
-        {
-            user.Role = request.Role.Value;
-        }
-
         await _userRepository.UpdateUser(user);
 
         return new CurrentUserDto
@@ -149,5 +144,37 @@ public class UserUseCase : IUserUseCase
         {
             throw new KeyNotFoundException("User not found");
         }
+    }
+
+    public async Task<CurrentUserDto> CreateUser(CreateUserDto request)
+    {
+        var existingUser = await _userRepository.GetUserByEmail(request.Email);
+        if (existingUser != null)
+        {
+            throw new InvalidOperationException("Email đã được sử dụng");
+        }
+
+        var newUser = new User
+        {
+            Id = Guid.NewGuid(),
+            Name = request.Name,
+            Email = request.Email,
+            Phone = request.Phone,
+            Password = string.IsNullOrWhiteSpace(request.Password) ? null : PasswordHashing.HashPassword(request.Password),
+            Avatar = request.Avatar,
+            Role = request.Role ?? UserRole.Candidate
+        };
+
+        await _userRepository.AddUser(newUser);
+
+        return new CurrentUserDto
+        {
+            Id = newUser.Id,
+            Name = newUser.Name,
+            Phone = newUser.Phone,
+            Email = newUser.Email,
+            Avatar = newUser.Avatar,
+            Role = newUser.Role
+        };
     }
 }

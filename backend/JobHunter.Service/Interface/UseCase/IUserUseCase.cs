@@ -14,5 +14,7 @@ public interface IUserUseCase
 
     Task<CurrentUserDto> UpdateUser(Guid userId, UpdateUserRequestDto request);
 
+    Task<CurrentUserDto> CreateUser(CreateUserDto request);
+
     Task DeleteUser(Guid userId);
 }

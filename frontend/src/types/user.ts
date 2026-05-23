@@ -16,6 +16,10 @@ export interface RegisterRequest {
   name: string
 }
 
+export interface CreateUserRequest extends UpdateUserRequest {
+  role: UserRole | null
+}
+
 export interface Userinfo extends CurrentUser {
   isDeleted: boolean;
 }
@@ -25,5 +29,4 @@ export interface UpdateUserRequest {
   phone: string;
   password: string;
   avatar: string;
-  role: UserRole | null;
 }

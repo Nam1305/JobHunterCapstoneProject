@@ -5,7 +5,7 @@ import { AxiosError } from "axios";
 import api from "./api";
 
 import { PageResult, ResponseEntity } from "@/types/base";
-import { RegisterRequest, Userinfo } from "@/types/user";
+import { CreateUserRequest, RegisterRequest, Userinfo } from "@/types/user";
 
 type ApiError = AxiosError<ResponseEntity<string>>;
 
@@ -22,6 +22,11 @@ export const userApi = {
     const res = await api.get<ResponseEntity<PageResult<Userinfo>>>("/users", {
       params,
     });
+    return res.data;
+  },
+
+  async createUser(payload: CreateUserRequest): Promise<ResponseEntity<string>> {
+    const res = await api.post<ResponseEntity<string>>("/users", payload);
     return res.data;
   },
 
@@ -53,5 +58,11 @@ export function useRegisterMutation() {
 export function useDeleteUserMutation() {
   return useMutation<ResponseEntity<string>, ApiError, string>({
     mutationFn: userApi.deleteUser,
+  });
+}
+
+export function useCreateUserMutation() {
+  return useMutation<ResponseEntity<string>, ApiError, CreateUserRequest>({
+    mutationFn: userApi.createUser,
   });
 }

@@ -11,6 +11,4 @@ public class UpdateUserRequestDto
     public string? Password { get; set; }
 
     public string? Avatar { get; set; }
-
-    public UserRole? Role { get; set; }
 }
