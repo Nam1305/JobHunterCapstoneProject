@@ -22,10 +22,12 @@ import {
   Trash2Icon,
 } from "lucide-react"
 
+import { useUsersQuery } from "@/api/user.api"
 import { UserModal } from "@/components/dashboard/user-modal"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -161,7 +163,7 @@ export function getUserColumns({
   ]
 }
 
-export function UserInfoDataTable({ data }: { data: Userinfo[] }) {
+export function UserInfoDataTable() {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
@@ -169,6 +171,7 @@ export function UserInfoDataTable({ data }: { data: Userinfo[] }) {
     pageIndex: 0,
     pageSize: 10,
   })
+  const [search, setSearch] = React.useState("")
   const [modalMode, setModalMode] = React.useState<"create" | "update">(
     "create"
   )
@@ -208,16 +211,26 @@ export function UserInfoDataTable({ data }: { data: Userinfo[] }) {
       }),
     [handleCreate, handleDelete, handleUpdate]
   )
+  const usersQuery = useUsersQuery({
+    search: search || undefined,
+    page: pagination.pageIndex + 1,
+    pageSize: pagination.pageSize,
+  })
+  const pageResult = usersQuery.data?.data
+  const data = pageResult?.items ?? []
+  const totalCount = pageResult?.totalCount ?? 0
 
   const table = useReactTable({
     data,
     columns: userColumns,
+    pageCount: Math.max(1, Math.ceil(totalCount / pagination.pageSize)),
     state: {
       sorting,
       columnVisibility,
       pagination,
     },
     getRowId: (row) => row.id,
+    manualPagination: true,
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
@@ -245,6 +258,17 @@ export function UserInfoDataTable({ data }: { data: Userinfo[] }) {
           </p>
         </div>
 
+        <div className="flex max-w-sm items-center gap-2">
+          <Input
+            value={search}
+            onChange={(event) => {
+              setSearch(event.target.value)
+              setPagination((current) => ({ ...current, pageIndex: 0 }))
+            }}
+            placeholder="Tìm kiếm người dùng..."
+          />
+        </div>
+
         <div className="overflow-hidden rounded-lg border">
           <Table>
             <TableHeader className="bg-muted">
@@ -264,7 +288,25 @@ export function UserInfoDataTable({ data }: { data: Userinfo[] }) {
               ))}
             </TableHeader>
             <TableBody>
-              {table.getRowModel().rows.length ? (
+              {usersQuery.isLoading ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={userColumns.length}
+                    className="h-24 text-center"
+                  >
+                    Đang tải dữ liệu...
+                  </TableCell>
+                </TableRow>
+              ) : usersQuery.isError ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={userColumns.length}
+                    className="h-24 text-center text-destructive"
+                  >
+                    Không thể tải dữ liệu người dùng.
+                  </TableCell>
+                </TableRow>
+              ) : table.getRowModel().rows.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow key={row.id}>
                     {row.getVisibleCells().map((cell) => (
@@ -293,7 +335,7 @@ export function UserInfoDataTable({ data }: { data: Userinfo[] }) {
 
         <div className="flex items-center justify-between gap-4">
           <div className="text-sm text-muted-foreground">
-            Tổng {table.getPrePaginationRowModel().rows.length} tài khoản
+            Tổng {totalCount} tài khoản
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden items-center gap-2 md:flex">
@@ -302,7 +344,12 @@ export function UserInfoDataTable({ data }: { data: Userinfo[] }) {
               </Label>
               <Select
                 value={`${table.getState().pagination.pageSize}`}
-                onValueChange={(value) => table.setPageSize(Number(value))}
+                onValueChange={(value) => {
+                  setPagination({
+                    pageIndex: 0,
+                    pageSize: Number(value),
+                  })
+                }}
               >
                 <SelectTrigger
                   id="account-rows-per-page"

@@ -97,13 +97,8 @@ public class UserUseCase : IUserUseCase
             user.Phone = request.Phone;
         }
 
-        if (request.Password != null)
+        if (!string.IsNullOrWhiteSpace(request.Password))
         {
-            if (string.IsNullOrWhiteSpace(request.Password))
-            {
-                throw new ArgumentException("Password cannot be empty");
-            }
-
             user.Password = PasswordHashing.HashPassword(request.Password);
         }
 

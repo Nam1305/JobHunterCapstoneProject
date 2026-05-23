@@ -1,21 +1,44 @@
 // auth.service.ts
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import api from "./api";
 
-import { ResponseEntity } from "@/types/base";
-import { RegisterRequest } from "@/types/user";
+import { PageResult, ResponseEntity } from "@/types/base";
+import { RegisterRequest, Userinfo } from "@/types/user";
 
 type ApiError = AxiosError<ResponseEntity<string>>;
 
+export interface GetUsersParams {
+  search?: string;
+  page?: number;
+  pageSize?: number;
+}
+
 export const userApi = {
+  async getUsers(
+    params: GetUsersParams,
+  ): Promise<ResponseEntity<PageResult<Userinfo>>> {
+    const res = await api.get<ResponseEntity<PageResult<Userinfo>>>("/users", {
+      params,
+    });
+    return res.data;
+  },
+
   async register(payload: RegisterRequest): Promise<ResponseEntity<string>> {
     const res = await api.post<ResponseEntity<string>>("/users/register", payload);
     return res.data;
   },
 
 };
+
+export function useUsersQuery(params: GetUsersParams) {
+  return useQuery<ResponseEntity<PageResult<Userinfo>>>({
+    queryKey: ["users", params],
+    queryFn: () => userApi.getUsers(params),
+    staleTime: Infinity,
+  });
+}
 
 export function useRegisterMutation() {
   return useMutation<ResponseEntity<string>, ApiError, RegisterRequest>({

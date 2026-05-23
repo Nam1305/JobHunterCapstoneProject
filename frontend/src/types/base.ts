@@ -5,3 +5,10 @@ export interface ResponseEntity<T> {
   errorCode: string | null;
   data: T | null;
 }
+
+export interface PageResult<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+}
