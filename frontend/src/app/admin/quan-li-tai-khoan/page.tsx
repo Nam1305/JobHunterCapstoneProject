@@ -1,5 +1,6 @@
-import { UserInfoDataTable } from "@/components/dashboard/data-table"
 import type { Userinfo } from "@/types/user"
+
+import { UserInfoDataTable } from "./user-table"
 
 const users: Userinfo[] = [
   {
