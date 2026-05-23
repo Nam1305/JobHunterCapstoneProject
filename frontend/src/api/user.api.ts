@@ -30,6 +30,10 @@ export const userApi = {
     return res.data;
   },
 
+  async deleteUser(userId: string): Promise<ResponseEntity<string>> {
+    const res = await api.delete<ResponseEntity<string>>(`/users/${userId}`);
+    return res.data;
+  },
 };
 
 export function useUsersQuery(params: GetUsersParams) {
@@ -43,5 +47,11 @@ export function useUsersQuery(params: GetUsersParams) {
 export function useRegisterMutation() {
   return useMutation<ResponseEntity<string>, ApiError, RegisterRequest>({
     mutationFn: userApi.register,
+  });
+}
+
+export function useDeleteUserMutation() {
+  return useMutation<ResponseEntity<string>, ApiError, string>({
+    mutationFn: userApi.deleteUser,
   });
 }

@@ -16,13 +16,8 @@ export interface RegisterRequest {
   name: string
 }
 
-export interface Userinfo {
-  id: string;
-  name: string;
-  phone: string | null;
-  email: string;
-  avatar: string | null;
-  role: UserRole | null;
+export interface Userinfo extends CurrentUser {
+  isDeleted: boolean;
 }
 
 export interface UpdateUserRequest {

@@ -20,12 +20,23 @@ import {
   PlusIcon,
   Trash2Icon,
 } from "lucide-react"
+import { toast } from "sonner"
 
-import { useUsersQuery } from "@/api/user.api"
+import { useDeleteUserMutation, useUsersQuery } from "@/api/user.api"
 import {
   UserModal,
   type UserModalValues,
 } from "@/components/dashboard/user-modal"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -120,6 +131,18 @@ export function getUserColumns({
       ),
     },
     {
+      accessorKey: "isDeleted",
+      header: "Trạng thái",
+      cell: ({ row }) => (
+        <Badge
+          variant={row.original.isDeleted ? "destructive" : "outline"}
+          className="px-2"
+        >
+          {row.original.isDeleted ? "Đã xóa" : "Hoạt động"}
+        </Badge>
+      ),
+    },
+    {
       id: "actions",
       header: () => (
         <div className="flex justify-end">
@@ -164,6 +187,8 @@ export function UserInfoDataTable() {
   const [search, setSearch] = React.useState("")
   const [debouncedSearch, setDebouncedSearch] = React.useState("")
   const [isUserModalOpen, setIsUserModalOpen] = React.useState(false)
+  const [userToDelete, setUserToDelete] = React.useState<Userinfo | null>(null)
+  const deleteUserMutation = useDeleteUserMutation()
 
   React.useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -179,7 +204,7 @@ export function UserInfoDataTable() {
   }, [])
 
   const handleDelete = React.useCallback((user: Userinfo) => {
-    console.log("Delete user", user)
+    setUserToDelete(user)
   }, [])
 
   const handleSubmitUser = React.useCallback(
@@ -203,6 +228,25 @@ export function UserInfoDataTable() {
     page: pagination.pageIndex + 1,
     pageSize: pagination.pageSize,
   })
+  const { refetch: refetchUsers } = usersQuery
+
+  const handleConfirmDelete = React.useCallback(() => {
+    if (!userToDelete) {
+      return
+    }
+
+    deleteUserMutation.mutate(userToDelete.id, {
+      onSuccess: () => {
+        toast.success("Xóa tài khoản thành công")
+        setUserToDelete(null)
+        refetchUsers()
+      },
+      onError: () => {
+        toast.error("Không thể xóa tài khoản")
+      },
+    })
+  }, [deleteUserMutation, refetchUsers, userToDelete])
+
   const pageResult = usersQuery.data?.data
   const data = pageResult?.items ?? []
   const totalCount = pageResult?.totalCount ?? 0
@@ -233,6 +277,39 @@ export function UserInfoDataTable() {
         onOpenChange={setIsUserModalOpen}
         onSubmit={handleSubmitUser}
       />
+      <AlertDialog
+        open={Boolean(userToDelete)}
+        onOpenChange={(open) => {
+          if (!open && !deleteUserMutation.isPending) {
+            setUserToDelete(null)
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xóa tài khoản?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc muốn xóa tài khoản {userToDelete?.name}? Hành động
+              này không thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteUserMutation.isPending}>
+              Hủy
+            </AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={deleteUserMutation.isPending}
+              onClick={(event) => {
+                event.preventDefault()
+                handleConfirmDelete()
+              }}
+            >
+              {deleteUserMutation.isPending ? "Đang xóa..." : "Xóa"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <div className="flex flex-col gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
