@@ -26,10 +26,18 @@ public class UserUseCase : IUserUseCase
             throw new KeyNotFoundException("Không tìm thấy thông tin tài khoản");
         }
 
-        return MapToCurrentUserDto(user);
+        return new CurrentUserDto
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Phone = user.Phone,
+            Email = user.Email,
+            Avatar = user.Avatar,
+            Role = user.Role
+        };
     }
 
-    public async Task<PageResult<CurrentUserDto>> GetUsers(string? search, int page, int pageSize)
+    public async Task<PageResult<UserInfoDto>> GetUsers(string? search, int page, int pageSize)
     {
         if (page < 1)
         {
@@ -44,9 +52,18 @@ public class UserUseCase : IUserUseCase
         var users = await _userRepository.GetUsers(search, page, pageSize);
         var totalCount = await _userRepository.CountUsers(search);
 
-        return new PageResult<CurrentUserDto>
+        return new PageResult<UserInfoDto>
         {
-            Items = users.Select(MapToCurrentUserDto).ToList(),
+            Items = users.Select(user => new UserInfoDto
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Phone = user.Phone,
+                Email = user.Email,
+                Avatar = user.Avatar,
+                Role = user.Role,
+                IsDeleted = user.IsDelete
+            }).ToList(),
             Page = page,
             PageSize = pageSize,
             TotalCount = totalCount
@@ -114,11 +131,6 @@ public class UserUseCase : IUserUseCase
 
         await _userRepository.UpdateUser(user);
 
-        return MapToCurrentUserDto(user);
-    }
-
-    private static CurrentUserDto MapToCurrentUserDto(User user)
-    {
         return new CurrentUserDto
         {
             Id = user.Id,
@@ -128,5 +140,14 @@ public class UserUseCase : IUserUseCase
             Avatar = user.Avatar,
             Role = user.Role
         };
+    }
+
+    public async Task DeleteUser(Guid userId)
+    {
+        var isDeleted = await _userRepository.DeleteUser(userId);
+        if (!isDeleted)
+        {
+            throw new KeyNotFoundException("User not found");
+        }
     }
 }

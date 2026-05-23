@@ -20,13 +20,13 @@ public class UserController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<ResponseBase<PageResult<CurrentUserDto>>>> GetUsers(
+    public async Task<ActionResult<ResponseBase<PageResult<UserInfoDto>>>> GetUsers(
         [FromQuery] string? search,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10)
     {
         var users = await _userUseCase.GetUsers(search, page, pageSize);
-        return new ResponseBase<PageResult<CurrentUserDto>>(users);
+        return new ResponseBase<PageResult<UserInfoDto>>(users);
     }
 
     [HttpGet("me")]
@@ -52,5 +52,13 @@ public class UserController : ControllerBase
     {
         var user = await _userUseCase.UpdateUser(id, request);
         return new ResponseBase<CurrentUserDto>(user);
+    }
+
+    [HttpDelete("{id:guid}")]
+    // [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<ResponseBase<string>>> DeleteUser(Guid id)
+    {
+        await _userUseCase.DeleteUser(id);
+        return new ResponseBase<string>("User deleted successfully");
     }
 }

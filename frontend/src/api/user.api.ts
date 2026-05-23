@@ -36,7 +36,7 @@ export function useUsersQuery(params: GetUsersParams) {
   return useQuery<ResponseEntity<PageResult<Userinfo>>>({
     queryKey: ["users", params],
     queryFn: () => userApi.getUsers(params),
-    staleTime: Infinity,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 

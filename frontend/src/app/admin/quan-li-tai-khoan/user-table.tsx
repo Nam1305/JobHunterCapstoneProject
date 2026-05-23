@@ -17,13 +17,15 @@ import {
   ChevronRightIcon,
   ChevronsLeftIcon,
   ChevronsRightIcon,
-  PencilIcon,
   PlusIcon,
   Trash2Icon,
 } from "lucide-react"
 
 import { useUsersQuery } from "@/api/user.api"
-import { UserModal } from "@/components/dashboard/user-modal"
+import {
+  UserModal,
+  type UserModalValues,
+} from "@/components/dashboard/user-modal"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -45,11 +47,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import type { UpdateUserRequest, Userinfo } from "@/types/user"
+import type { Userinfo } from "@/types/user"
 
 interface UserColumnActions {
   onCreate: () => void
-  onUpdate: (user: Userinfo) => void
   onDelete: (user: Userinfo) => void
 }
 
@@ -65,7 +66,6 @@ function getInitials(name: string) {
 
 export function getUserColumns({
   onCreate,
-  onUpdate,
   onDelete,
 }: UserColumnActions): ColumnDef<Userinfo>[] {
   return [
@@ -83,7 +83,6 @@ export function getUserColumns({
             </Avatar>
             <div className="grid">
               <span className="font-medium">{user.name}</span>
-              <span className="text-sm text-muted-foreground">{user.id}</span>
             </div>
           </div>
         )
@@ -140,15 +139,6 @@ export function getUserColumns({
           <Button
             variant="ghost"
             size="icon"
-            className="size-8"
-            onClick={() => onUpdate(row.original)}
-          >
-            <PencilIcon />
-            <span className="sr-only">Cập nhật {row.original.name}</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
             className="size-8 text-destructive"
             onClick={() => onDelete(row.original)}
           >
@@ -172,21 +162,19 @@ export function UserInfoDataTable() {
     pageSize: 10,
   })
   const [search, setSearch] = React.useState("")
-  const [modalMode, setModalMode] = React.useState<"create" | "update">(
-    "create"
-  )
-  const [selectedUser, setSelectedUser] = React.useState<Userinfo | null>(null)
+  const [debouncedSearch, setDebouncedSearch] = React.useState("")
   const [isUserModalOpen, setIsUserModalOpen] = React.useState(false)
 
-  const handleCreate = React.useCallback(() => {
-    setModalMode("create")
-    setSelectedUser(null)
-    setIsUserModalOpen(true)
-  }, [])
+  React.useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(search)
+      setPagination((current) => ({ ...current, pageIndex: 0 }))
+    }, 1000)
 
-  const handleUpdate = React.useCallback((user: Userinfo) => {
-    setModalMode("update")
-    setSelectedUser(user)
+    return () => window.clearTimeout(timeoutId)
+  }, [search])
+
+  const handleCreate = React.useCallback(() => {
     setIsUserModalOpen(true)
   }, [])
 
@@ -195,24 +183,23 @@ export function UserInfoDataTable() {
   }, [])
 
   const handleSubmitUser = React.useCallback(
-    (values: UpdateUserRequest) => {
-      console.log(`${modalMode} user`, values)
+    (values: UserModalValues) => {
+      console.log("Create user", values)
       setIsUserModalOpen(false)
     },
-    [modalMode]
+    []
   )
 
   const userColumns = React.useMemo(
     () =>
       getUserColumns({
         onCreate: handleCreate,
-        onUpdate: handleUpdate,
         onDelete: handleDelete,
       }),
-    [handleCreate, handleDelete, handleUpdate]
+    [handleCreate, handleDelete]
   )
   const usersQuery = useUsersQuery({
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     page: pagination.pageIndex + 1,
     pageSize: pagination.pageSize,
   })
@@ -242,9 +229,7 @@ export function UserInfoDataTable() {
   return (
     <>
       <UserModal
-        mode={modalMode}
         open={isUserModalOpen}
-        user={selectedUser}
         onOpenChange={setIsUserModalOpen}
         onSubmit={handleSubmitUser}
       />
@@ -261,10 +246,7 @@ export function UserInfoDataTable() {
         <div className="flex max-w-sm items-center gap-2">
           <Input
             value={search}
-            onChange={(event) => {
-              setSearch(event.target.value)
-              setPagination((current) => ({ ...current, pageIndex: 0 }))
-            }}
+            onChange={(event) => setSearch(event.target.value)}
             placeholder="Tìm kiếm người dùng..."
           />
         </div>

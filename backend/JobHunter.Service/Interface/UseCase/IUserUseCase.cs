@@ -8,9 +8,11 @@ public interface IUserUseCase
 {
     Task<CurrentUserDto> GetCurrentUser(Guid userId);
 
-    Task<PageResult<CurrentUserDto>> GetUsers(string? search, int page, int pageSize);
+    Task<PageResult<UserInfoDto>> GetUsers(string? search, int page, int pageSize);
 
     Task Register(RegisterRequestDto request);
 
     Task<CurrentUserDto> UpdateUser(Guid userId, UpdateUserRequestDto request);
+
+    Task DeleteUser(Guid userId);
 }

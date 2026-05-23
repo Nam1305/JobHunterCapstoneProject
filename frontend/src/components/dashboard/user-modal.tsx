@@ -6,7 +6,7 @@ import { Loader2Icon } from "lucide-react"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 
-import type { UpdateUserRequest, Userinfo, UserRole } from "@/types/user"
+import type { UserRole } from "@/types/user"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -43,65 +43,54 @@ const formSchema = z.object({
   role: z.enum(roleOptions).nullable(),
 })
 
-type FormValues = z.infer<typeof formSchema>
-
-type UserModalMode = "create" | "update"
+export type UserModalValues = z.infer<typeof formSchema>
 
 interface UserModalProps {
-  mode: UserModalMode
   open: boolean
-  user?: Userinfo | null
   isSubmitting?: boolean
   onOpenChange: (open: boolean) => void
-  onSubmit?: (values: UpdateUserRequest) => void
+  onSubmit?: (values: UserModalValues) => void
 }
 
-function getDefaultValues(user?: Userinfo | null): FormValues {
+function getDefaultValues(): UserModalValues {
   return {
-    name: user?.name ?? "",
-    phone: user?.phone ?? "",
+    name: "",
+    phone: "",
     password: "",
-    avatar: user?.avatar ?? "",
-    role: user?.role ?? null,
+    avatar: "",
+    role: null,
   }
 }
 
 export function UserModal({
-  mode,
   open,
-  user,
   isSubmitting = false,
   onOpenChange,
   onSubmit,
 }: UserModalProps) {
-  const form = useForm<FormValues>({
+  const form = useForm<UserModalValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: getDefaultValues(user),
+    defaultValues: getDefaultValues(),
   })
 
   React.useEffect(() => {
     if (open) {
-      form.reset(getDefaultValues(user))
+      form.reset(getDefaultValues())
     }
-  }, [form, open, user])
+  }, [form, open])
 
-  const handleSubmit = (values: FormValues) => {
+  const handleSubmit = (values: UserModalValues) => {
     onSubmit?.(values)
   }
-
-  const title = mode === "create" ? "Thêm tài khoản" : "Cập nhật tài khoản"
-  const description =
-    mode === "create"
-      ? "Nhập thông tin người dùng, mật khẩu, avatar và vai trò."
-      : "Cập nhật thông tin người dùng, mật khẩu, avatar và vai trò."
-  const submitLabel = mode === "create" ? "Thêm" : "Cập nhật"
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle className="text-2xl">Thêm tài khoản</DialogTitle>
+          <DialogDescription>
+            Nhập thông tin người dùng, mật khẩu, avatar và vai trò.
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -148,11 +137,7 @@ export function UserModal({
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder={
-                        mode === "create"
-                          ? "Nhập mật khẩu"
-                          : "Để trống nếu không đổi mật khẩu"
-                      }
+                      placeholder="Nhập mật khẩu"
                       autoComplete="new-password"
                       {...field}
                     />
@@ -219,7 +204,7 @@ export function UserModal({
                   Đang lưu...
                 </>
               ) : (
-                submitLabel
+                "Thêm"
               )}
             </Button>
           </form>

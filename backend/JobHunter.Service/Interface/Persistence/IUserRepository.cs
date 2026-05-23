@@ -17,5 +17,7 @@ namespace JobHunter.Service.Interface.Persistence
         Task<User> AddUser(User user);
 
         Task UpdateUser(User user);
+
+        Task<bool> DeleteUser(Guid userId);
     }
 }

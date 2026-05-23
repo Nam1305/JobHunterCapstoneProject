@@ -31,9 +31,9 @@ namespace JobHunter.Service.Infrastructure.Persistence
 
         public Task<List<User>> GetUsers(string? search, int page, int pageSize)
         {
-            return BuildUserQuery(search)
-                .OrderByDescending(x => x.CreatedAt)
-                .ThenBy(x => x.Name)
+            return _context.Users
+                .AsNoTracking()
+                .Where(x => string.IsNullOrWhiteSpace(search) || EF.Functions.ILike(x.Name, $"%{search.Trim()}%"))
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -41,7 +41,10 @@ namespace JobHunter.Service.Infrastructure.Persistence
 
         public Task<int> CountUsers(string? search)
         {
-            return BuildUserQuery(search).CountAsync();
+            return _context.Users
+                .AsNoTracking()
+                .Where(x => string.IsNullOrWhiteSpace(search) || EF.Functions.ILike(x.Name, $"%{search.Trim()}%"))
+                .CountAsync();
         }
 
         public async Task<User> AddUser(User user)
@@ -57,19 +60,18 @@ namespace JobHunter.Service.Infrastructure.Persistence
             await _context.SaveChangesAsync();
         }
 
-        private IQueryable<User> BuildUserQuery(string? search)
+        public async Task<bool> DeleteUser(Guid userId)
         {
-            var query = _context.Users
-                .AsNoTracking()
-                .Where(x => !x.IsDelete);
-
-            if (!string.IsNullOrWhiteSpace(search))
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+            if (user == null)
             {
-                var keyword = search.Trim();
-                query = query.Where(x => EF.Functions.ILike(x.Name, $"%{keyword}%"));
+                return false;
             }
 
-            return query;
+            user.IsDelete = true;
+            await _context.SaveChangesAsync();
+
+            return true;
         }
     }
 }
