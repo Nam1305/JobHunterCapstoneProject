@@ -24,3 +24,11 @@ export interface Userinfo {
   avatar: string | null;
   role: UserRole | null;
 }
+
+export interface UpdateUserRequest {
+  name: string;
+  phone: string;
+  password: string;
+  avatar: string;
+  role: UserRole | null;
+}
