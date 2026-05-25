@@ -46,11 +46,12 @@ public class UserController : ControllerBase
         return new ResponseBase<string>("User registered successfully");
     }
 
-    [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<ResponseBase<CurrentUserDto>>> UpdateUser(Guid id, [FromBody] UpdateUserRequestDto request)
+    [HttpPut("me")]
+    public async Task<ActionResult<ResponseBase<CurrentUserDto>>> UpdateUser([FromBody] UpdateUserRequestDto request)
     {
-        var user = await _userUseCase.UpdateUser(id, request);
+        //get user id from token
+        var userId = User.GetUserId();
+        var user = await _userUseCase.UpdateUser(userId, request);
         return new ResponseBase<CurrentUserDto>(user);
     }
 
