@@ -1,6 +1,6 @@
 ﻿using JobHunter.Domain;
 
-namespace JobHunter.Service.Infrastructure.Persistence;
+namespace JobHunter.Domain.Entities;
 
 public partial class User : BaseEntity
 {
@@ -11,6 +11,8 @@ public partial class User : BaseEntity
     public string Email { get; set; } = null!;
 
     public string? GoogleId { get; set; }
+
+    public bool IsDelete { get; set; } = false;
 
     public string Password { get; set; } = null!;
 

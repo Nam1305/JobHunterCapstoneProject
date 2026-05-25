@@ -9,3 +9,24 @@ export interface CurrentUser {
   role: UserRole | null;
 }
 
+export interface RegisterRequest {
+  email: string
+  password: string
+  phone: string
+  name: string
+}
+
+export interface CreateUserRequest extends UpdateUserRequest {
+  role: UserRole | null
+}
+
+export interface Userinfo extends CurrentUser {
+  isDeleted: boolean;
+}
+
+export interface UpdateUserRequest {
+  name: string;
+  phone: string;
+  password: string;
+  avatar: string;
+}

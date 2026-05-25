@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
+import { useRegisterMutation } from "@/api/user.api";
 import { useGoogleLoginMutation } from "@/api/auth.api";
 import { Button } from "@/components/ui/button";
 import {
@@ -48,6 +49,7 @@ type FormValues = z.infer<typeof formSchema>;
 export function RegisterModal() {
   const dispatch = useAppDispatch();
   const openModal = useAppSelector((state) => state.modal.openModal);
+  const registerMutation = useRegisterMutation();
   const googleLoginMutation = useGoogleLoginMutation();
 
   const form = useForm<FormValues>({
@@ -61,8 +63,33 @@ export function RegisterModal() {
     },
   });
 
-  const onSubmit = () => {
-    return;
+  const onSubmit = (values: FormValues) => {
+    registerMutation.mutate(
+      {
+        name: values.fullName,
+        email: values.email,
+        phone: values.phoneNumber,
+        password: values.password,
+      },
+      {
+        onSuccess: () => {
+          dispatch(closeModal());
+          form.reset();
+          toast.success("Đăng ký thành công. Vui lòng đăng nhập.");
+          dispatch(openLoginModal());
+        },
+        onError: (error) => {
+          const message =
+            error.response?.data.message ||
+            "Đăng ký thất bại. Vui lòng thử lại.";
+
+          form.setError("root", {
+            message,
+          });
+          toast.error(message);
+        },
+      },
+    );
   };
 
   const handleAuthenticated = async () => {
@@ -229,8 +256,19 @@ export function RegisterModal() {
               )}
             />
 
-            <Button type="submit" className="w-full">
-              Đăng ký
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={registerMutation.isPending}
+            >
+              {registerMutation.isPending ? (
+                <>
+                  <Loader2Icon className="animate-spin" />
+                  Đang đăng ký...
+                </>
+              ) : (
+                "Đăng ký"
+              )}
             </Button>
 
             {form.formState.errors.root?.message ? (
@@ -254,7 +292,7 @@ export function RegisterModal() {
               type="button"
               variant="outline"
               className="w-full"
-              disabled={googleLoginMutation.isPending}
+              disabled={registerMutation.isPending || googleLoginMutation.isPending}
               onClick={() => googleLogin()}
             >
               {googleLoginMutation.isPending ? (

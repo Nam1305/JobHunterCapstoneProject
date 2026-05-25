@@ -1,10 +1,9 @@
-import { HRPlaceholderPage } from "@/components/hr/placeholder-page"
+import { UserInfoDataTable } from "./user-table"
 
 export default function AccountManagementPage() {
   return (
-    <HRPlaceholderPage
-      title="Quản lí tài khoản"
-      description="Quản lý tài khoản người dùng, vai trò và trạng thái hoạt động."
-    />
+    <main className="flex flex-1 flex-col gap-4 p-4 lg:p-6">
+      <UserInfoDataTable />
+    </main>
   )
 }

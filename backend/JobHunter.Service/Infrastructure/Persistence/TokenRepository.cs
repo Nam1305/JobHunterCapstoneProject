@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using JobHunter.Domain.Entities;
 using JobHunter.Service.DTOs.Auth;
 using JobHunter.Service.Interface.Persistence;
 using Microsoft.EntityFrameworkCore;
