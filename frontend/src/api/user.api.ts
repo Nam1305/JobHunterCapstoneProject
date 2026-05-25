@@ -5,7 +5,7 @@ import { AxiosError } from "axios";
 import api from "./api";
 
 import { PageResult, ResponseEntity } from "@/types/base";
-import { CreateUserRequest, RegisterRequest, Userinfo } from "@/types/user";
+import { CreateUserRequest, RegisterRequest, UpdateUserRequest, Userinfo, CurrentUser } from "@/types/user";
 
 type ApiError = AxiosError<ResponseEntity<string>>;
 
@@ -39,6 +39,16 @@ export const userApi = {
     const res = await api.delete<ResponseEntity<string>>(`/users/${userId}`);
     return res.data;
   },
+
+  async UpdateUser(payload: UpdateUserRequest): Promise<ResponseEntity<string>> {
+    const res = await api.put<ResponseEntity<string>>(`/users/me`, payload);
+    return res.data;
+  },
+
+  async getCurrentUser(): Promise<ResponseEntity<CurrentUser>> {
+    const res = await api.get<ResponseEntity<CurrentUser>>("/users/me");
+    return res.data;
+  },
 };
 
 export function useUsersQuery(params: GetUsersParams) {
@@ -64,5 +74,19 @@ export function useDeleteUserMutation() {
 export function useCreateUserMutation() {
   return useMutation<ResponseEntity<string>, ApiError, CreateUserRequest>({
     mutationFn: userApi.createUser,
+  });
+}
+
+export function useUpdateUserMutation() {
+  return useMutation<ResponseEntity<string>, ApiError, UpdateUserRequest>({
+    mutationFn: userApi.UpdateUser,
+  });
+}
+
+export function useCurrentUserQuery() {
+  return useQuery<ResponseEntity<CurrentUser>>({
+    queryKey: ["currentUser"],
+    queryFn: userApi.getCurrentUser,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }

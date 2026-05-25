@@ -28,5 +28,4 @@ export interface UpdateUserRequest {
   name: string;
   phone: string;
   password: string;
-  avatar: string;
 }
