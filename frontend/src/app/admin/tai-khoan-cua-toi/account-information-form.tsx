@@ -2,12 +2,15 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2Icon, UploadIcon } from "lucide-react"
-import { useEffect } from "react"
+import { useEffect, useRef, type ChangeEvent } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
 
-import { useUpdateUserMutation } from "@/api/user.api"
+import {
+  useUpdateAvatarMutation,
+  useUpdateUserMutation,
+} from "@/api/user.api"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -26,7 +29,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useCurrentUser } from "@/hooks/use-current-user"
-import { setUser } from "@/store/auth.slice"
+import { fetchCurrentUser, setUser } from "@/store/auth.slice"
 import { useAppDispatch } from "@/store/hooks"
 import { useQueryClient } from "@tanstack/react-query"
 
@@ -88,6 +91,8 @@ export function AccountInformationForm() {
   const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
   const updateUserMutation = useUpdateUserMutation()
+  const updateAvatarMutation = useUpdateAvatarMutation()
+  const avatarInputRef = useRef<HTMLInputElement>(null)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -158,6 +163,48 @@ export function AccountInformationForm() {
     )
   }
 
+  const handleAvatarChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+
+    if (!file) {
+      return
+    }
+
+    if (!["image/jpeg", "image/png"].includes(file.type)) {
+      toast.error("Vui lòng chọn ảnh JPG hoặc PNG")
+      event.target.value = ""
+      return
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Kích thước ảnh tối đa là 2MB")
+      event.target.value = ""
+      return
+    }
+
+    const formData = new FormData()
+    formData.append("request", file)
+
+    updateAvatarMutation.mutate(formData, {
+      onSuccess: async (response) => {
+        await dispatch(fetchCurrentUser()).unwrap()
+        queryClient.invalidateQueries({ queryKey: ["currentUser"] })
+        queryClient.invalidateQueries({ queryKey: ["users"] })
+        toast.success(response.message || "Cập nhật ảnh đại diện thành công")
+      },
+      onError: (error) => {
+        const message =
+          error.response?.data.message ||
+          "Không thể cập nhật ảnh đại diện. Vui lòng thử lại."
+
+        toast.error(message)
+      },
+      onSettled: () => {
+        event.target.value = ""
+      },
+    })
+  }
+
   return (
     <Card className="w-full">
       <CardContent className="grid gap-8 md:grid-cols-[260px_1fr]">
@@ -172,9 +219,32 @@ export function AccountInformationForm() {
           </Avatar>
 
           <div className="grid w-full gap-3">
-            <Button type="button" variant="outline" size="lg" className="w-full">
-              <UploadIcon />
-              Tải ảnh lên
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/jpeg,image/png"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="w-full"
+              disabled={updateAvatarMutation.isPending}
+              onClick={() => avatarInputRef.current?.click()}
+            >
+              {updateAvatarMutation.isPending ? (
+                <>
+                  <Loader2Icon className="animate-spin" />
+                  Đang tải...
+                </>
+              ) : (
+                <>
+                  <UploadIcon />
+                  Tải ảnh lên
+                </>
+              )}
             </Button>
             <p className="text-sm leading-6 text-muted-foreground">
               JPG hoặc PNG
