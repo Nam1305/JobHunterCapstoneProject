@@ -16,5 +16,7 @@ public interface IUserUseCase
 
     Task<CurrentUserDto> CreateUser(CreateUserDto request);
 
+    Task UpdateAvatar(Guid userId, string avatarUrl);
+
     Task DeleteUser(Guid userId);
 }

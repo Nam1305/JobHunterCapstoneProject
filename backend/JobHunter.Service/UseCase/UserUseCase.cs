@@ -171,4 +171,16 @@ public class UserUseCase : IUserUseCase
             Role = newUser.Role
         };
     }
+
+    public async Task UpdateAvatar(Guid userId, string avatarUrl)
+    {
+        var user = await _userRepository.GetUserById(userId);
+        if (user == null)
+        {
+            throw new KeyNotFoundException("User not found");
+        }
+
+        user.Avatar = avatarUrl;
+        await _userRepository.UpdateUser(user);
+    }
 }

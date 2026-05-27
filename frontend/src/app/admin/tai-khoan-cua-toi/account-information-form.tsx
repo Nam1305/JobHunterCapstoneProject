@@ -1,6 +1,7 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 
@@ -21,6 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { useCurrentUser } from "@/hooks/use-current-user"
 
 const formSchema = z
   .object({
@@ -66,16 +68,32 @@ const formSchema = z
 type FormValues = z.infer<typeof formSchema>
 
 export function AccountInformationForm() {
+  const { user } = useCurrentUser()
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: "Vu Quang Minh",
-      email: "vuquangminh240804@gmail.com",
+      fullName: "",
+      email: "",
       phoneNumber: "",
       password: "",
       confirmPassword: "",
     },
   })
+
+  useEffect(() => {
+    if (!user) {
+      return
+    }
+
+    form.reset({
+      fullName: user.name,
+      email: user.email,
+      phoneNumber: user.phone ?? "",
+      password: "",
+      confirmPassword: "",
+    })
+  }, [form, user])
 
   const onSubmit = (values: FormValues) => {
     void values
@@ -123,6 +141,7 @@ export function AccountInformationForm() {
                       type="email"
                       placeholder="Nhập email của bạn"
                       autoComplete="email"
+                      disabled
                       {...field}
                     />
                   </FormControl>
