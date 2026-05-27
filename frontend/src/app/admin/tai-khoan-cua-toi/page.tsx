@@ -1,5 +1,4 @@
 import { AccountInformationForm } from "./account-information-form"
-import { ProfilePictureUpload } from "./profile-picture-upload"
 
 export default function AdminAccountPage() {
   return (
@@ -13,10 +12,7 @@ export default function AdminAccountPage() {
         </p>
       </div>
 
-      <div className="grid items-start gap-6 xl:grid-cols-[320px_1fr]">
-        <ProfilePictureUpload />
-        <AccountInformationForm />
-      </div>
+      <AccountInformationForm />
     </main>
   )
 }

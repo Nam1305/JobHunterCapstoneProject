@@ -49,6 +49,15 @@ export const userApi = {
     const res = await api.get<ResponseEntity<CurrentUser>>("/users/me");
     return res.data;
   },
+
+  async updateAvatar(payload: FormData): Promise<ResponseEntity<string>> {
+    const res = await api.post<ResponseEntity<string>>("/users/avatar", payload, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return res.data;
+  }
 };
 
 export function useUsersQuery(params: GetUsersParams) {
@@ -88,5 +97,11 @@ export function useCurrentUserQuery() {
     queryKey: ["currentUser"],
     queryFn: userApi.getCurrentUser,
     staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+export function useUpdateAvatarMutation() {
+  return useMutation<ResponseEntity<string>, ApiError, FormData>({
+    mutationFn: userApi.updateAvatar,
   });
 }

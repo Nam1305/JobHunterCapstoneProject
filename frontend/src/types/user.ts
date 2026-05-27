@@ -29,3 +29,7 @@ export interface UpdateUserRequest {
   phone: string;
   password: string;
 }
+
+export interface UpdateAvatarRequest {
+  avatar: File;
+}
