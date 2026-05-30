@@ -206,19 +206,30 @@ export function AccountInformationForm() {
   }
 
   return (
-    <Card className="w-full">
-      <CardContent className="grid gap-8 md:grid-cols-[260px_1fr]">
-        <div className="flex flex-col items-center gap-5 text-center">
-          <Avatar className="size-32 shadow-sm">
+  <Card className="w-full border-border/60 shadow-sm">
+    <CardContent className="p-6 md:p-8">
+      <div className="grid gap-10 lg:grid-cols-[240px_1fr]">
+        {/* Avatar Section */}
+        <div className="flex flex-col items-center rounded-2xl border bg-muted/20 p-6 text-center">
+          <Avatar className="size-28 border shadow-sm">
             {user?.avatar ? (
               <AvatarImage src={user.avatar} alt={user.name} />
             ) : null}
-            <AvatarFallback className="text-3xl font-semibold">
+
+            <AvatarFallback className="text-2xl font-semibold">
               {getInitials(user?.name) || "U"}
             </AvatarFallback>
           </Avatar>
 
-          <div className="grid w-full gap-3">
+          <div className="mt-4 space-y-1">
+            <h3 className="text-base font-semibold">{user?.name}</h3>
+
+            <p className="text-sm text-muted-foreground">
+              {user?.email}
+            </p>
+          </div>
+
+          <div className="mt-6 w-full">
             <input
               ref={avatarInputRef}
               type="file"
@@ -226,10 +237,10 @@ export function AccountInformationForm() {
               className="hidden"
               onChange={handleAvatarChange}
             />
+
             <Button
               type="button"
               variant="outline"
-              size="lg"
               className="w-full"
               disabled={updateAvatarMutation.isPending}
               onClick={() => avatarInputRef.current?.click()}
@@ -242,146 +253,196 @@ export function AccountInformationForm() {
               ) : (
                 <>
                   <UploadIcon />
-                  Tải ảnh lên
+                  Đổi ảnh đại diện
                 </>
               )}
             </Button>
-            <p className="text-sm leading-6 text-muted-foreground">
+
+            <p className="mt-3 text-xs leading-5 text-muted-foreground">
               JPG hoặc PNG
               <br />
-              Kích thước tối đa: 2MB
+              Tối đa 2MB
             </p>
           </div>
         </div>
 
+        {/* Form Section */}
         <div className="min-w-0">
+          <div className="mb-6">
+            <CardTitle className="text-2xl">
+              Tài khoản của tôi
+            </CardTitle>
+
+            <CardDescription className="mt-2">
+              Quản lý thông tin cá nhân và bảo mật tài khoản.
+            </CardDescription>
+          </div>
+
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="fullName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Họ và tên</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        placeholder="Nhập họ và tên"
-                        autoComplete="name"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-6"
+            >
+              {/* Personal Info */}
+              <div className="space-y-5">
+                <FormField
+                  control={form.control}
+                  name="fullName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Họ và tên</FormLabel>
 
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="Nhập email của bạn"
-                        autoComplete="email"
-                        disabled
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="Nhập họ và tên"
+                          autoComplete="name"
+                          className="h-11"
+                          {...field}
+                        />
+                      </FormControl>
 
-              <FormField
-                control={form.control}
-                name="phoneNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Số điện thoại</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="tel"
-                        placeholder="Nhập số điện thoại của bạn"
-                        autoComplete="tel"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <div className="border-t pt-6">
-                <h2 className="text-base font-semibold">Đổi mật khẩu</h2>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+
+                      <FormControl>
+                        <Input
+                          type="email"
+                          autoComplete="email"
+                          disabled
+                          className="h-11 opacity-80"
+                          {...field}
+                        />
+                      </FormControl>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="phoneNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Số điện thoại</FormLabel>
+
+                      <FormControl>
+                        <Input
+                          type="tel"
+                          placeholder="Nhập số điện thoại"
+                          autoComplete="tel"
+                          className="h-11"
+                          {...field}
+                        />
+                      </FormControl>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Mật khẩu mới</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Nhập mật khẩu mới"
-                        autoComplete="new-password"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Password Section */}
+              <div className="rounded-xl border p-5">
+                <div className="mb-5">
+                  <h2 className="text-base font-semibold">
+                    Đổi mật khẩu
+                  </h2>
 
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Xác nhận mật khẩu mới</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Nhập lại mật khẩu mới"
-                        autoComplete="new-password"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Để trống nếu bạn không muốn thay đổi mật khẩu.
+                  </p>
+                </div>
 
-              <Button
-                type="submit"
-                size="lg"
-                className="mt-4 w-full"
-                disabled={updateUserMutation.isPending}
-              >
-                {updateUserMutation.isPending ? (
-                  <>
-                    <Loader2Icon className="animate-spin" />
-                    Đang lưu...
-                  </>
-                ) : (
-                  "Lưu thay đổi"
-                )}
-              </Button>
+                <div className="space-y-5">
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Mật khẩu mới</FormLabel>
 
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="Nhập mật khẩu mới"
+                            autoComplete="new-password"
+                            className="h-11"
+                            {...field}
+                          />
+                        </FormControl>
+
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Xác nhận mật khẩu mới
+                        </FormLabel>
+
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="Nhập lại mật khẩu mới"
+                            autoComplete="new-password"
+                            className="h-11"
+                            {...field}
+                          />
+                        </FormControl>
+
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Root Error */}
               {form.formState.errors.root?.message ? (
-                <p className="text-center text-sm text-destructive">
+                <p className="text-sm text-destructive">
                   {form.formState.errors.root.message}
                 </p>
               ) : null}
+
+              {/* Submit */}
+              <div className="flex justify-end">
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="min-w-40"
+                  disabled={updateUserMutation.isPending}
+                >
+                  {updateUserMutation.isPending ? (
+                    <>
+                      <Loader2Icon className="animate-spin" />
+                      Đang lưu...
+                    </>
+                  ) : (
+                    "Lưu thay đổi"
+                  )}
+                </Button>
+              </div>
             </form>
           </Form>
         </div>
-      </CardContent>
-    </Card>
-  )
+      </div>
+    </CardContent>
+  </Card>
+)
 }
