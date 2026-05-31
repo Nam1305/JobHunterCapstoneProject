@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace JobHunter.Service.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(JobhunterContext))]
-    [Migration("20260531043047_AddCompanyAndJobSchema")]
-    partial class AddCompanyAndJobSchema
+    [Migration("20260531075043_SeedJobLevels")]
+    partial class SeedJobLevels
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -123,6 +123,10 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("city");
 
+                    b.Property<string>("CitySlug")
+                        .HasColumnType("text")
+                        .HasColumnName("city_slug");
+
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid")
                         .HasColumnName("company_id");
@@ -155,6 +159,8 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                         .HasName("company_branches_pkey");
 
                     b.HasIndex("CompanyId");
+
+                    b.HasIndex(new[] { "CitySlug" }, "IX_company_branches_city_slug");
 
                     b.ToTable("company_branches", (string)null);
                 });
@@ -273,6 +279,10 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<string>("Slug")
+                        .HasColumnType("text")
+                        .HasColumnName("slug");
+
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -285,6 +295,9 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id")
                         .HasName("job_categories_pkey");
+
+                    b.HasIndex(new[] { "Slug" }, "job_categories_slug_key")
+                        .IsUnique();
 
                     b.ToTable("job_categories", (string)null);
                 });
@@ -307,6 +320,10 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("created_by");
 
+                    b.Property<string>("Slug")
+                        .HasColumnType("text")
+                        .HasColumnName("slug");
+
                     b.Property<string>("Title")
                         .HasColumnType("text")
                         .HasColumnName("title");
@@ -323,6 +340,9 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id")
                         .HasName("job_levels_pkey");
+
+                    b.HasIndex(new[] { "Slug" }, "job_levels_slug_key")
+                        .IsUnique();
 
                     b.ToTable("job_levels", (string)null);
                 });
@@ -353,6 +373,10 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<string>("Slug")
+                        .HasColumnType("text")
+                        .HasColumnName("slug");
+
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -367,6 +391,9 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                         .HasName("job_subcategories_pkey");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex(new[] { "Slug" }, "job_subcategories_slug_key")
+                        .IsUnique();
 
                     b.ToTable("job_subcategories", (string)null);
                 });

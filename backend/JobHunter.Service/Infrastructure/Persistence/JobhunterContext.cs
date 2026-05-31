@@ -73,11 +73,14 @@ public partial class JobhunterContext : DbContext
 
             entity.ToTable("company_branches");
 
+            entity.HasIndex(e => e.CitySlug, "IX_company_branches_city_slug");
+
             entity.Property(e => e.Id)
                 .HasDefaultValueSql("gen_random_uuid()")
                 .HasColumnName("id");
             entity.Property(e => e.Address).HasColumnName("address");
             entity.Property(e => e.City).HasColumnName("city");
+            entity.Property(e => e.CitySlug).HasColumnName("city_slug");
             entity.Property(e => e.CompanyId).HasColumnName("company_id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
@@ -100,6 +103,8 @@ public partial class JobhunterContext : DbContext
 
             entity.ToTable("job_categories");
 
+            entity.HasIndex(e => e.Slug, "job_categories_slug_key").IsUnique();
+
             entity.Property(e => e.Id)
                 .HasDefaultValueSql("gen_random_uuid()")
                 .HasColumnName("id");
@@ -108,6 +113,7 @@ public partial class JobhunterContext : DbContext
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
             entity.Property(e => e.Name).HasColumnName("name");
+            entity.Property(e => e.Slug).HasColumnName("slug");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("updated_at");
@@ -120,6 +126,8 @@ public partial class JobhunterContext : DbContext
 
             entity.ToTable("job_subcategories");
 
+            entity.HasIndex(e => e.Slug, "job_subcategories_slug_key").IsUnique();
+
             entity.Property(e => e.Id)
                 .HasDefaultValueSql("gen_random_uuid()")
                 .HasColumnName("id");
@@ -129,6 +137,7 @@ public partial class JobhunterContext : DbContext
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
             entity.Property(e => e.Name).HasColumnName("name");
+            entity.Property(e => e.Slug).HasColumnName("slug");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("updated_at");
@@ -145,6 +154,8 @@ public partial class JobhunterContext : DbContext
 
             entity.ToTable("job_levels");
 
+            entity.HasIndex(e => e.Slug, "job_levels_slug_key").IsUnique();
+
             entity.Property(e => e.Id)
                 .HasDefaultValueSql("gen_random_uuid()")
                 .HasColumnName("id");
@@ -153,6 +164,7 @@ public partial class JobhunterContext : DbContext
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
             entity.Property(e => e.Title).HasColumnName("title");
+            entity.Property(e => e.Slug).HasColumnName("slug");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("updated_at");

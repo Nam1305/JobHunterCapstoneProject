@@ -12,6 +12,8 @@ public partial class CompanyBranch : BaseEntity
 
     public string? City { get; set; }
 
+    public string? CitySlug { get; set; }
+
     public virtual Company Company { get; set; } = null!;
 
     public virtual ICollection<Job> Jobs { get; set; } = new List<Job>();

@@ -50,6 +50,7 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     name = table.Column<string>(type: "text", nullable: true),
+                    slug = table.Column<string>(type: "text", nullable: true),
                     created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true, defaultValueSql: "CURRENT_TIMESTAMP"),
                     updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true, defaultValueSql: "CURRENT_TIMESTAMP"),
                     created_by = table.Column<string>(type: "text", nullable: true),
@@ -66,6 +67,7 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     title = table.Column<string>(type: "text", nullable: true),
+                    slug = table.Column<string>(type: "text", nullable: true),
                     created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true, defaultValueSql: "CURRENT_TIMESTAMP"),
                     updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true, defaultValueSql: "CURRENT_TIMESTAMP"),
                     created_by = table.Column<string>(type: "text", nullable: true),
@@ -85,6 +87,7 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                     name = table.Column<string>(type: "text", nullable: true),
                     address = table.Column<string>(type: "text", nullable: true),
                     city = table.Column<string>(type: "text", nullable: true),
+                    city_slug = table.Column<string>(type: "text", nullable: true),
                     created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true, defaultValueSql: "CURRENT_TIMESTAMP"),
                     updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true, defaultValueSql: "CURRENT_TIMESTAMP"),
                     created_by = table.Column<string>(type: "text", nullable: true),
@@ -108,6 +111,7 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                     id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     category_id = table.Column<Guid>(type: "uuid", nullable: false),
                     name = table.Column<string>(type: "text", nullable: true),
+                    slug = table.Column<string>(type: "text", nullable: true),
                     created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true, defaultValueSql: "CURRENT_TIMESTAMP"),
                     updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true, defaultValueSql: "CURRENT_TIMESTAMP"),
                     created_by = table.Column<string>(type: "text", nullable: true),
@@ -203,9 +207,20 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_company_branches_city_slug",
+                table: "company_branches",
+                column: "city_slug");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_company_branches_company_id",
                 table: "company_branches",
                 column: "company_id");
+
+            migrationBuilder.CreateIndex(
+                name: "job_categories_slug_key",
+                table: "job_categories",
+                column: "slug",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_job_level_mappings_level_id",
@@ -213,9 +228,21 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                 column: "level_id");
 
             migrationBuilder.CreateIndex(
+                name: "job_levels_slug_key",
+                table: "job_levels",
+                column: "slug",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_job_subcategories_category_id",
                 table: "job_subcategories",
                 column: "category_id");
+
+            migrationBuilder.CreateIndex(
+                name: "job_subcategories_slug_key",
+                table: "job_subcategories",
+                column: "slug",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_jobs_branch_id",
