@@ -3,6 +3,7 @@ import { BriefcaseBusiness, FileText, Home } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { LoginModalButton } from "@/components/auth/login-modal-button"
+import { ThemeToggle } from "@/providers/theme-provider"
 
 const navItems = [
   { href: "/", label: "Trang chủ", icon: Home },
@@ -37,7 +38,10 @@ export default function UserLayout({
             ))}
           </div>
 
-          <LoginModalButton />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <LoginModalButton />
+          </div>
         </nav>
       </header>
 

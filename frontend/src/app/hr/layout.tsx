@@ -1,6 +1,7 @@
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { SiteHeader } from "@/components/dashboard/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { ThemeToggle } from "@/providers/theme-provider"
 import {
   BriefcaseBusinessIcon,
   Building2Icon,
@@ -70,7 +71,7 @@ export default function HRLayout({
         variant="inset"
       />
       <SidebarInset>
-        <SiteHeader />
+        <SiteHeader actions={<ThemeToggle />} />
         {children}
       </SidebarInset>
     </SidebarProvider>

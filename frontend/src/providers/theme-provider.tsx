@@ -1,7 +1,18 @@
 "use client"
 
 import * as React from "react"
-import { ThemeProvider as NextThemesProvider } from "next-themes"
+import { Moon, Sun } from "lucide-react"
+import {
+  ThemeProvider as NextThemesProvider,
+  useTheme,
+} from "next-themes"
+
+import { Button } from "@/components/ui/button"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 function ThemeProvider({
   children,
@@ -20,4 +31,26 @@ function ThemeProvider({
   )
 }
 
-export { ThemeProvider }
+function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme()
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label="Chuyển chế độ sáng tối"
+          onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+        >
+          <Sun className="hidden dark:block" />
+          <Moon className="block dark:hidden" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>Chuyển chế độ sáng tối</TooltipContent>
+    </Tooltip>
+  )
+}
+
+export { ThemeProvider, ThemeToggle }

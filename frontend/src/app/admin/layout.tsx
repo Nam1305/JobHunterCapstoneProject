@@ -1,6 +1,7 @@
 import { SiteHeader } from "@/components/dashboard/site-header"
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { ThemeToggle } from "@/providers/theme-provider"
 import {
   Building2Icon,
   LayoutDashboardIcon,
@@ -52,7 +53,7 @@ export default function AdminLayout({
         variant="inset"
       />
       <SidebarInset>
-        <SiteHeader />
+        <SiteHeader actions={<ThemeToggle />} />
         {children}
       </SidebarInset>
     </SidebarProvider>
