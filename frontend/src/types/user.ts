@@ -28,5 +28,8 @@ export interface UpdateUserRequest {
   name: string;
   phone: string;
   password: string;
-  avatar: string;
+}
+
+export interface UpdateAvatarRequest {
+  avatar: File;
 }

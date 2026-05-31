@@ -1,6 +1,7 @@
 using JobHunter.Service.DTOs;
 using JobHunter.Service.DTOs.Auth;
 using JobHunter.Service.DTOs.User;
+using JobHunter.Service.Interface.Service;
 using JobHunter.Service.Interface.UseCase;
 using JobHunter.Service.Utils;
 using Microsoft.AspNetCore.Authorization;
@@ -13,10 +14,13 @@ namespace JobHunter.WebAPI.Controllers;
 public class UserController : ControllerBase
 {
     private readonly IUserUseCase _userUseCase;
+
+    private readonly IFileService _fileService;
     
-    public UserController(IUserUseCase userUseCase)
+    public UserController(IUserUseCase userUseCase, IFileService fileService)
     {
         _userUseCase = userUseCase;
+        _fileService = fileService;
     }
 
     [HttpGet]
@@ -46,11 +50,12 @@ public class UserController : ControllerBase
         return new ResponseBase<string>("User registered successfully");
     }
 
-    [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<ResponseBase<CurrentUserDto>>> UpdateUser(Guid id, [FromBody] UpdateUserRequestDto request)
+    [HttpPut("me")]
+    public async Task<ActionResult<ResponseBase<CurrentUserDto>>> UpdateUser([FromBody] UpdateUserRequestDto request)
     {
-        var user = await _userUseCase.UpdateUser(id, request);
+        //get user id from token
+        var userId = User.GetUserId();
+        var user = await _userUseCase.UpdateUser(userId, request);
         return new ResponseBase<CurrentUserDto>(user);
     }
 
@@ -68,5 +73,15 @@ public class UserController : ControllerBase
     {
         var user = await _userUseCase.CreateUser(request);
         return new ResponseBase<CurrentUserDto>(user);
+    }
+
+    [HttpPost("avatar")]
+    [Authorize]
+    public async Task<ActionResult<ResponseBase<string>>> UpdateAvatar(IFormFile request)
+    {
+        var userId = User.GetUserId();
+        var avatarUrl = await _fileService.UploadFileAsync(request);
+        await _userUseCase.UpdateAvatar(userId, avatarUrl);
+        return new ResponseBase<string>("Avatar updated successfully");
     }
 }

@@ -114,14 +114,10 @@ public class UserUseCase : IUserUseCase
             user.Phone = request.Phone;
         }
 
+        //if password is not null or empty, update password
         if (!string.IsNullOrWhiteSpace(request.Password))
         {
             user.Password = PasswordHashing.HashPassword(request.Password);
-        }
-
-        if (request.Avatar != null)
-        {
-            user.Avatar = request.Avatar;
         }
 
         await _userRepository.UpdateUser(user);
@@ -132,7 +128,6 @@ public class UserUseCase : IUserUseCase
             Name = user.Name,
             Phone = user.Phone,
             Email = user.Email,
-            Avatar = user.Avatar,
             Role = user.Role
         };
     }
@@ -161,7 +156,6 @@ public class UserUseCase : IUserUseCase
             Email = request.Email,
             Phone = request.Phone,
             Password = string.IsNullOrWhiteSpace(request.Password) ? null : PasswordHashing.HashPassword(request.Password),
-            Avatar = request.Avatar,
             Role = request.Role ?? UserRole.Candidate
         };
 
@@ -176,5 +170,17 @@ public class UserUseCase : IUserUseCase
             Avatar = newUser.Avatar,
             Role = newUser.Role
         };
+    }
+
+    public async Task UpdateAvatar(Guid userId, string avatarUrl)
+    {
+        var user = await _userRepository.GetUserById(userId);
+        if (user == null)
+        {
+            throw new KeyNotFoundException("User not found");
+        }
+
+        user.Avatar = avatarUrl;
+        await _userRepository.UpdateUser(user);
     }
 }
