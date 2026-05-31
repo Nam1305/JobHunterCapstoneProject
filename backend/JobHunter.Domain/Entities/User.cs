@@ -6,6 +6,8 @@ public partial class User : BaseEntity
 {
     public string Name { get; set; } = null!;
 
+    public Guid? CompanyId { get; set; }
+
     public string? Phone { get; set; }
 
     public string Email { get; set; } = null!;
@@ -19,6 +21,8 @@ public partial class User : BaseEntity
     public string? Avatar { get; set; }
 
     public UserRole? Role { get; set; }
+
+    public virtual Company? Company { get; set; }
 
     public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 }
