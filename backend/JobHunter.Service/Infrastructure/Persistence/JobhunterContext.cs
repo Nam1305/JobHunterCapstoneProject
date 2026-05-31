@@ -190,6 +190,7 @@ public partial class JobhunterContext : DbContext
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
             entity.Property(e => e.ExpiredAt).HasColumnName("expired_at");
+            entity.Property(e => e.ExperienceRequirement).HasColumnName("experience_requirement");
             entity.Property(e => e.Requirements).HasColumnName("requirements");
             entity.Property(e => e.Responsibilities).HasColumnName("responsibilities");
             entity.Property(e => e.SalaryRange).HasColumnName("salary_range");

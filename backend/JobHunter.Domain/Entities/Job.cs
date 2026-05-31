@@ -19,6 +19,8 @@ public partial class Job : BaseEntity
 
     public string? Requirements { get; set; }
 
+    public string? ExperienceRequirement { get; set; }
+
     public string? Benefits { get; set; }
 
     public JobWorkType? WorkType { get; set; }
