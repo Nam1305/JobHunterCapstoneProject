@@ -1,111 +1,420 @@
-import { ArrowRight, MapPin, Search, Sparkles } from "lucide-react"
+import {
+  Brain,
+  BriefcaseBusiness,
+  Building2,
+  ChartBar,
+  ChevronRight,
+  Clock,
+  FileText,
+  Heart,
+  MapPin,
+  MessageSquare,
+  Search,
+  UserCheck,
+  Users,
+  WalletCards,
+} from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
 
-const featuredJobs = [
+const companies = [
   {
-    title: "Frontend Developer",
-    company: "Công ty Sao Việt",
-    location: "Thành phố Hồ Chí Minh",
-    salary: "18-28 triệu",
+    name: "FPT Software",
+    field: "Technology",
+    jobs: 127,
+    mark: "FPT",
   },
   {
-    title: "Chuyên viên Nhân sự",
-    company: "An Phát Group",
-    location: "Hà Nội",
-    salary: "12-18 triệu",
+    name: "VNG Corporation",
+    field: "Gaming",
+    jobs: 89,
+    mark: "VNG",
   },
   {
-    title: "Data Analyst",
-    company: "Mekong Digital",
-    location: "Đà Nẵng",
-    salary: "20-32 triệu",
+    name: "Shopee Vietnam",
+    field: "E-commerce",
+    jobs: 156,
+    mark: "SP",
+  },
+  {
+    name: "Tiki",
+    field: "E-commerce",
+    jobs: 73,
+    mark: "TK",
+  },
+  {
+    name: "MOMO",
+    field: "Fintech",
+    jobs: 94,
+    mark: "MM",
+  },
+  {
+    name: "ViettelPay",
+    field: "Fintech",
+    jobs: 68,
+    mark: "VT",
   },
 ]
 
+const jobs = [
+  {
+    title: "Senior Frontend Developer",
+    company: "FPT Software",
+    salary: "25 - 40 triệu",
+    location: "Hà Nội",
+    level: "Trưởng phòng",
+    type: "Fulltime",
+    exp: "5 năm",
+    posted: "2 ngày trước",
+    hot: true,
+    iconClass: "bg-blue-600",
+  },
+  {
+    title: "Backend Engineer (NodeJS)",
+    company: "VNG Corporation",
+    salary: "30 - 50 triệu",
+    location: "TP.HCM",
+    level: "Senior",
+    type: "Fulltime",
+    exp: "4 năm",
+    posted: "1 tuần trước",
+    hot: true,
+    iconClass: "bg-violet-600",
+  },
+  {
+    title: "UI/UX Designer",
+    company: "Shopee Vietnam",
+    salary: "Thương lượng",
+    location: "TP.HCM",
+    level: "Middle",
+    type: "Fulltime",
+    exp: "3 năm",
+    posted: "3 ngày trước",
+    hot: false,
+    iconClass: "bg-amber-500",
+  },
+  {
+    title: "Data Engineer",
+    company: "Tiki",
+    salary: "28 - 45 triệu",
+    location: "Hà Nội",
+    level: "Senior",
+    type: "Fulltime",
+    exp: "4 năm",
+    posted: "5 ngày trước",
+    hot: true,
+    iconClass: "bg-sky-600",
+  },
+  {
+    title: "Product Manager",
+    company: "MOMO",
+    salary: "35 - 60 triệu",
+    location: "TP.HCM",
+    level: "Trưởng phòng",
+    type: "Fulltime",
+    exp: "6 năm",
+    posted: "1 tuần trước",
+    hot: false,
+    iconClass: "bg-fuchsia-500",
+  },
+  {
+    title: "DevOps Engineer",
+    company: "ViettelPay",
+    salary: "30 - 50 triệu",
+    location: "Hà Nội",
+    level: "Senior",
+    type: "Fulltime",
+    exp: "5 năm",
+    posted: "2 ngày trước",
+    hot: true,
+    iconClass: "bg-red-600",
+  },
+]
+
+const tools = [
+  {
+    title: "Tạo CV",
+    description:
+      "Tạo CV chuyên nghiệp chỉ trong vài phút với các mẫu được thiết kế sẵn.",
+    icon: FileText,
+  },
+  {
+    title: "Hoàn thành hồ sơ",
+    description:
+      "Bổ sung đầy đủ thông tin cá nhân để tăng cơ hội được nhà tuyển dụng chú ý.",
+    icon: UserCheck,
+  },
+  {
+    title: "Trắc nghiệm tính cách",
+    description:
+      "Khám phá điểm mạnh và phong cách làm việc phù hợp với bạn.",
+    icon: Brain,
+  },
+  {
+    title: "Câu hỏi phỏng vấn",
+    description:
+      "Luyện tập với bộ câu hỏi phỏng vấn phổ biến theo từng ngành nghề.",
+    icon: MessageSquare,
+  },
+]
+
+function SectionHeading({
+  title,
+  description,
+}: {
+  title: string
+  description: string
+}) {
+  return (
+    <div>
+      <h2 className="text-3xl font-semibold tracking-normal text-foreground">
+        {title}
+      </h2>
+      <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+    </div>
+  )
+}
+
+function ViewAllLink() {
+  return (
+    <Button variant="ghost" asChild>
+      <a href="#">
+        Xem tất cả
+        <ChevronRight />
+      </a>
+    </Button>
+  )
+}
+
 export default function UserHomePage() {
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-12 px-4 py-10 sm:px-6 lg:py-16">
-      <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-        <div className="space-y-6">
-          <Badge variant="outline" className="gap-1">
-            <Sparkles />
-            Nền tảng tìm việc thông minh
-          </Badge>
-          <div className="space-y-4">
-            <h1 className="text-4xl font-semibold tracking-normal sm:text-5xl">
-              Tìm công việc phù hợp với kỹ năng và mục tiêu của bạn
-            </h1>
-            <p className="max-w-2xl text-base leading-7 text-muted-foreground">
-              Khám phá cơ hội nghề nghiệp mới, lưu tin tuyển dụng yêu thích và
-              chuẩn bị hồ sơ ứng tuyển trong một nơi duy nhất.
-            </p>
+    <div className="bg-background text-foreground">
+      <section className="border-b bg-muted/30">
+        <div className="mx-auto flex min-h-110 max-w-6xl flex-col items-center justify-center px-4 py-16 text-center sm:px-6 lg:py-20">
+          <h1 className="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-normal text-balance sm:text-5xl lg:text-6xl">
+            Bắt đầu hành trình sự nghiệp mới
+          </h1>
+          <p className="mt-6 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
+            Hàng nghìn cơ hội việc làm từ các công ty hàng đầu Việt Nam đang
+            chờ đón bạn
+          </p>
+
+          {/* Search bar */}
+          <div className="mt-10 w-full max-w-3xl rounded-lg border bg-background p-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  className="h-10 pl-9"
+                  placeholder="Tìm kiếm công việc, công ty, kỹ năng..."
+                  type="search"
+                />
+              </div>
+              <div className="w-full shrink-0 sm:w-48">
+                <Select defaultValue="all">
+                  <SelectTrigger className="h-10 w-full">
+                    <SelectValue placeholder="Địa điểm" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tất cả địa điểm</SelectItem>
+                    <SelectItem value="ha-noi">Hà Nội</SelectItem>
+                    <SelectItem value="tp-hcm">TP.HCM</SelectItem>
+                    <SelectItem value="da-nang">Đà Nẵng</SelectItem>
+                    <SelectItem value="remote">Remote</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button size="lg" className="w-full sm:w-auto">
+                Tìm kiếm
+              </Button>
+            </div>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button size="lg">
-              <Search />
-              Tìm việc ngay
-            </Button>
-            <Button size="lg" variant="outline">
-              Tạo hồ sơ
-              <ArrowRight />
-            </Button>
+
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-2">
+              <BriefcaseBusiness className="size-4" />
+              50,000+ việc làm
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <Building2 className="size-4" />
+              10,000+ công ty
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <Users className="size-4" />
+              100,000+ ứng viên
+            </span>
           </div>
         </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Gợi ý hôm nay</CardTitle>
-            <CardDescription>
-              Một vài vị trí mẫu dành cho ứng viên mới bắt đầu.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {featuredJobs.map((job) => (
-              <div
-                key={`${job.company}-${job.title}`}
-                className="rounded-lg border p-4"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h2 className="font-medium">{job.title}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      {job.company}
-                    </p>
-                  </div>
-                  <Badge variant="secondary">{job.salary}</Badge>
-                </div>
-                <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="size-4" />
-                  {job.location}
-                </p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-3">
-        {[
-          ["1.240+", "Tin tuyển dụng đang mở"],
-          ["320+", "Công ty đã xác thực"],
-          ["15 phút", "Thời gian tạo hồ sơ mẫu"],
-        ].map(([value, label]) => (
-          <Card key={label} size="sm">
-            <CardHeader>
-              <CardTitle className="text-2xl">{value}</CardTitle>
-              <CardDescription>{label}</CardDescription>
-            </CardHeader>
-          </Card>
-        ))}
+      <section className="py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="flex items-start justify-between gap-4">
+            <SectionHeading
+              title="Công ty hàng đầu"
+              description="Các nhà tuyển dụng uy tín đang tìm kiếm nhân tài"
+            />
+            <ViewAllLink />
+          </div>
+
+          <Carousel
+            className="mt-10"
+            opts={{
+              align: "start",
+            }}
+          >
+            <CarouselContent className="py-1">
+              {companies.map((company) => (
+                <CarouselItem
+                  key={company.name}
+                  className="basis-4/5 sm:basis-1/2 md:basis-1/3 lg:basis-1/6"
+                >
+                  <Card size="sm" className="h-full">
+                    <CardContent className="space-y-4">
+                      <div className="flex size-14 items-center justify-center rounded-lg border bg-muted text-xs font-semibold text-muted-foreground">
+                        {company.mark}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{company.name}</h3>
+                        <Badge variant="secondary" className="mt-2">
+                          {company.field}
+                        </Badge>
+                      </div>
+                      <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <BriefcaseBusiness className="size-4" />
+                        {company.jobs} vị trí
+                      </p>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden md:inline-flex" />
+            <CarouselNext className="hidden md:inline-flex" />
+          </Carousel>
+        </div>
+      </section>
+
+      <section className="border-y bg-muted/30 py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="flex items-start justify-between gap-4">
+            <SectionHeading
+              title="Top việc làm"
+              description="Những cơ hội nghề nghiệp hấp dẫn nhất trong tuần"
+            />
+            <ViewAllLink />
+          </div>
+
+          <div className="mt-10 grid gap-4 lg:grid-cols-3">
+            {jobs.map((job) => (
+              <Card key={`${job.company}-${job.title}`}>
+                <CardContent>
+                  <div className="flex items-start gap-3">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border bg-background">
+                      <span className={`size-4 rounded-full ${job.iconClass}`} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-semibold leading-5 text-foreground">
+                          {job.title}
+                        </h3>
+                        {job.hot ? (
+                          <Badge variant="secondary">HOT</Badge>
+                        ) : null}
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {job.company}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 text-sm text-muted-foreground">
+                    <p className="col-span-2 flex items-center gap-2 font-semibold text-foreground">
+                      <WalletCards className="size-4" />
+                      {job.salary}
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <MapPin className="size-4" />
+                      {job.location}
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <ChartBar className="size-4" />
+                      {job.level}
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <Clock className="size-4" />
+                      {job.type}
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <BriefcaseBusiness className="size-4" />
+                      {job.exp}
+                    </p>
+                  </div>
+
+                  <div className="mt-5 flex items-center justify-between border-t pt-4">
+                    <p className="text-xs text-muted-foreground">
+                      {job.posted}
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        aria-label="Lưu việc làm"
+                        size="icon-sm"
+                        variant="ghost"
+                      >
+                        <Heart />
+                      </Button>
+                      <Button>Ứng tuyển</Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <SectionHeading
+            title="Công cụ hỗ trợ"
+            description="Mọi thứ bạn cần để chinh phục nhà tuyển dụng"
+          />
+
+          <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {tools.map((tool) => (
+              <Card key={tool.title}>
+                <CardContent className="space-y-6">
+                  <div className="flex size-10 items-center justify-center rounded-lg border bg-background">
+                    <tool.icon className="size-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">{tool.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      {tool.description}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
       </section>
     </div>
   )
