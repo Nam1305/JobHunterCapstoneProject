@@ -1,5 +1,5 @@
 import { SiteHeader } from "@/components/dashboard/site-header"
-import { AppSidebar } from "@/components/hr/app-sidebar"
+import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import {
   Building2Icon,
@@ -7,12 +7,6 @@ import {
   UserRoundIcon,
   UsersIcon,
 } from "lucide-react"
-
-const adminUser = {
-  name: "Admin User",
-  email: "admin@example.com",
-  avatar: "/avatars/shadcn.jpg",
-}
 
 const adminMenuItems = [
   {
@@ -55,7 +49,6 @@ export default function AdminLayout({
         brandName="Admin Portal"
         items={adminMenuItems}
         rootUrl="/admin"
-        user={adminUser}
         variant="inset"
       />
       <SidebarInset>

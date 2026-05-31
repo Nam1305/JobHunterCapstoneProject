@@ -17,12 +17,6 @@ import {
   CommandIcon,
 } from "lucide-react"
 
-type SidebarUser = {
-  name: string
-  email: string
-  avatar: string
-}
-
 type SidebarItem = {
   title: string
   url: string
@@ -33,14 +27,12 @@ type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   brandName: string
   items: SidebarItem[]
   rootUrl: string
-  user: SidebarUser
 }
 
 export function AppSidebar({
   brandName,
   items,
   rootUrl,
-  user,
   ...props
 }: AppSidebarProps) {
   return (
@@ -64,7 +56,7 @@ export function AppSidebar({
         <NavMain items={items} rootUrl={rootUrl} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   )

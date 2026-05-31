@@ -1,4 +1,4 @@
-import { AppSidebar } from "@/components/hr/app-sidebar"
+import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { SiteHeader } from "@/components/dashboard/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import {
@@ -10,12 +10,6 @@ import {
   UserRoundIcon,
   UsersIcon,
 } from "lucide-react"
-
-const hrUser = {
-  name: "HR User",
-  email: "hr@example.com",
-  avatar: "/avatars/shadcn.jpg",
-}
 
 const hrMenuItems = [
   {
@@ -73,7 +67,6 @@ export default function HRLayout({
         brandName="HR Portal"
         items={hrMenuItems}
         rootUrl="/hr"
-        user={hrUser}
         variant="inset"
       />
       <SidebarInset>

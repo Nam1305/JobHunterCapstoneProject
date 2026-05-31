@@ -1,4 +1,4 @@
-import { AccountInformationForm } from "./account-information-form"
+import { AccountInformationForm } from "@/components/account/account-information-form"
 
 export default function AdminAccountPage() {
   return (

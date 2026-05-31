@@ -1,9 +1,12 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 import type { CurrentUser } from "@/types/user"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,15 +22,20 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useLogout } from "@/api/auth.api"
-import { EllipsisVerticalIcon, Loader2Icon, LogOutIcon } from "lucide-react"
+import {
+  EllipsisVerticalIcon,
+  LayoutDashboardIcon,
+  Loader2Icon,
+  LogOutIcon,
+} from "lucide-react"
 import { logout as clearAuthUser } from "@/store/auth.slice"
 import { useAppDispatch } from "@/store/hooks"
 import { toast } from "sonner"
+import { useCurrentUser } from "@/hooks/use-current-user"
 
-type NavUserData = Pick<CurrentUser, "name" | "email" | "avatar">
+type NavUserData = Pick<CurrentUser, "name" | "email" | "avatar" | "role">
 
 type NavUserProps = {
-  user: NavUserData
   variant?: "sidebar" | "header"
 }
 
@@ -83,6 +91,30 @@ function UserAvatar({
   )
 }
 
+function NavUserSkeleton() {
+  return (
+    <div className="flex items-center gap-2">
+      <Skeleton className="size-9 rounded-full" />
+      <div className="hidden space-y-1.5 sm:block">
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-3 w-32" />
+      </div>
+    </div>
+  )
+}
+
+function getUserDashboardUrl(role: NavUserData["role"]) {
+  if (role === "Admin") {
+    return "/admin"
+  }
+
+  if (role === "HR") {
+    return "/hr"
+  }
+
+  return null
+}
+
 function UserDropdownContent({
   user,
   side,
@@ -93,13 +125,16 @@ function UserDropdownContent({
   className?: string
 }) {
   const dispatch = useAppDispatch()
+  const router = useRouter()
   const logoutMutation = useLogout()
+  const dashboardUrl = getUserDashboardUrl(user.role)
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
         dispatch(clearAuthUser())
         toast.success("Đăng xuất thành công")
+        router.push("/")
       },
       onError: (error) => {
         dispatch(clearAuthUser())
@@ -107,6 +142,7 @@ function UserDropdownContent({
           error.response?.data.message ||
             "Không thể đăng xuất trên máy chủ. Phiên cục bộ đã được xoá."
         )
+        router.push("/")
       },
     })
   }
@@ -125,6 +161,17 @@ function UserDropdownContent({
         </div>
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
+      {dashboardUrl ? (
+        <>
+          <DropdownMenuItem asChild>
+            <Link href={dashboardUrl}>
+              <LayoutDashboardIcon />
+              Trang của tôi
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+        </>
+      ) : null}
       <DropdownMenuItem
         onClick={handleLogout}
         disabled={logoutMutation.isPending}
@@ -193,7 +240,17 @@ function HeaderNavUser({ user }: { user: NavUserData }) {
   )
 }
 
-export function NavUser({ user, variant = "sidebar" }: NavUserProps) {
+export function NavUser({ variant = "sidebar" }: NavUserProps) {
+  const { user, isLoading } = useCurrentUser()
+
+  if (isLoading) {
+    return <NavUserSkeleton />
+  }
+
+  if (!user) {
+    return null
+  }
+
   if (variant === "header") {
     return <HeaderNavUser user={user} />
   }
