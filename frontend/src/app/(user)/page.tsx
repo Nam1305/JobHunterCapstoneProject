@@ -335,49 +335,43 @@ export default function UserHomePage() {
                         <h3 className="font-semibold leading-5 text-foreground">
                           {job.title}
                         </h3>
-                        {job.hot ? (
-                          <Badge variant="secondary">HOT</Badge>
-                        ) : null}
+                        {job.hot ? <Badge variant="secondary">HOT</Badge> : null}
                       </div>
-                      <p className="mt-1 text-sm text-muted-foreground">
+                      <p className="mt-0.5 text-xs text-muted-foreground">  {/* ← sm→xs, mt-1→mt-0.5 */}
                         {job.company}
                       </p>
                     </div>
                   </div>
 
-                  <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 text-sm text-muted-foreground">
-                    <p className="col-span-2 flex items-center gap-2 font-semibold text-foreground">
-                      <WalletCards className="size-4" />
+                  <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-muted-foreground">  {/* ← mt-5→mt-3, gap-x-6→gap-x-4, gap-y-3→gap-y-2, text-sm→text-xs */}
+                    <p className="col-span-2 flex items-center gap-1.5 text-sm font-semibold text-foreground">  {/* ← gap-2→gap-1.5, added text-sm to keep salary readable */}
+                      <WalletCards className="size-3.5" />  {/* ← size-4→size-3.5 */}
                       {job.salary}
                     </p>
-                    <p className="flex items-center gap-2">
-                      <MapPin className="size-4" />
+                    <p className="flex items-center gap-1.5">
+                      <MapPin className="size-3" />  {/* ← size-4→size-3 */}
                       {job.location}
                     </p>
-                    <p className="flex items-center gap-2">
-                      <ChartBar className="size-4" />
+                    <p className="flex items-center gap-1.5">
+                      <ChartBar className="size-3" />
                       {job.level}
                     </p>
-                    <p className="flex items-center gap-2">
-                      <Clock className="size-4" />
+                    <p className="flex items-center gap-1.5">
+                      <Clock className="size-3" />
                       {job.type}
                     </p>
-                    <p className="flex items-center gap-2">
-                      <BriefcaseBusiness className="size-4" />
+                    <p className="flex items-center gap-1.5">
+                      <BriefcaseBusiness className="size-3" />
                       {job.exp}
                     </p>
                   </div>
 
-                  <div className="mt-5 flex items-center justify-between border-t pt-4">
+                  <div className="mt-3 flex items-center justify-between border-t pt-3">  {/* ← mt-5→mt-3, pt-4→pt-3 */}
                     <p className="text-xs text-muted-foreground">
                       {job.posted}
                     </p>
                     <div className="flex items-center gap-3">
-                      <Button
-                        aria-label="Lưu việc làm"
-                        size="icon-sm"
-                        variant="ghost"
-                      >
+                      <Button aria-label="Lưu việc làm" size="icon-sm" variant="ghost">
                         <Heart />
                       </Button>
                       <Button>Ứng tuyển</Button>
@@ -387,6 +381,7 @@ export default function UserHomePage() {
               </Card>
             ))}
           </div>
+
         </div>
       </section>
 
