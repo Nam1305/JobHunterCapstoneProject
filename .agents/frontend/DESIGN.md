@@ -6,8 +6,10 @@ system, component library, token set, or styling language.
 ## Priority
 
 1. Use pure shadcn/ui components first.
-2. Compose screens from existing project components when available.
-3. Add custom UI only when shadcn/ui does not provide the needed component or
+2. Check the existing `ui` folder for shadcn/ui components before considering
+   any new type of custom component.
+3. Compose screens from existing project components when available.
+4. Add custom UI only when shadcn/ui and existing `ui` components do not provide the needed component or
    behavior.
 
 ## shadcn Usage
