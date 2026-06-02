@@ -1,10 +1,5 @@
-import { HRPlaceholderPage } from "@/components/hr/placeholder-page"
+import { JobPostingEditForm } from "@/components/hr/job-posting-edit-form"
 
 export default function JobPostingPage() {
-  return (
-    <HRPlaceholderPage
-      title="Đăng tin tuyển dụng"
-      description="Tạo và quản lý tin tuyển dụng cho các vị trí đang cần nhân sự."
-    />
-  )
+  return <JobPostingEditForm />
 }
