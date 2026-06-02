@@ -18,6 +18,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { UserContainer } from "@/components/user/user-container"
 import {
   Carousel,
   CarouselContent,
@@ -207,7 +208,7 @@ export default function UserHomePage() {
   return (
     <div className="bg-background text-foreground">
       <section className="border-b bg-muted/30">
-        <div className="mx-auto flex min-h-110 max-w-6xl flex-col items-center justify-center px-4 py-16 text-center sm:px-6 lg:py-20">
+        <UserContainer className="flex min-h-110 flex-col items-center justify-center py-16 text-center lg:py-20">
           <h1 className="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-normal text-balance sm:text-5xl lg:text-6xl">
             Bắt đầu hành trình sự nghiệp mới
           </h1>
@@ -261,11 +262,11 @@ export default function UserHomePage() {
               100,000+ ứng viên
             </span>
           </div>
-        </div>
+        </UserContainer>
       </section>
 
       <section className="py-20">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <UserContainer>
           <div className="flex items-start justify-between gap-4">
             <SectionHeading
               title="Công ty hàng đầu"
@@ -309,11 +310,11 @@ export default function UserHomePage() {
             <CarouselPrevious className="hidden md:inline-flex" />
             <CarouselNext className="hidden md:inline-flex" />
           </Carousel>
-        </div>
+        </UserContainer>
       </section>
 
       <section className="border-y bg-muted/30 py-20">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <UserContainer>
           <div className="flex items-start justify-between gap-4">
             <SectionHeading
               title="Top việc làm"
@@ -382,11 +383,11 @@ export default function UserHomePage() {
             ))}
           </div>
 
-        </div>
+        </UserContainer>
       </section>
 
       <section className="py-20">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <UserContainer>
           <SectionHeading
             title="Công cụ hỗ trợ"
             description="Mọi thứ bạn cần để chinh phục nhà tuyển dụng"
@@ -409,7 +410,7 @@ export default function UserHomePage() {
               </Card>
             ))}
           </div>
-        </div>
+        </UserContainer>
       </section>
     </div>
   )

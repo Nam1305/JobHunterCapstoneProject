@@ -44,6 +44,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import { UserContainer } from "@/components/user/user-container"
 import { cn } from "@/lib/utils"
 
 const PAGE_SIZE = 5
@@ -810,7 +811,7 @@ export default function JobsPage() {
   return (
     <div className="min-h-[calc(100svh-4rem)] bg-background">
       <section className="border-b bg-background">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:px-6">
+        <UserContainer className="flex flex-col gap-3 py-4">
           <div className="grid gap-3 lg:grid-cols-[12rem_1fr_10rem]">
             <CategoryPopover
               selected={selectedCategories}
@@ -906,10 +907,10 @@ export default function JobsPage() {
                 </Button>
               )}
           </div>
-        </div>
+        </UserContainer>
       </section>
 
-      <section className="mx-auto grid max-w-6xl px-4 sm:px-6 lg:grid-cols-[24rem_1fr]">
+      <UserContainer as="section" className="grid lg:grid-cols-[24rem_1fr]">
         <aside className="border-r">
           <div className="flex flex-col gap-2.5 py-3 pr-3">
             {paginatedJobs.map((job) => (
@@ -1095,7 +1096,7 @@ export default function JobsPage() {
             </div>
           )}
         </main>
-      </section>
+      </UserContainer>
 
       <AllFiltersSheet
         open={sheetOpen}

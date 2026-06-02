@@ -3,16 +3,14 @@ import { BriefcaseBusiness, FileText, Home } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { LoginModalButton } from "@/components/auth/login-modal-button"
+import { UserContainer } from "@/components/user/user-container"
 import { ThemeToggle } from "@/providers/theme-provider"
-import { cn } from "@/lib/utils"
 
 const navItems = [
   { href: "/", label: "Trang chủ", icon: Home },
   { href: "/cong-viec", label: "Việc làm", icon: BriefcaseBusiness },
   { href: "/ho-so", label: "Hồ sơ", icon: FileText },
 ]
-
-const userContainerClass = "mx-auto max-w-6xl px-4 sm:px-6"
 
 export default function UserLayout({
   children,
@@ -22,11 +20,9 @@ export default function UserLayout({
   return (
     <div className="min-h-svh bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
-        <nav
-          className={cn(
-            userContainerClass,
-            "flex h-16 items-center justify-between"
-          )}
+        <UserContainer
+          as="nav"
+          className="flex h-16 items-center justify-between"
         >
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -50,7 +46,7 @@ export default function UserLayout({
             <ThemeToggle />
             <LoginModalButton />
           </div>
-        </nav>
+        </UserContainer>
       </header>
 
       <main>{children}</main>
