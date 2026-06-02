@@ -188,24 +188,24 @@ export function CompanyInformationForm() {
           </div>
 
           <Tabs defaultValue="general" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 rounded-full bg-muted p-1">
+            <TabsList  variant="default" className="w-full max-w-max rounded-full bg-muted p-1">
               <TabsTrigger 
                 value="general" 
-                className="rounded-full py-2.5 text-base transition-all"
+                // className="h-10 rounded-full px-2 py-0 text-xs leading-none transition-all sm:text-sm md:text-base"
               >
                 Thông tin chung
               </TabsTrigger>
               
               <TabsTrigger 
                 value="branding" 
-                className="rounded-full py-2.5 text-base transition-all"
+                // className="h-10 rounded-full px-2 py-0 text-xs leading-none transition-all sm:text-sm md:text-base"
               >
                 Branding
               </TabsTrigger>
               
               <TabsTrigger 
                 value="branches" 
-                className="rounded-full py-2.5 text-base transition-all"
+                // className="h-10 rounded-full px-2 py-0 text-xs leading-none transition-all sm:text-sm md:text-base"
               >
                 Quản lý chi nhánh
               </TabsTrigger>
