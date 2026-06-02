@@ -16,14 +16,13 @@ import {
 import { Separator } from "@/components/ui/separator"
 
 const companySizes = [
-  "1-10 nhân sự",
-  "11-50 nhân sự",
-  "51-200 nhân sự",
-  "201-500 nhân sự",
-  "Trên 500 nhân sự",
+  "1-100 nhân sự",
+  "100 - 1000 nhân sự",
+  "1000 - 5000 nhân sự",
+  "5000+ nhân sự",
 ]
 
-const industries = [
+const companyType = [
   "Công nghệ thông tin",
   "Tài chính - ngân hàng",
   "Giáo dục",
@@ -36,9 +35,9 @@ const countries = ["Việt Nam", "Singapore", "Thái Lan", "Nhật Bản", "Hoa 
 const companyMockData = {
   name: "Nexora Technology",
   website: "https://nexora.example.com",
-  size: "51-200 nhân sự",
+  size: "1-100 nhân sự",
   country: "Việt Nam",
-  industry: "Công nghệ thông tin",
+  CompanyType: "Công nghệ thông tin",
   logo:
     "https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=800&q=80",
   cover:
@@ -157,12 +156,12 @@ export function CompanyGeneralInformationForm() {
 
             <div className="space-y-3">
               <Label className="text-base font-semibold">Ngành nghề</Label>
-              <Select defaultValue={companyMockData.industry}>
+              <Select defaultValue={companyMockData.CompanyType}>
                 <SelectTrigger className="h-12 w-full rounded-2xl bg-muted/60 px-4 text-base md:text-base">
                   <SelectValue placeholder="Chọn ngành nghề" />
                 </SelectTrigger>
                 <SelectContent>
-                  {industries.map((industry) => (
+                  {companyType.map((industry) => (
                     <SelectItem key={industry} value={industry}>
                       {industry}
                     </SelectItem>
