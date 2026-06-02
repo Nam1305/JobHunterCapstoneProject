@@ -239,7 +239,15 @@ function HtmlInput({
   )
 }
 
-export function JobPostingEditForm() {
+interface JobPostingEditFormProps {
+  mode?: "create" | "edit"
+  onCancel?: () => void
+}
+
+export function JobPostingEditForm({
+  mode = "edit",
+  onCancel,
+}: JobPostingEditFormProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -278,6 +286,7 @@ export function JobPostingEditForm() {
   return (
     <Form {...form}>
       <form
+        data-mode={mode}
         className="flex w-full flex-1 flex-col gap-6 p-4 md:p-6"
         onSubmit={form.handleSubmit(onSubmit)}
       >
@@ -502,7 +511,13 @@ export function JobPostingEditForm() {
         </Section>
 
         <div className="flex justify-end gap-3">
-          <Button type="button" variant="outline" size="lg" className="min-w-24">
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="min-w-24"
+            onClick={onCancel}
+          >
             Hủy
           </Button>
           <Button type="submit" size="lg" className="min-w-36">

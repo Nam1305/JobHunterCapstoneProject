@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import {
   flexRender,
   getCoreRowModel,
@@ -220,13 +221,17 @@ const columns: ColumnDef<JobPosting>[] = [
     header: () => <div className="text-right">Hành động</div>,
     cell: ({ row }) => (
       <div className="flex justify-end gap-1">
-        <Button variant="ghost" size="icon" className="size-8">
-          <EyeIcon />
-          <span className="sr-only">Xem {row.original.title}</span>
+        <Button variant="ghost" size="icon" className="size-8" asChild>
+          <Link href={`/hr/dang-tin-tuyen-dung/${row.original.id}/chinh-sua`}>
+            <EyeIcon />
+            <span className="sr-only">Xem {row.original.title}</span>
+          </Link>
         </Button>
-        <Button variant="ghost" size="icon" className="size-8">
-          <PencilIcon />
-          <span className="sr-only">Sửa {row.original.title}</span>
+        <Button variant="ghost" size="icon" className="size-8" asChild>
+          <Link href={`/hr/dang-tin-tuyen-dung/${row.original.id}/chinh-sua`}>
+            <PencilIcon />
+            <span className="sr-only">Sửa {row.original.title}</span>
+          </Link>
         </Button>
         <Button
           variant="ghost"
@@ -276,9 +281,6 @@ export default function JobPostingPage() {
 
   const totalCount = filteredData.length
   const pageIndex = table.getState().pagination.pageIndex
-  const pageSize = table.getState().pagination.pageSize
-  const firstResult = totalCount === 0 ? 0 : pageIndex * pageSize + 1
-  const lastResult = Math.min((pageIndex + 1) * pageSize, totalCount)
 
   React.useEffect(() => {
     setPagination((current) => ({ ...current, pageIndex: 0 }))
@@ -295,9 +297,11 @@ export default function JobPostingPage() {
             {jobPostings.length} tin tuyển dụng
           </p>
         </div>
-        <Button className="w-full md:w-auto">
-          <PlusIcon />
-          Tạo tin mới
+        <Button asChild className="w-full md:w-auto">
+          <Link href="/hr/dang-tin-tuyen-dung/tao-moi">
+            <PlusIcon />
+            Tạo tin mới
+          </Link>
         </Button>
       </div>
 
