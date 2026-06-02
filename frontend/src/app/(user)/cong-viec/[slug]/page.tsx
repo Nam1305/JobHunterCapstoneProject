@@ -143,7 +143,7 @@ const similarJobs = [
   },
 ]
 
-export default async function Page({
+export default async function JobDetailsPage({
   params,
 }: {
   params: Promise<{ slug: string }>
