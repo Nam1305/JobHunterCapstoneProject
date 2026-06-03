@@ -9,7 +9,7 @@ import { ThemeToggle } from "@/providers/theme-provider"
 const navItems = [
   { href: "/", label: "Trang chủ", icon: Home },
   { href: "/cong-viec", label: "Việc làm", icon: BriefcaseBusiness },
-  { href: "/ho-so", label: "Hồ sơ", icon: FileText },
+  { href: "/cong-ty", label: "Công ty", icon: FileText },
 ]
 
 export default function UserLayout({

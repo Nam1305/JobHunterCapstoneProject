@@ -14,6 +14,7 @@ import {
   Users,
   WalletCards,
 } from "lucide-react"
+import Link from "next/link"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -34,118 +35,137 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
+import type { JobCard } from "@/types/job"
 
 const companies = [
   {
     name: "FPT Software",
+    slug: "fpt-software",
     field: "Technology",
     jobs: 127,
     mark: "FPT",
   },
   {
     name: "VNG Corporation",
+    slug: "vng-corporation",
     field: "Gaming",
     jobs: 89,
     mark: "VNG",
   },
   {
     name: "Shopee Vietnam",
+    slug: "shopee-vietnam",
     field: "E-commerce",
     jobs: 156,
     mark: "SP",
   },
   {
     name: "Tiki",
+    slug: "tiki",
     field: "E-commerce",
     jobs: 73,
     mark: "TK",
   },
   {
     name: "MOMO",
+    slug: "momo",
     field: "Fintech",
     jobs: 94,
     mark: "MM",
   },
   {
     name: "ViettelPay",
+    slug: "viettelpay",
     field: "Fintech",
     jobs: 68,
     mark: "VT",
   },
 ]
 
-const jobs = [
+const jobs: JobCard[] = [
   {
+    id: "8fb4f462-8c3e-43fd-a75c-2c95e1e81668",
     title: "Senior Frontend Developer",
-    company: "FPT Software",
-    salary: "25 - 40 triệu",
-    location: "Hà Nội",
-    level: "Trưởng phòng",
-    type: "Fulltime",
-    exp: "5 năm",
-    posted: "2 ngày trước",
-    hot: true,
-    iconClass: "bg-blue-600",
+    companyName: "FPT Software",
+    companyImage: null,
+    salaryRange: "25 - 40 triệu",
+    experienceRequirement: "5 năm",
+    workType: "Onsite",
+    expiredAt: "2026-07-05T17:00:00+07:00",
+    tags: ["ReactJS", "TypeScript"],
+    slug: "senior-frontend-developer",
+    city: "Hà Nội",
+    jobLevels: ["Trưởng phòng"],
   },
   {
+    id: "4f92074a-f40d-4f62-afc1-e314d4ac6a26",
     title: "Backend Engineer (NodeJS)",
-    company: "VNG Corporation",
-    salary: "30 - 50 triệu",
-    location: "TP.HCM",
-    level: "Senior",
-    type: "Fulltime",
-    exp: "4 năm",
-    posted: "1 tuần trước",
-    hot: true,
-    iconClass: "bg-violet-600",
+    companyName: "VNG Corporation",
+    companyImage: null,
+    salaryRange: "30 - 50 triệu",
+    experienceRequirement: "4 năm",
+    workType: "Onsite",
+    expiredAt: "2026-07-10T17:00:00+07:00",
+    tags: ["NodeJS", "Backend"],
+    slug: "backend-engineer-nodejs",
+    city: "TP.HCM",
+    jobLevels: ["Senior"],
   },
   {
+    id: "c84e3daf-aac0-4b2a-a5a7-302d7d9f5969",
     title: "UI/UX Designer",
-    company: "Shopee Vietnam",
-    salary: "Thương lượng",
-    location: "TP.HCM",
-    level: "Middle",
-    type: "Fulltime",
-    exp: "3 năm",
-    posted: "3 ngày trước",
-    hot: false,
-    iconClass: "bg-amber-500",
+    companyName: "Shopee Vietnam",
+    companyImage: null,
+    salaryRange: "Thương lượng",
+    experienceRequirement: "3 năm",
+    workType: "Hybrid",
+    expiredAt: "2026-07-18T17:00:00+07:00",
+    tags: ["Figma", "UI/UX"],
+    slug: "ui-ux-designer",
+    city: "TP.HCM",
+    jobLevels: ["Middle"],
   },
   {
+    id: "af451029-bd76-4311-a958-40fe619881c4",
     title: "Data Engineer",
-    company: "Tiki",
-    salary: "28 - 45 triệu",
-    location: "Hà Nội",
-    level: "Senior",
-    type: "Fulltime",
-    exp: "4 năm",
-    posted: "5 ngày trước",
-    hot: true,
-    iconClass: "bg-sky-600",
+    companyName: "Tiki",
+    companyImage: null,
+    salaryRange: "28 - 45 triệu",
+    experienceRequirement: "4 năm",
+    workType: "Remote",
+    expiredAt: "2026-07-22T17:00:00+07:00",
+    tags: ["Python", "Data"],
+    slug: "data-engineer",
+    city: "Hà Nội",
+    jobLevels: ["Senior"],
   },
   {
+    id: "5cfdb724-e94e-4b20-a7cd-a81edae0c402",
     title: "Product Manager",
-    company: "MOMO",
-    salary: "35 - 60 triệu",
-    location: "TP.HCM",
-    level: "Trưởng phòng",
-    type: "Fulltime",
-    exp: "6 năm",
-    posted: "1 tuần trước",
-    hot: false,
-    iconClass: "bg-fuchsia-500",
+    companyName: "MOMO",
+    companyImage: null,
+    salaryRange: "35 - 60 triệu",
+    experienceRequirement: "6 năm",
+    workType: "Hybrid",
+    expiredAt: "2026-08-01T17:00:00+07:00",
+    tags: ["Product", "Fintech"],
+    slug: "product-manager",
+    city: "TP.HCM",
+    jobLevels: ["Trưởng phòng"],
   },
   {
+    id: "1d264352-4094-4640-ae55-b3ad79eac40c",
     title: "DevOps Engineer",
-    company: "ViettelPay",
-    salary: "30 - 50 triệu",
-    location: "Hà Nội",
-    level: "Senior",
-    type: "Fulltime",
-    exp: "5 năm",
-    posted: "2 ngày trước",
-    hot: true,
-    iconClass: "bg-red-600",
+    companyName: "ViettelPay",
+    companyImage: null,
+    salaryRange: "30 - 50 triệu",
+    experienceRequirement: "5 năm",
+    workType: "Onsite",
+    expiredAt: "2026-08-08T17:00:00+07:00",
+    tags: ["DevOps", "Cloud"],
+    slug: "devops-engineer",
+    city: "Hà Nội",
+    jobLevels: ["Senior"],
   },
 ]
 
@@ -193,14 +213,29 @@ function SectionHeading({
   )
 }
 
-function ViewAllLink() {
+function formatDaysUntil(expiredAt: string | null) {
+  if (!expiredAt) return "Chưa cập nhật hạn"
+
+  const diff = new Date(expiredAt).getTime() - Date.now()
+  const days = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
+
+  return days === 0 ? "Hết hạn hôm nay" : `Còn ${days} ngày`
+}
+
+function getCompanyMark(name: string | null | undefined) {
+  return (name ?? "CO")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase()
+}
+
+function getCompanySlug(companyName: string) {
   return (
-    <Button variant="ghost" asChild>
-      <a href="#">
-        Xem tất cả
-        <ChevronRight />
-      </a>
-    </Button>
+    companies.find((company) => company.name === companyName)?.slug ??
+    companyName.toLowerCase().replace(/\s+/g, "-")
   )
 }
 
@@ -242,8 +277,8 @@ export default function UserHomePage() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button size="lg" className="w-full sm:w-auto">
-                Tìm kiếm
+              <Button asChild size="lg" className="w-full sm:w-auto">
+                <Link href="/cong-viec">Tìm kiếm</Link>
               </Button>
             </div>
           </div>
@@ -272,13 +307,18 @@ export default function UserHomePage() {
               title="Công ty hàng đầu"
               description="Các nhà tuyển dụng uy tín đang tìm kiếm nhân tài"
             />
-            <ViewAllLink />
+            <Button variant="ghost" asChild>
+              <Link href="/cong-ty">
+                Xem tất cả
+                <ChevronRight />
+              </Link>
+            </Button>
           </div>
 
           <Carousel
             className="mt-10"
             opts={{
-              align: "start",
+              align: "center",
             }}
           >
             <CarouselContent className="py-1">
@@ -287,23 +327,28 @@ export default function UserHomePage() {
                   key={company.name}
                   className="basis-4/5 sm:basis-1/2 md:basis-1/3 lg:basis-1/6"
                 >
-                  <Card size="sm" className="h-full">
-                    <CardContent className="space-y-4">
-                      <div className="flex size-14 items-center justify-center rounded-lg border bg-muted text-xs font-semibold text-muted-foreground">
-                        {company.mark}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">{company.name}</h3>
-                        <Badge variant="secondary" className="mt-2">
-                          {company.field}
-                        </Badge>
-                      </div>
-                      <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <BriefcaseBusiness className="size-4" />
-                        {company.jobs} vị trí
-                      </p>
-                    </CardContent>
-                  </Card>
+                  <Link
+                    className="block h-full rounded-lg focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                    href={`/cong-ty/${company.slug}`}
+                  >
+                    <Card size="sm" className="h-full">
+                      <CardContent className="flex h-full flex-col items-center space-y-4 text-center">
+                        <div className="flex size-14 items-center justify-center rounded-lg border bg-muted text-xs font-semibold text-muted-foreground">
+                          {company.mark}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">{company.name}</h3>
+                          <Badge variant="secondary" className="mt-2">
+                            {company.field}
+                          </Badge>
+                        </div>
+                        <p className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                          <BriefcaseBusiness className="size-4" />
+                          {company.jobs} vị trí
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 </CarouselItem>
               ))}
             </CarouselContent>
@@ -320,62 +365,97 @@ export default function UserHomePage() {
               title="Top việc làm"
               description="Những cơ hội nghề nghiệp hấp dẫn nhất trong tuần"
             />
-            <ViewAllLink />
+            <Button variant="ghost" asChild>
+              <Link href="/cong-viec">
+                Xem tất cả
+                <ChevronRight />
+              </Link>
+            </Button>
           </div>
 
           <div className="mt-10 grid gap-4 lg:grid-cols-3">
             {jobs.map((job) => (
-              <Card key={`${job.company}-${job.title}`}>
-                <CardContent>
+              <Card key={job.id} className="group relative">
+                <Link
+                  aria-label={`Xem việc làm ${job.title ?? ""}`}
+                  className="absolute inset-0 rounded-lg focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                  href={`/cong-viec/${job.slug}`}
+                />
+                <CardContent className="relative">
                   <div className="flex items-start gap-3">
-                    <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border bg-background">
-                      <span className={`size-4 rounded-full ${job.iconClass}`} />
-                    </div>
+                    <Link
+                      className="relative z-10 flex size-9 shrink-0 items-center justify-center rounded-lg border bg-background text-xs font-semibold text-muted-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                      href={`/cong-ty/${getCompanySlug(job.companyName)}`}
+                      aria-label={`Xem công ty ${job.companyName}`}
+                    >
+                      {job.companyImage ? (
+                        <span
+                          aria-label={`${job.companyName} logo`}
+                          className="size-full rounded-lg bg-contain bg-center bg-no-repeat"
+                          role="img"
+                          style={{ backgroundImage: `url(${job.companyImage})` }}
+                        />
+                      ) : (
+                        getCompanyMark(job.companyName)
+                      )}
+                    </Link>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="font-semibold leading-5 text-foreground">
-                          {job.title}
+                          <Link
+                            className="relative z-10 hover:text-primary focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                            href={`/cong-viec/${job.slug}`}
+                          >
+                            {job.title}
+                          </Link>
                         </h3>
-                        {job.hot ? <Badge variant="secondary">HOT</Badge> : null}
                       </div>
-                      <p className="mt-0.5 text-xs text-muted-foreground">  {/* ← sm→xs, mt-1→mt-0.5 */}
-                        {job.company}
-                      </p>
+                      <Link
+                        className="relative z-10 mt-0.5 inline-block text-xs text-muted-foreground hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                        href={`/cong-ty/${getCompanySlug(job.companyName)}`}
+                      >  {/* ← sm→xs, mt-1→mt-0.5 */}
+                        {job.companyName}
+                      </Link>
                     </div>
                   </div>
 
                   <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-muted-foreground">  {/* ← mt-5→mt-3, gap-x-6→gap-x-4, gap-y-3→gap-y-2, text-sm→text-xs */}
                     <p className="col-span-2 flex items-center gap-1.5 text-sm font-semibold text-foreground">  {/* ← gap-2→gap-1.5, added text-sm to keep salary readable */}
                       <WalletCards className="size-3.5" />  {/* ← size-4→size-3.5 */}
-                      {job.salary}
+                      {job.salaryRange ?? "Thương lượng"}
                     </p>
                     <p className="flex items-center gap-1.5">
                       <MapPin className="size-3" />  {/* ← size-4→size-3 */}
-                      {job.location}
+                      {job.city}
                     </p>
                     <p className="flex items-center gap-1.5">
                       <ChartBar className="size-3" />
-                      {job.level}
+                      {job.jobLevels.join(", ") || "Chưa cập nhật"}
                     </p>
                     <p className="flex items-center gap-1.5">
                       <Clock className="size-3" />
-                      {job.type}
+                      {job.workType ?? "Chưa cập nhật"}
                     </p>
                     <p className="flex items-center gap-1.5">
                       <BriefcaseBusiness className="size-3" />
-                      {job.exp}
+                      {job.experienceRequirement ?? "Chưa cập nhật"}
                     </p>
                   </div>
 
                   <div className="mt-3 flex items-center justify-between border-t pt-3">  {/* ← mt-5→mt-3, pt-4→pt-3 */}
                     <p className="text-xs text-muted-foreground">
-                      {job.posted}
+                      {formatDaysUntil(job.expiredAt)}
                     </p>
                     <div className="flex items-center gap-3">
-                      <Button aria-label="Lưu việc làm" size="icon-sm" variant="ghost">
+                      <Button
+                        aria-label="Lưu việc làm"
+                        className="relative z-10"
+                        size="icon-sm"
+                        variant="ghost"
+                      >
                         <Heart />
                       </Button>
-                      <Button>Ứng tuyển</Button>
+                      <Button className="relative z-10">Ứng tuyển</Button>
                     </div>
                   </div>
                 </CardContent>
