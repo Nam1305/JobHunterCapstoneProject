@@ -60,9 +60,8 @@ const job: JobDetails = {
     citySlug: "ho-chi-minh",
   },
   jobLevels: ["Junior", "Middle", "Senior"],
+  applicants: 58,
 }
-
-const applicants = "58 ứng viên"
 
 const company: CompanyCardData = {
   id: "fedf1fc7-1765-4df9-a39c-ef34c070054d",
@@ -308,8 +307,10 @@ export default async function JobDetailsPage({
 
               <div className="text-xs text-muted-foreground">
                 {formatDaysUntil(job.expiredAt)}
-                <span className="px-2" aria-hidden="true">•</span>
-                {applicants}
+                <span className="px-2" aria-hidden="true">
+                  •
+                </span>
+                {job.applicants} ứng viên
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">

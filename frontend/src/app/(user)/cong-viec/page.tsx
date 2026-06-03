@@ -248,6 +248,7 @@ const jobs: JobDetails[] = [
       citySlug: "ha-noi",
     },
     jobLevels: ["Junior"],
+    applicants: 24,
   },
   {
     id: "7a3e9718-164f-40f3-8298-dcf1fbfc9a6e",
@@ -278,6 +279,7 @@ const jobs: JobDetails[] = [
       citySlug: "ho-chi-minh",
     },
     jobLevels: ["Middle"],
+    applicants: 18,
   },
   {
     id: "e9a29681-c7ea-4e2c-b8fb-db7ac8159998",
@@ -308,6 +310,7 @@ const jobs: JobDetails[] = [
       citySlug: "ha-noi",
     },
     jobLevels: ["Middle"],
+    applicants: 31,
   },
   {
     id: "de14fb3b-5dec-45b9-a767-3e098b37e56c",
@@ -338,6 +341,7 @@ const jobs: JobDetails[] = [
       citySlug: "ho-chi-minh",
     },
     jobLevels: ["Senior"],
+    applicants: 12,
   },
   {
     id: "481022da-d305-4202-8401-1c0a516c77e0",
@@ -368,6 +372,7 @@ const jobs: JobDetails[] = [
       citySlug: "ho-chi-minh",
     },
     jobLevels: ["Senior"],
+    applicants: 45,
   },
   {
     id: "da7df316-7c59-46dc-88b8-23679af3a0e7",
@@ -398,6 +403,7 @@ const jobs: JobDetails[] = [
       citySlug: "ho-chi-minh",
     },
     jobLevels: ["Senior"],
+    applicants: 28,
   },
   {
     id: "a1aa0154-2533-4ad5-8467-187c84d573f5",
@@ -428,6 +434,7 @@ const jobs: JobDetails[] = [
       citySlug: "ha-noi",
     },
     jobLevels: ["Trưởng phòng"],
+    applicants: 36,
   },
   {
     id: "103f8c8b-4637-42df-b477-686063324a5f",
@@ -458,6 +465,7 @@ const jobs: JobDetails[] = [
       citySlug: "ho-chi-minh",
     },
     jobLevels: ["Middle"],
+    applicants: 22,
   },
 ]
 

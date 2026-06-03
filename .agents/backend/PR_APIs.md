@@ -121,6 +121,7 @@ Return jobs for `frontend/src/app/(user)/cong-viec/page.tsx`.
 | ------------------ | ---------- | ------- |
 | `search`           | `string`   | `null`  |
 | `location`         | `string`   | `null`  |
+| `companySlug`      | `string`   | `null`  |
 | `categorySlugs`    | `string[]` | `[]`    |
 | `subcategorySlugs` | `string[]` | `[]`    |
 | `levelSlugs`       | `string[]` | `[]`    |
@@ -131,7 +132,7 @@ Return jobs for `frontend/src/app/(user)/cong-viec/page.tsx`.
 Example:
 
 ```text
-GET /api/jobs?search=developer&location=Hà Nội&subcategorySlugs=software-developer&levelSlugs=senior&workTypes=Remote&page=1&pageSize=5
+GET /api/jobs?search=developer&location=Hà Nội&companySlug=viettel-solutions&subcategorySlugs=software-developer&levelSlugs=senior&workTypes=Remote&page=1&pageSize=5
 ```
 
 ### Response
@@ -162,6 +163,7 @@ type JobDetails = {
   companyId: string;
   branchId: string | null;
   subcategoryId: string | null;
+  applicants: number;
   responsibilities: string | null;
   requirements: string | null;
   benefits: string | null;
@@ -193,6 +195,7 @@ type JobDetails = {
         "slug": "chuyen-vien-phan-tich-nghiep-vu-ba",
         "city": "Hà Nội",
         "jobLevels": ["Junior"],
+        "applicants": 24,
         "responsibilities": "Xây dựng quy trình nghiệp vụ...",
         "requirements": "Yêu cầu từ 1 năm kinh nghiệm làm IT BA...",
         "benefits": "Thu nhập: 12.000.000 VNĐ - 25.000.000 VNĐ.",
@@ -210,6 +213,78 @@ type JobDetails = {
     "pageSize": 5,
     "totalCount": 24,
     "totalPage": 5
+  }
+}
+```
+
+## GET /api/jobs/{slug}
+
+Return one job detail by slug for:
+
+- `frontend/src/app/(user)/cong-viec/page.tsx`
+- `frontend/src/app/(user)/cong-viec/[slug]/page.tsx`
+
+### Response
+
+```ts
+type JobDetails = {
+  id: string;
+  title: string | null;
+  companyName: string;
+  companyImage: string | null;
+  salaryRange: string | null;
+  experienceRequirement: string | null;
+  workType: "Onsite" | "Remote" | "Hybrid" | "Oversea" | null;
+  expiredAt: string | null;
+  tags: string[];
+  slug: string;
+  city: string;
+  jobLevels: string[];
+  companyId: string;
+  branchId: string | null;
+  subcategoryId: string | null;
+  applicants: number;
+  responsibilities: string | null;
+  requirements: string | null;
+  benefits: string | null;
+  branch: CompanyBranchResponse | null;
+};
+```
+
+```json
+{
+  "success": true,
+  "status": 200,
+  "message": "Success.",
+  "errorCode": null,
+  "data": {
+    "id": "5a5f1e2b-49cb-4f14-a6c9-8d49c8f994a0",
+    "companyId": "fedf1fc7-1765-4df9-a39c-ef34c070054d",
+    "branchId": "0f7a5db5-a75d-44a6-b167-fdc5c8b8d826",
+    "subcategoryId": null,
+    "title": "Content Marketing",
+    "companyName": "DaouKiwoom Innovation",
+    "companyImage": null,
+    "salaryRange": "9.000.000 VND - 13.000.000 VND",
+    "experienceRequirement": "1 năm, 3 năm",
+    "workType": "Hybrid",
+    "expiredAt": "2026-06-14T17:00:00+07:00",
+    "tags": ["Viết nội dung", "SEO", "Canva"],
+    "slug": "content-marketing",
+    "city": "Hồ Chí Minh",
+    "jobLevels": ["Junior", "Middle", "Senior"],
+    "applicants": 58,
+    "responsibilities": "Lập kế hoạch, xây dựng và quản lý lịch nội dung...",
+    "requirements": "Có 1-3 năm kinh nghiệm trong tiếp thị nội dung...",
+    "benefits": "Mức lương cạnh tranh cùng thưởng hiệu suất theo quý.",
+    "branch": {
+      "id": "0f7a5db5-a75d-44a6-b167-fdc5c8b8d826",
+      "companyId": "fedf1fc7-1765-4df9-a39c-ef34c070054d",
+      "name": "DaouKiwoom Innovation",
+      "address": "Quận Bình Thạnh, Hồ Chí Minh",
+      "city": "Hồ Chí Minh",
+      "citySlug": "ho-chi-minh"
+    }
   }
 }
 ```
@@ -296,6 +371,70 @@ type JobFilterOptions = {
     ],
     "workTypes": ["Onsite", "Hybrid", "Remote", "Oversea"],
     "locations": ["Hà Nội", "Hồ Chí Minh", "Đà Nẵng", "Remote"]
+  }
+}
+```
+
+## GET /api/companies
+
+Return companies for `frontend/src/app/(user)/cong-ty/page.tsx`.
+
+### Query
+
+| Name       | Type     | Default |
+| ---------- | -------- | ------- |
+| `search`   | `string` | `null`  |
+| `page`     | `int`    | `1`     |
+| `pageSize` | `int`    | `9`     |
+
+Example:
+
+```text
+GET /api/companies?search=viettel&page=1&pageSize=9
+```
+
+### Response
+
+```ts
+type CompanyCard = {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+  coverPhotoUrl: string | null;
+  companyType: string | null;
+  teamSize: string | null;
+  country: string | null;
+  openingVacancies: number;
+  numberOfFollowers: number;
+};
+```
+
+```json
+{
+  "success": true,
+  "status": 200,
+  "message": "Success.",
+  "errorCode": null,
+  "data": {
+    "items": [
+      {
+        "id": "aa30a12f-2994-4140-8556-bc07009dad9d",
+        "name": "Viettel Solutions",
+        "slug": "viettel-solutions",
+        "logoUrl": null,
+        "coverPhotoUrl": null,
+        "companyType": "Information Technology",
+        "teamSize": "1000+ nhân sự",
+        "country": "Vietnam",
+        "openingVacancies": 3,
+        "numberOfFollowers": 122
+      }
+    ],
+    "page": 1,
+    "pageSize": 9,
+    "totalCount": 17,
+    "totalPage": 2
   }
 }
 ```
