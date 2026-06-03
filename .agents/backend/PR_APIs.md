@@ -110,3 +110,192 @@ type JobCard = {
   ]
 }
 ```
+
+## GET /api/jobs
+
+Return jobs for `frontend/src/app/(user)/cong-viec/page.tsx`.
+
+### Query
+
+| Name               | Type       | Default |
+| ------------------ | ---------- | ------- |
+| `search`           | `string`   | `null`  |
+| `location`         | `string`   | `null`  |
+| `categorySlugs`    | `string[]` | `[]`    |
+| `subcategorySlugs` | `string[]` | `[]`    |
+| `levelSlugs`       | `string[]` | `[]`    |
+| `workTypes`        | `string[]` | `[]`    |
+| `page`             | `int`      | `1`     |
+| `pageSize`         | `int`      | `5`     |
+
+Example:
+
+```text
+GET /api/jobs?search=developer&location=Hà Nội&subcategorySlugs=software-developer&levelSlugs=senior&workTypes=Remote&page=1&pageSize=5
+```
+
+### Response
+
+```ts
+type CompanyBranchResponse = {
+  id: string;
+  companyId: string;
+  name: string | null;
+  address: string | null;
+  city: string | null;
+  citySlug: string | null;
+};
+
+type JobDetails = {
+  id: string;
+  title: string | null;
+  companyName: string;
+  companyImage: string | null;
+  salaryRange: string | null;
+  experienceRequirement: string | null;
+  workType: "Onsite" | "Remote" | "Hybrid" | "Oversea" | null;
+  expiredAt: string | null;
+  tags: string[];
+  slug: string;
+  city: string;
+  jobLevels: string[];
+  companyId: string;
+  branchId: string | null;
+  subcategoryId: string | null;
+  responsibilities: string | null;
+  requirements: string | null;
+  benefits: string | null;
+  branch: CompanyBranchResponse | null;
+};
+```
+
+```json
+{
+  "success": true,
+  "status": 200,
+  "message": "Success.",
+  "errorCode": null,
+  "data": {
+    "items": [
+      {
+        "id": "7d49dc16-cf59-4bb0-90f3-6b0d558cb61e",
+        "companyId": "0935c729-42a3-4a58-9558-543d514386c9",
+        "branchId": "34f7a76a-f881-47ed-9f14-8f7791208d0e",
+        "subcategoryId": null,
+        "title": "Chuyên viên Phân tích nghiệp vụ (BA)",
+        "companyName": "Công ty Dịch vụ Số Bưu điện (Vietnam Post Digital)",
+        "companyImage": null,
+        "salaryRange": "12.000.000 VND to 25.000.000 VND",
+        "experienceRequirement": "Junior",
+        "workType": "Onsite",
+        "expiredAt": "2026-06-30T17:00:00+07:00",
+        "tags": ["Business Analyst"],
+        "slug": "chuyen-vien-phan-tich-nghiep-vu-ba",
+        "city": "Hà Nội",
+        "jobLevels": ["Junior"],
+        "responsibilities": "Xây dựng quy trình nghiệp vụ...",
+        "requirements": "Yêu cầu từ 1 năm kinh nghiệm làm IT BA...",
+        "benefits": "Thu nhập: 12.000.000 VNĐ - 25.000.000 VNĐ.",
+        "branch": {
+          "id": "34f7a76a-f881-47ed-9f14-8f7791208d0e",
+          "companyId": "0935c729-42a3-4a58-9558-543d514386c9",
+          "name": "Công ty Dịch vụ Số Bưu điện (Vietnam Post Digital)",
+          "address": "Quận Nam Từ Liêm, Hà Nội",
+          "city": "Hà Nội",
+          "citySlug": "ha-noi"
+        }
+      }
+    ],
+    "page": 1,
+    "pageSize": 5,
+    "totalCount": 24,
+    "totalPage": 5
+  }
+}
+```
+
+## GET /api/jobs/filter-options
+
+Return filter options for `frontend/src/app/(user)/cong-viec/page.tsx`.
+
+### Response
+
+```ts
+type JobFilterOptions = {
+  categories: {
+    name: string;
+    slug: string;
+    subcategories: {
+      name: string;
+      slug: string;
+    }[];
+  }[];
+  levels: {
+    name: string;
+    slug: string;
+  }[];
+  workTypes: ("Onsite" | "Remote" | "Hybrid" | "Oversea")[];
+  locations: string[];
+};
+```
+
+```json
+{
+  "success": true,
+  "status": 200,
+  "message": "Success.",
+  "errorCode": null,
+  "data": {
+    "categories": [
+      {
+        "name": "IT",
+        "slug": "it",
+        "subcategories": [
+          { "name": "IT Support Specialist", "slug": "it-support-specialist" },
+          {
+            "name": "Product Manager / Business Analyst",
+            "slug": "product-manager-business-analyst"
+          },
+          { "name": "QA / Tester", "slug": "qa-tester" },
+          {
+            "name": "Network Engineer / Cyber Security Expert",
+            "slug": "network-engineer-cyber-security-expert"
+          },
+          {
+            "name": "Data Engineer / Scientist / Analyst",
+            "slug": "data-engineer-scientist-analyst"
+          },
+          { "name": "DevOps Engineer", "slug": "devops-engineer" },
+          { "name": "Blockchain Developer", "slug": "blockchain-developer" },
+          {
+            "name": "Internet of Things (IoT) Developer",
+            "slug": "internet-of-things-iot-developer"
+          },
+          {
+            "name": "Augmented Reality (AR) Developer",
+            "slug": "augmented-reality-ar-developer"
+          },
+          {
+            "name": "Machine Learning / AI Engineer",
+            "slug": "machine-learning-ai-engineer"
+          },
+          { "name": "Software Developer", "slug": "software-developer" }
+        ]
+      }
+    ],
+    "levels": [
+      { "name": "Director", "slug": "director" },
+      { "name": "Vice Director", "slug": "vice-director" },
+      { "name": "Intern", "slug": "intern" },
+      { "name": "Fresher", "slug": "fresher" },
+      { "name": "Junior", "slug": "junior" },
+      { "name": "Middle", "slug": "middle" },
+      { "name": "Senior", "slug": "senior" },
+      { "name": "Trưởng Nhóm", "slug": "truong-nhom" },
+      { "name": "Trưởng phòng", "slug": "truong-phong" }
+    ],
+    "workTypes": ["Onsite", "Hybrid", "Remote", "Oversea"],
+    "locations": ["Hà Nội", "Hồ Chí Minh", "Đà Nẵng", "Remote"]
+  }
+}
+```

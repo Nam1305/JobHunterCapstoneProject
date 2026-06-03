@@ -49,40 +49,171 @@ import type { JobCard, JobDetails } from "@/types/job"
 
 const PAGE_SIZE = 5
 
-const experienceLevels = [
-  "Intern",
-  "Fresher",
-  "Junior",
-  "Middle",
-  "Senior",
-  "Trưởng nhóm",
-  "Trưởng phòng",
-  "Director",
+type SlugOption = {
+  name: string
+  slug: string
+}
+
+const jobLevels: SlugOption[] = [
+  { name: "Director", slug: "director" },
+  { name: "Vice Director", slug: "vice-director" },
+  { name: "Intern", slug: "intern" },
+  { name: "Fresher", slug: "fresher" },
+  { name: "Junior", slug: "junior" },
+  { name: "Middle", slug: "middle" },
+  { name: "Senior", slug: "senior" },
+  { name: "Trưởng Nhóm", slug: "truong-nhom" },
+  { name: "Trưởng phòng", slug: "truong-phong" },
 ]
 
-const workTypes = ["Fulltime", "Hybrid", "Remote", "Oversea"]
+const workTypes = ["Onsite", "Hybrid", "Remote", "Oversea"]
 
 const locations = ["Hà Nội", "Hồ Chí Minh", "Đà Nẵng", "Remote"]
 
 const jobCategories = [
   {
-    label: "IT",
+    name: "IT",
+    slug: "it",
     subcategories: [
-      "Business Analyst",
-      "Backend Developer",
-      "Data Engineer",
-      "DevOps",
-      "UI/UX Designer",
-      "Game Artist",
+      { name: "IT Support Specialist", slug: "it-support-specialist" },
+      {
+        name: "Product Manager / Business Analyst",
+        slug: "product-manager-business-analyst",
+      },
+      { name: "QA / Tester", slug: "qa-tester" },
+      {
+        name: "Network Engineer / Cyber Security Expert",
+        slug: "network-engineer-cyber-security-expert",
+      },
+      {
+        name: "Data Engineer / Scientist / Analyst",
+        slug: "data-engineer-scientist-analyst",
+      },
+      { name: "DevOps Engineer", slug: "devops-engineer" },
+      { name: "Blockchain Developer", slug: "blockchain-developer" },
+      {
+        name: "Internet of Things (IoT) Developer",
+        slug: "internet-of-things-iot-developer",
+      },
+      {
+        name: "Augmented Reality (AR) Developer",
+        slug: "augmented-reality-ar-developer",
+      },
+      {
+        name: "Machine Learning / AI Engineer",
+        slug: "machine-learning-ai-engineer",
+      },
+      { name: "Software Developer", slug: "software-developer" },
     ],
   },
   {
-    label: "Business, Finance",
-    subcategories: ["Ngân hàng", "Fintech", "Phân tích kinh doanh"],
+    name: "Business, Finance",
+    slug: "business-finance",
+    subcategories: [
+      { name: "Insurance", slug: "insurance" },
+      {
+        name: "Accounting / Auditing / Tax",
+        slug: "accounting-auditing-tax",
+      },
+      { name: "Securities", slug: "securities" },
+      { name: "Finance / Investment", slug: "finance-investment" },
+      { name: "Banking", slug: "banking" },
+      { name: "Business Intelligence", slug: "business-intelligence" },
+      { name: "Online Marketing", slug: "online-marketing" },
+      {
+        name: "Marketing / PR / Communication / Event",
+        slug: "marketing-pr-communication-event",
+      },
+      { name: "Ecommerce", slug: "ecommerce" },
+      { name: "Customer Service", slug: "customer-service" },
+      {
+        name: "Sales / Business Development",
+        slug: "sales-business-development",
+      },
+      { name: "Retail / Store", slug: "retail-store" },
+    ],
   },
   {
-    label: "Management",
-    subcategories: ["Project Coordinator", "Product Manager", "PMO"],
+    name: "Management",
+    slug: "management",
+    subcategories: [
+      { name: "Management", slug: "management" },
+      { name: "Consulting", slug: "consulting" },
+      { name: "Interpreter / Translator", slug: "interpreter-translator" },
+      { name: "Administrative / Clerk", slug: "administrative-clerk" },
+      { name: "Human Resources", slug: "human-resources" },
+    ],
+  },
+  {
+    name: "Manufacturing & Engineering",
+    slug: "manufacturing-engineering",
+    subcategories: [
+      {
+        name: "Agriculture / Forestry / Fishery",
+        slug: "agriculture-forestry-fishery",
+      },
+      { name: "Food Tech / Nutritionist", slug: "food-tech-nutritionist" },
+      { name: "Telecommunications", slug: "telecommunications" },
+      {
+        name: "Electrical / Electronics Engineer",
+        slug: "electrical-electronics-engineer",
+      },
+      { name: "Mineral", slug: "mineral" },
+      { name: "Chemical Engineer", slug: "chemical-engineer" },
+      {
+        name: "Energy & Environmental Engineer",
+        slug: "energy-environmental-engineer",
+      },
+      {
+        name: "Mechanical / Auto / Automotive",
+        slug: "mechanical-auto-automotive",
+      },
+      {
+        name: "Textiles / Garments / Fashion",
+        slug: "textiles-garments-fashion",
+      },
+      { name: "Quality Control (QA/QC)", slug: "quality-control-qa-qc" },
+      { name: "Manufacturing / Process", slug: "manufacturing-process" },
+      { name: "Import / Export", slug: "import-export" },
+      {
+        name: "Purchasing / Merchandising",
+        slug: "purchasing-merchandising",
+      },
+      { name: "Printing / Publishing", slug: "printing-publishing" },
+    ],
+  },
+  {
+    name: "Service",
+    slug: "service",
+    subcategories: [
+      { name: "Law / Legal Agent", slug: "law-legal-agent" },
+      { name: "Library", slug: "library" },
+      { name: "Education / Training", slug: "education-training" },
+      { name: "Hotel", slug: "hotel" },
+      { name: "Restaurant / FnB", slug: "restaurant-fnb" },
+      { name: "Personal Care / Coach", slug: "personal-care-coach" },
+      { name: "Beauty / Cosmetics", slug: "beauty-cosmetics" },
+      { name: "Tourism", slug: "tourism" },
+      {
+        name: "Medical Services / Healthcare Service",
+        slug: "medical-services-healthcare-service",
+      },
+      { name: "Pharmacy / Doctor / Nurse", slug: "pharmacy-doctor-nurse" },
+    ],
+  },
+  {
+    name: "Design, Creativity",
+    slug: "design-creativity",
+    subcategories: [
+      {
+        name: "Photographer / Video Editor",
+        slug: "photographer-video-editor",
+      },
+      { name: "Arts / Creative Design", slug: "arts-creative-design" },
+      { name: "Entertainment", slug: "entertainment" },
+      { name: "Architect", slug: "architect" },
+      { name: "Interior / Exterior", slug: "interior-exterior" },
+    ],
   },
 ]
 
@@ -426,7 +557,7 @@ function MultiFilterPopover({
 }: {
   label: string
   icon: LucideIcon
-  options: string[]
+  options: string[] | SlugOption[]
   selected: string[]
   onToggle: (value: string) => void
   onClear: () => void
@@ -449,22 +580,26 @@ function MultiFilterPopover({
       <PopoverContent align="start" className="w-64 gap-1 p-2">
         {options.map((option) => (
           <Button
-            key={option}
+            key={typeof option === "string" ? option : option.slug}
             type="button"
             variant="ghost"
             className="justify-start"
-            onClick={() => onToggle(option)}
+            onClick={() =>
+              onToggle(typeof option === "string" ? option : option.slug)
+            }
           >
             <span
               className={cn(
                 "flex size-4 items-center justify-center rounded-[6px] border",
-                selected.includes(option) &&
+                selected.includes(typeof option === "string" ? option : option.slug) &&
                 "border-primary bg-primary text-primary-foreground"
               )}
             >
-              {selected.includes(option) && <Check className="size-3" />}
+              {selected.includes(
+                typeof option === "string" ? option : option.slug
+              ) && <Check className="size-3" />}
             </span>
-            {option}
+            {typeof option === "string" ? option : option.name}
           </Button>
         ))}
         {selected.length > 0 && (
@@ -490,9 +625,9 @@ function CategoryPopover({
   onToggle: (value: string) => void
   onClear: () => void
 }) {
-  const [activeCategory, setActiveCategory] = useState(jobCategories[0].label)
+  const [activeCategory, setActiveCategory] = useState(jobCategories[0].slug)
   const active =
-    jobCategories.find((category) => category.label === activeCategory) ??
+    jobCategories.find((category) => category.slug === activeCategory) ??
     jobCategories[0]
 
   return (
@@ -504,50 +639,53 @@ function CategoryPopover({
           <ChevronDown className="transition-transform group-data-[state=open]/button:rotate-180" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-[34rem] gap-0 p-0">
-        <div className="grid min-h-72 grid-cols-[12rem_1fr]">
+      <PopoverContent
+        align="start"
+        className="w-[min(44rem,calc(100vw-2rem))] gap-0 p-0"
+      >
+        <div className="grid min-h-72 grid-cols-[17rem_minmax(0,1fr)]">
           <div className="border-r p-2">
             {jobCategories.map((category) => {
               const hasSelected = category.subcategories.some((subcategory) =>
-                selected.includes(subcategory)
+                selected.includes(subcategory.slug)
               )
 
               return (
                 <Button
-                  key={category.label}
+                  key={category.slug}
                   type="button"
                   variant={
-                    activeCategory === category.label ? "secondary" : "ghost"
+                    activeCategory === category.slug ? "secondary" : "ghost"
                   }
-                  className="w-full justify-between"
-                  onClick={() => setActiveCategory(category.label)}
+                  className="w-full min-w-0 justify-between"
+                  onClick={() => setActiveCategory(category.slug)}
                 >
-                  <span className="flex items-center gap-2">
+                  <span className="flex min-w-0 items-center gap-2">
                     {hasSelected && (
-                      <span className="size-1.5 rounded-full bg-primary" />
+                      <span className="size-1.5 shrink-0 rounded-full bg-primary" />
                     )}
-                    {category.label}
+                    <span className="truncate">{category.name}</span>
                   </span>
-                  <ChevronRight />
+                  <ChevronRight className="shrink-0" />
                 </Button>
               )
             })}
           </div>
           <div className="p-3">
             <p className="px-2 pb-2 text-xs text-muted-foreground">
-              {active.label}
+              {active.name}
             </p>
             <div className="grid gap-1">
               {active.subcategories.map((subcategory) => (
                 <Button
-                  key={subcategory}
+                  key={subcategory.slug}
                   type="button"
                   variant="ghost"
                   className="justify-between"
-                  onClick={() => onToggle(subcategory)}
+                  onClick={() => onToggle(subcategory.slug)}
                 >
-                  {subcategory}
-                  {selected.includes(subcategory) && <Check />}
+                  {subcategory.name}
+                  {selected.includes(subcategory.slug) && <Check />}
                 </Button>
               ))}
             </div>
@@ -651,14 +789,14 @@ function AllFiltersSheet({
   onOpenChange,
   keyword,
   location,
-  selectedCategories,
-  selectedExperience,
+  selectedSubcategories,
+  selectedJobLevels,
   selectedWorkTypes,
-  onToggleCategory,
-  onToggleExperience,
+  onToggleSubcategory,
+  onToggleJobLevel,
   onToggleWorkType,
-  onClearCategories,
-  onClearExperience,
+  onClearSubcategories,
+  onClearJobLevels,
   onClearWorkTypes,
   onClearAll,
   activeCount,
@@ -667,14 +805,14 @@ function AllFiltersSheet({
   onOpenChange: (open: boolean) => void
   keyword: string
   location: string
-  selectedCategories: string[]
-  selectedExperience: string[]
+  selectedSubcategories: string[]
+  selectedJobLevels: string[]
   selectedWorkTypes: string[]
-  onToggleCategory: (value: string) => void
-  onToggleExperience: (value: string) => void
+  onToggleSubcategory: (value: string) => void
+  onToggleJobLevel: (value: string) => void
   onToggleWorkType: (value: string) => void
-  onClearCategories: () => void
-  onClearExperience: () => void
+  onClearSubcategories: () => void
+  onClearJobLevels: () => void
   onClearWorkTypes: () => void
   onClearAll: () => void
   activeCount: number
@@ -710,17 +848,17 @@ function AllFiltersSheet({
           <FilterSheetSection
             title="Danh mục"
             options={jobCategories.flatMap((category) => category.subcategories)}
-            selected={selectedCategories}
-            onToggle={onToggleCategory}
-            onClear={onClearCategories}
+            selected={selectedSubcategories}
+            onToggle={onToggleSubcategory}
+            onClear={onClearSubcategories}
           />
           <Separator />
           <FilterSheetSection
-            title="Kinh nghiệm làm việc"
-            options={experienceLevels}
-            selected={selectedExperience}
-            onToggle={onToggleExperience}
-            onClear={onClearExperience}
+            title="Cấp bậc"
+            options={jobLevels}
+            selected={selectedJobLevels}
+            onToggle={onToggleJobLevel}
+            onClear={onClearJobLevels}
           />
           <Separator />
           <FilterSheetSection
@@ -762,7 +900,7 @@ function FilterSheetSection({
   onClear,
 }: {
   title: string
-  options: string[]
+  options: string[] | SlugOption[]
   selected: string[]
   onToggle: (value: string) => void
   onClear: () => void
@@ -782,13 +920,19 @@ function FilterSheetSection({
       <div className="flex flex-wrap gap-2">
         {options.map((option) => (
           <Button
-            key={option}
+            key={typeof option === "string" ? option : option.slug}
             type="button"
-            variant={selected.includes(option) ? "default" : "outline"}
+            variant={
+              selected.includes(typeof option === "string" ? option : option.slug)
+                ? "default"
+                : "outline"
+            }
             size="sm"
-            onClick={() => onToggle(option)}
+            onClick={() =>
+              onToggle(typeof option === "string" ? option : option.slug)
+            }
           >
-            {option}
+            {typeof option === "string" ? option : option.name}
           </Button>
         ))}
       </div>
@@ -799,8 +943,8 @@ function FilterSheetSection({
 export default function JobsPage() {
   const [keyword, setKeyword] = useState("")
   const [location, setLocation] = useState("")
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [selectedExperience, setSelectedExperience] = useState<string[]>([])
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([])
+  const [selectedJobLevels, setSelectedJobLevels] = useState<string[]>([])
   const [selectedWorkTypes, setSelectedWorkTypes] = useState<string[]>([])
   const [selectedJobId, setSelectedJobId] = useState(jobs[0].id)
   const [savedJobIds, setSavedJobIds] = useState<string[]>([])
@@ -815,8 +959,8 @@ export default function JobsPage() {
   const totalActiveFilters =
     (keyword.trim() ? 1 : 0) +
     (location ? 1 : 0) +
-    selectedCategories.length +
-    selectedExperience.length +
+    selectedSubcategories.length +
+    selectedJobLevels.length +
     selectedWorkTypes.length
 
   const toggleSavedJob = (id: string) => {
@@ -829,8 +973,8 @@ export default function JobsPage() {
   const clearAllFilters = () => {
     setKeyword("")
     setLocation("")
-    setSelectedCategories([])
-    setSelectedExperience([])
+    setSelectedSubcategories([])
+    setSelectedJobLevels([])
     setSelectedWorkTypes([])
   }
 
@@ -840,12 +984,12 @@ export default function JobsPage() {
         <UserContainer className="flex flex-col gap-3 py-4">
           <div className="grid gap-3 lg:grid-cols-[12rem_1fr_10rem]">
             <CategoryPopover
-              selected={selectedCategories}
+              selected={selectedSubcategories}
               onToggle={(value) => {
-                toggleValue(setSelectedCategories, value)
+                toggleValue(setSelectedSubcategories, value)
               }}
               onClear={() => {
-                setSelectedCategories([])
+                setSelectedSubcategories([])
               }}
             />
             <div className="grid gap-3 md:grid-cols-[1fr_13rem]">
@@ -881,15 +1025,15 @@ export default function JobsPage() {
           </div>
           <div className="flex flex-wrap gap-3">
             <MultiFilterPopover
-              label="Kinh nghiệm làm việc"
+              label="Cấp bậc"
               icon={Users}
-              options={experienceLevels}
-              selected={selectedExperience}
+              options={jobLevels}
+              selected={selectedJobLevels}
               onToggle={(value) => {
-                toggleValue(setSelectedExperience, value)
+                toggleValue(setSelectedJobLevels, value)
               }}
               onClear={() => {
-                setSelectedExperience([])
+                setSelectedJobLevels([])
               }}
             />
             <MultiFilterPopover
@@ -916,8 +1060,8 @@ export default function JobsPage() {
             </Button>
             {(keyword ||
               location ||
-              selectedCategories.length > 0 ||
-              selectedExperience.length > 0 ||
+              selectedSubcategories.length > 0 ||
+              selectedJobLevels.length > 0 ||
               selectedWorkTypes.length > 0) && (
                 <Button
                   type="button"
@@ -1112,21 +1256,21 @@ export default function JobsPage() {
         onOpenChange={setSheetOpen}
         keyword={keyword}
         location={location}
-        selectedCategories={selectedCategories}
-        selectedExperience={selectedExperience}
+        selectedSubcategories={selectedSubcategories}
+        selectedJobLevels={selectedJobLevels}
         selectedWorkTypes={selectedWorkTypes}
         activeCount={totalActiveFilters}
-        onToggleCategory={(value) => {
-          toggleValue(setSelectedCategories, value)
+        onToggleSubcategory={(value) => {
+          toggleValue(setSelectedSubcategories, value)
         }}
-        onToggleExperience={(value) => {
-          toggleValue(setSelectedExperience, value)
+        onToggleJobLevel={(value) => {
+          toggleValue(setSelectedJobLevels, value)
         }}
         onToggleWorkType={(value) => {
           toggleValue(setSelectedWorkTypes, value)
         }}
-        onClearCategories={() => setSelectedCategories([])}
-        onClearExperience={() => setSelectedExperience([])}
+        onClearSubcategories={() => setSelectedSubcategories([])}
+        onClearJobLevels={() => setSelectedJobLevels([])}
         onClearWorkTypes={() => setSelectedWorkTypes([])}
         onClearAll={clearAllFilters}
       />
