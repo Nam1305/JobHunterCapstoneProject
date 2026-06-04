@@ -3,6 +3,8 @@ using JobHunter.Service.DTOs;
 using JobHunter.Service.DTOs.Job;
 using JobHunter.Service.Interface.Persistence;
 using JobHunter.Service.Interface.UseCase;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace JobHunter.Service.UseCase;
 
@@ -67,5 +69,49 @@ public class JobUseCase : IJobUseCase
             PageSize = pageSize,
             TotalCount = totalCount
         };
+    }
+
+    public async Task<JobDetailDto> GetJobDetailsById(Guid uid)
+    {
+        var job = await _jobRepository.GetJobById(uid);
+        if (job == null)
+        {
+            throw new KeyNotFoundException("Job not found");
+        }
+
+        return new JobDetailDto
+        {
+            Id = job.Id,
+            Name = job.Title,
+            SalaryRange = job.SalaryRange,
+            JobWorkType = job.WorkType?.ToString(),
+            ExpiredDate = job.ExpiredAt,
+            Category = job.Subcategory?.CategoryId,
+            SubCategory = job.SubcategoryId,
+            Brand = job.CompanyId,
+            ExperienceRequirement = job.ExperienceRequirement,
+            Level = string.Join(", ", job.JobLevels.Select(level => level.Title).Where(title => !string.IsNullOrWhiteSpace(title))),
+            Tag = job.Tags?.RootElement.ToString(),
+            Requirements = ParseJsonValue(job.Requirements),
+            Responsibilities = ParseJsonValue(job.Responsibilities),
+            Benefits = ParseJsonValue(job.Benefits)
+        };
+    }
+
+    private static JsonNode? ParseJsonValue(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        try
+        {
+            return JsonNode.Parse(value);
+        }
+        catch (JsonException)
+        {
+            return JsonValue.Create(value);
+        }
     }
 }

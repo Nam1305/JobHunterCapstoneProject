@@ -28,6 +28,15 @@ public class JobRepository : IJobRepository
         return BuildQuery(companyId, search, status).CountAsync();
     }
 
+    public Task<Job?> GetJobById(Guid id)
+    {
+        return _context.Jobs
+            .AsNoTracking()
+            .Include(job => job.Subcategory)
+            .Include(job => job.JobLevels)
+            .FirstOrDefaultAsync(job => job.Id == id);
+    }
+
     private IQueryable<Job> BuildQuery(Guid companyId, string? search, JobStatus? status)
     {
         var query = _context.Jobs

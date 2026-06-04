@@ -19,7 +19,7 @@ public class JobController : ControllerBase
         _jobUseCase = jobUseCase;
     }
 
-    [HttpGet("mine")]
+    [HttpGet("")]
     [Authorize(Roles = "HR")]
     public async Task<ActionResult<ResponseBase<PageResult<JobPostingDto>>>> GetJobs(
         [FromQuery] string? search,
@@ -31,5 +31,14 @@ public class JobController : ControllerBase
         var jobs = await _jobUseCase.GetJobs(userId, search, status, page, pageSize);
 
         return new ResponseBase<PageResult<JobPostingDto>>(jobs);
+    }
+
+    [HttpGet("{uid:guid}")]
+    [Authorize(Roles = "HR")]
+    public async Task<ActionResult<ResponseBase<JobDetailDto>>> GetJobDetail(Guid uid)
+    {
+        var job = await _jobUseCase.GetJobDetailsById(uid);
+
+        return new ResponseBase<JobDetailDto>(job);
     }
 }
