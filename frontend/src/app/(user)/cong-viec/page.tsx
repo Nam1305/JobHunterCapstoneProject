@@ -256,7 +256,10 @@ export default async function JobsPage({
       <Suspense fallback={<JobsSearchSkeleton />}>
         <JobsSearchSection query={query} />
       </Suspense>
-      <UserContainer as="section" className="grid lg:grid-cols-[24rem_1fr]">
+      <UserContainer
+        as="section"
+        className="grid lg:min-h-[calc(100svh-4rem)] lg:grid-cols-[24rem_1fr] lg:items-start"
+      >
         <Suspense key={`list-${listKey}`} fallback={<JobCardListSkeleton />}>
           <JobsBrowserSection query={listQuery} jobSlug={query.jobSlug} />
         </Suspense>

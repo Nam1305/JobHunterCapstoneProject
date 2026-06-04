@@ -3,6 +3,7 @@ import { BriefcaseIcon, Clock3, MapPin } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { getImageUrl } from "@/lib/utils"
 import type { JobDetails } from "@/types/job"
 
 function CompanyMark({
@@ -12,14 +13,16 @@ function CompanyMark({
   image: string | null
   name: string
 }) {
+  const imageUrl = getImageUrl(image)
+
   return (
     <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted text-sm font-semibold text-muted-foreground">
-      {image ? (
+      {imageUrl ? (
         <span
           aria-label={`${name} logo`}
           className="size-full bg-contain bg-center bg-no-repeat"
           role="img"
-          style={{ backgroundImage: `url(${image})` }}
+          style={{ backgroundImage: `url("${imageUrl}")` }}
         />
       ) : (
         getCompanyMark(name)
@@ -63,7 +66,7 @@ function getJobSections(job: JobDetails) {
 
 export function SelectedJobDetail({ job }: { job: JobDetails | null }) {
   return (
-    <main className="min-w-0 py-5 lg:pl-7">
+    <main className="min-w-0 py-5 lg:sticky lg:top-16 lg:pl-7">
       {job ? (
         <>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start">

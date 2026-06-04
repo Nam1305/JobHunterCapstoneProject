@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { UserContainer } from "@/components/user/user-container"
+import { getImageUrl } from "@/lib/utils"
 import type { PageResult, ResponseEntity } from "@/types/base"
 import type { CompanyCard as CompanyCardData } from "@/types/company"
 
@@ -28,12 +29,6 @@ function getCompanyMark(name: string) {
     .map((word) => word[0])
     .join("")
     .toUpperCase()
-}
-
-function getImageUrl(src: string | null | undefined) {
-  if (!src) return null
-
-  return encodeURI(src)
 }
 
 function getCompanyHref({

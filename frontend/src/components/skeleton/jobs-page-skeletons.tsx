@@ -66,7 +66,7 @@ export function JobCardListSkeleton() {
 
 export function SelectedJobDetailSkeleton() {
   return (
-    <main className="min-w-0 py-5 lg:pl-7">
+    <main className="min-w-0 py-5 lg:sticky lg:top-16 lg:pl-7">
       <div className="flex gap-3">
         <div className="size-11 shrink-0 animate-pulse rounded-md bg-muted" />
         <div className="min-w-0 flex-1 space-y-3">

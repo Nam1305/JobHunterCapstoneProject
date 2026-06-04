@@ -35,6 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
+import { getImageUrl } from "@/lib/utils"
 import type { ResponseEntity } from "@/types/base"
 import type { CompanyCard } from "@/types/company"
 import type { JobCard } from "@/types/job"
@@ -112,12 +113,6 @@ function getCompanySlug(companyName: string | null | undefined) {
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
-}
-
-function getImageUrl(src: string | null | undefined) {
-  if (!src) return null
-
-  return encodeURI(src)
 }
 
 async function fetchTopList<T>(path: string) {

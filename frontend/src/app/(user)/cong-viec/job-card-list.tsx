@@ -11,7 +11,7 @@ import {
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { cn, getImageUrl } from "@/lib/utils"
 import type { JobCard } from "@/types/job"
 import type { JobsResult } from "@/types/jobs"
 
@@ -38,14 +38,16 @@ function CompanyMark({
   image: string | null
   name: string
 }) {
+  const imageUrl = getImageUrl(image)
+
   return (
     <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted text-sm font-semibold text-muted-foreground">
-      {image ? (
+      {imageUrl ? (
         <span
           aria-label={`${name} logo`}
           className="size-full bg-contain bg-center bg-no-repeat"
           role="img"
-          style={{ backgroundImage: `url(${image})` }}
+          style={{ backgroundImage: `url("${imageUrl}")` }}
         />
       ) : (
         getCompanyMark(name)
