@@ -2,6 +2,7 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using JobHunter.Service.Interface.Service;
 using Microsoft.AspNetCore.Http;
+using System.Collections.Concurrent;
 
 namespace JobHunter.Service.Service;
 
@@ -55,5 +56,28 @@ public class FileService : IFileService
         };
 
         return _s3Client.DeleteObjectAsync(deleteReq);
+    }
+
+    public async Task<List<string>> UploadMultipleFilesAsync(List<IFormFile> files)
+    {
+        var successfulUrls = new ConcurrentBag<string>(); // list thread-safe để lưu các URL thành công
+
+        var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 5 }; // Giới hạn số lượng file upload đồng thời
+        await Parallel.ForEachAsync(files, parallelOptions, async (file, cancellationToken) =>
+        {
+            try
+            {
+                var url = await UploadFileAsync(file);
+                lock (successfulUrls)
+                {
+                    successfulUrls.Add(url);
+                }
+            }
+            catch
+            {
+                
+            }
+        });
+        return successfulUrls.ToList();  
     }
 }
