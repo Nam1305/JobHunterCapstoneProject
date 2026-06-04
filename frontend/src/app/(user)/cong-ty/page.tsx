@@ -1,219 +1,24 @@
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react"
+import Form from "next/form"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { UserContainer } from "@/components/user/user-container"
+import type { PageResult, ResponseEntity } from "@/types/base"
 import type { CompanyCard as CompanyCardData } from "@/types/company"
 
-const companies: CompanyCardData[] = [
-  {
-    id: "7619c4db-486f-4f46-86aa-35a7d43112ef",
-    name: "Viettel - BankPlus",
-    slug: "viettel-bankplus",
-    logoUrl: null,
-    coverPhotoUrl: null,
-    companyType: "Fintech",
-    teamSize: "500+ nhân sự",
-    country: "Vietnam",
-    openingVacancies: 0,
-    numberOfFollowers: 1,
-  },
-  {
-    id: "aa30a12f-2994-4140-8556-bc07009dad9d",
-    name: "Viettel Solutions",
-    slug: "viettel-solutions",
-    logoUrl: null,
-    coverPhotoUrl: null,
-    companyType: "Information Technology",
-    teamSize: "1000+ nhân sự",
-    country: "Vietnam",
-    openingVacancies: 3,
-    numberOfFollowers: 122,
-  },
-  {
-    id: "d00cd5d4-ecdc-4fe2-9340-8eebfcb1ef5a",
-    name: "Viettel IDC",
-    slug: "viettel-idc",
-    logoUrl: null,
-    coverPhotoUrl: null,
-    companyType: "Data Center",
-    teamSize: "300+ nhân sự",
-    country: "Vietnam",
-    openingVacancies: 0,
-    numberOfFollowers: 43,
-  },
-  {
-    id: "44ae9925-b080-475b-961c-88dbcc4f4f1f",
-    name: "Viettel Cyber Security",
-    slug: "viettel-cyber-security",
-    logoUrl: null,
-    coverPhotoUrl: null,
-    companyType: "Cyber Security",
-    teamSize: "300+ nhân sự",
-    country: "Vietnam",
-    openingVacancies: 2,
-    numberOfFollowers: 87,
-  },
-  {
-    id: "23142b92-c1b7-44ee-973a-d942d41ec780",
-    name: "Viettel Post",
-    slug: "viettel-post",
-    logoUrl: null,
-    coverPhotoUrl: null,
-    companyType: "Logistics",
-    teamSize: "5000+ nhân sự",
-    country: "Vietnam",
-    openingVacancies: 5,
-    numberOfFollowers: 210,
-  },
-  {
-    id: "9e1d0b20-9cdb-4687-ad14-321cfb76cd61",
-    name: "Viettel Construction",
-    slug: "viettel-construction",
-    logoUrl: null,
-    coverPhotoUrl: null,
-    companyType: "Construction",
-    teamSize: "1000+ nhân sự",
-    country: "Vietnam",
-    openingVacancies: 1,
-    numberOfFollowers: 19,
-  },
-  {
-    id: "19af50bc-7bb8-4589-a1ff-f57131ad7274",
-    name: "Viettel Media",
-    slug: "viettel-media",
-    logoUrl: null,
-    coverPhotoUrl: null,
-    companyType: "Media",
-    teamSize: "300+ nhân sự",
-    country: "Vietnam",
-    openingVacancies: 4,
-    numberOfFollowers: 54,
-  },
-  {
-    id: "8145ae60-c90f-4a60-85ed-5f489d1f684d",
-    name: "Viettel Digital Services",
-    slug: "viettel-digital-services",
-    logoUrl: null,
-    coverPhotoUrl: null,
-    companyType: "Digital Services",
-    teamSize: "1000+ nhân sự",
-    country: "Vietnam",
-    openingVacancies: 8,
-    numberOfFollowers: 336,
-  },
-  {
-    id: "ebc335d2-8222-471e-88d2-0f09a3454a15",
-    name: "Viettel Telecom",
-    slug: "viettel-telecom",
-    logoUrl: null,
-    coverPhotoUrl: null,
-    companyType: "Telecommunications",
-    teamSize: "5000+ nhân sự",
-    country: "Vietnam",
-    openingVacancies: 12,
-    numberOfFollowers: 512,
-  },
-  {
-    id: "8a1a4821-0746-4790-81ac-802e8ba2a853",
-    name: "Viettel High Tech",
-    slug: "viettel-high-tech",
-    logoUrl: null,
-    coverPhotoUrl: null,
-    companyType: "Research and Development",
-    teamSize: "1000+ nhân sự",
-    country: "Vietnam",
-    openingVacancies: 6,
-    numberOfFollowers: 148,
-  },
-  {
-    id: "4c7a5abe-432d-4539-a6db-19fdfc35a0d5",
-    name: "Viettel AI",
-    slug: "viettel-ai",
-    logoUrl: null,
-    coverPhotoUrl: null,
-    companyType: "Artificial Intelligence",
-    teamSize: "100+ nhân sự",
-    country: "Vietnam",
-    openingVacancies: 3,
-    numberOfFollowers: 96,
-  },
-  {
-    id: "7405ea03-6de0-4f70-aa45-cbc34d8ade6c",
-    name: "Viettel Global",
-    slug: "viettel-global",
-    logoUrl: null,
-    coverPhotoUrl: null,
-    companyType: "Telecommunications",
-    teamSize: "5000+ nhân sự",
-    country: "Vietnam",
-    openingVacancies: 7,
-    numberOfFollowers: 271,
-  },
-  {
-    id: "b916bef2-0292-4ecb-aab3-8b6d47ab8a49",
-    name: "Viettel Network",
-    slug: "viettel-network",
-    logoUrl: null,
-    coverPhotoUrl: null,
-    companyType: "Network Infrastructure",
-    teamSize: "1000+ nhân sự",
-    country: "Vietnam",
-    openingVacancies: 4,
-    numberOfFollowers: 188,
-  },
-  {
-    id: "214cba8b-70fe-4122-b530-f2d6d670f134",
-    name: "Viettel Academy",
-    slug: "viettel-academy",
-    logoUrl: null,
-    coverPhotoUrl: null,
-    companyType: "Education",
-    teamSize: "100+ nhân sự",
-    country: "Vietnam",
-    openingVacancies: 2,
-    numberOfFollowers: 72,
-  },
-  {
-    id: "54eec9ad-7fea-481a-a92a-332ecf4bcf24",
-    name: "Viettel Store",
-    slug: "viettel-store",
-    logoUrl: null,
-    coverPhotoUrl: null,
-    companyType: "Retail",
-    teamSize: "1000+ nhân sự",
-    country: "Vietnam",
-    openingVacancies: 10,
-    numberOfFollowers: 403,
-  },
-  {
-    id: "9f20b7ed-736d-4cdb-936f-d8af74b0eb23",
-    name: "Viettel Logistics",
-    slug: "viettel-logistics",
-    logoUrl: null,
-    coverPhotoUrl: null,
-    companyType: "Logistics",
-    teamSize: "300+ nhân sự",
-    country: "Vietnam",
-    openingVacancies: 1,
-    numberOfFollowers: 35,
-  },
-  {
-    id: "e1b9fdff-ae2e-43e7-8271-11a3185f0475",
-    name: "Viettel Cloud",
-    slug: "viettel-cloud",
-    logoUrl: null,
-    coverPhotoUrl: null,
-    companyType: "Cloud Services",
-    teamSize: "300+ nhân sự",
-    country: "Vietnam",
-    openingVacancies: 5,
-    numberOfFollowers: 164,
-  },
-]
+const API_BASE_URL = "http://localhost:5000/api"
+const PAGE_SIZE = 9
 
-const visibleCompanies = companies.slice(0, 9)
+type CompaniesSearchParams = Promise<{
+  search?: string | string[]
+  page?: string | string[]
+}>
+
+function getParamValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value
+}
 
 function getCompanyMark(name: string) {
   return name
@@ -225,20 +30,95 @@ function getCompanyMark(name: string) {
     .toUpperCase()
 }
 
+function getImageUrl(src: string | null | undefined) {
+  if (!src) return null
+
+  return encodeURI(src)
+}
+
+function getCompanyHref({
+  page,
+  search,
+}: {
+  page: number
+  search: string
+}) {
+  const params = new URLSearchParams()
+
+  if (search) params.set("search", search)
+  if (page > 1) params.set("page", String(page))
+
+  const query = params.toString()
+
+  return query ? `/cong-ty?${query}` : "/cong-ty"
+}
+
+async function getCompanies({
+  page,
+  search,
+}: {
+  page: number
+  search: string
+}) {
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(PAGE_SIZE),
+  })
+
+  if (search) params.set("search", search)
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/companies?${params}`, {
+      cache: "no-store",
+    })
+
+    if (!response.ok) {
+      return {
+        items: [],
+        page,
+        pageSize: PAGE_SIZE,
+        totalCount: 0,
+      } satisfies PageResult<CompanyCardData>
+    }
+
+    const payload =
+      (await response.json()) as ResponseEntity<PageResult<CompanyCardData>>
+
+    return (
+      payload.data ?? {
+        items: [],
+        page,
+        pageSize: PAGE_SIZE,
+        totalCount: 0,
+      }
+    )
+  } catch {
+    return {
+      items: [],
+      page,
+      pageSize: PAGE_SIZE,
+      totalCount: 0,
+    } satisfies PageResult<CompanyCardData>
+  }
+}
+
 function CompanyCard({
   company,
 }: {
   company: CompanyCardData
 }) {
+  const coverPhotoUrl = getImageUrl(company.coverPhotoUrl)
+  const logoUrl = getImageUrl(company.logoUrl)
+
   return (
     <article className="overflow-hidden rounded-lg border bg-card text-card-foreground">
       <div className="flex h-36 items-center justify-center bg-muted px-6 text-center text-sm text-muted-foreground">
-        {company.coverPhotoUrl ? (
+        {coverPhotoUrl ? (
           <span
             aria-label={`${company.name} cover`}
             className="size-full bg-cover bg-center"
             role="img"
-            style={{ backgroundImage: `url(${company.coverPhotoUrl})` }}
+            style={{ backgroundImage: `url("${coverPhotoUrl}")` }}
           />
         ) : (
           company.name
@@ -248,12 +128,12 @@ function CompanyCard({
       <div className="p-5">
         <div className="flex items-center gap-4">
           <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted text-sm text-muted-foreground">
-            {company.logoUrl ? (
+            {logoUrl ? (
               <span
                 aria-label={`${company.name} logo`}
                 className="size-full bg-contain bg-center bg-no-repeat"
                 role="img"
-                style={{ backgroundImage: `url(${company.logoUrl})` }}
+                style={{ backgroundImage: `url("${logoUrl}")` }}
               />
             ) : (
               getCompanyMark(company.name)
@@ -272,11 +152,15 @@ function CompanyCard({
         <dl className="mt-4 grid grid-cols-2 gap-3 text-xs text-muted-foreground">
           <div>
             <dt>Ngành nghề</dt>
-            <dd className="mt-1 text-foreground">{company.companyType}</dd>
+            <dd className="mt-1 text-foreground">
+              {company.companyType ?? "Chưa cập nhật"}
+            </dd>
           </div>
           <div>
             <dt>Quy mô</dt>
-            <dd className="mt-1 text-foreground">{company.teamSize}</dd>
+            <dd className="mt-1 text-foreground">
+              {company.teamSize ?? "Chưa cập nhật"}
+            </dd>
           </div>
         </dl>
 
@@ -297,7 +181,22 @@ function CompanyCard({
   )
 }
 
-export default function CompaniesPage() {
+export default async function CompaniesPage({
+  searchParams,
+}: {
+  searchParams: CompaniesSearchParams
+}) {
+  const params = await searchParams
+  const search = (getParamValue(params.search) ?? "").trim()
+  const pageParam = Number(getParamValue(params.page) ?? "1")
+  const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1
+  const companies = await getCompanies({ page, search })
+  const totalPages = Math.max(1, Math.ceil(companies.totalCount / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const startItem =
+    companies.totalCount === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1
+  const endItem = Math.min(currentPage * PAGE_SIZE, companies.totalCount)
+
   return (
     <UserContainer className="py-6">
       <header>
@@ -309,10 +208,16 @@ export default function CompaniesPage() {
           bạn
         </p>
 
-        <div className="mt-7 flex gap-3">
-          <Input className="flex-1" defaultValue="viettel" type="search" />
-          <Button type="button">Tìm</Button>
-        </div>
+        <Form className="mt-7 flex gap-3" action="/cong-ty">
+          <Input
+            className="flex-1"
+            defaultValue={search}
+            name="search"
+            placeholder="Nhập tên công ty..."
+            type="search"
+          />
+          <Button type="submit">Tìm</Button>
+        </Form>
       </header>
 
       <div className="my-9 border-t" />
@@ -321,42 +226,67 @@ export default function CompaniesPage() {
         <h2 className="text-xl font-semibold tracking-normal">
           Tất cả công ty{" "}
           <span className="font-normal text-muted-foreground">
-            ({companies.length})
+            ({companies.totalCount})
           </span>
         </h2>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {visibleCompanies.map((company) => (
-            <CompanyCard key={company.id} company={company} />
-          ))}
-        </div>
+        {companies.items.length > 0 ? (
+          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {companies.items.map((company) => (
+              <CompanyCard key={company.id} company={company} />
+            ))}
+          </div>
+        ) : (
+          <p className="mt-6 rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground">
+            Không tìm thấy công ty phù hợp.
+          </p>
+        )}
       </section>
 
       <footer className="mt-9 flex flex-col gap-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-        <p>Hiển thị 1-9 trong {companies.length} công ty</p>
+        <p>
+          Hiển thị {startItem}-{endItem} trong {companies.totalCount} công ty
+        </p>
 
         <div className="flex items-center gap-2">
           <Button
             aria-label="Trang trước"
+            asChild={currentPage > 1}
+            disabled={currentPage <= 1}
             size="icon"
             type="button"
             variant="outline"
           >
-            <ChevronLeft className="size-5" />
+            {currentPage > 1 ? (
+              <Link
+                href={getCompanyHref({ page: currentPage - 1, search })}
+              >
+                <ChevronLeft className="size-5" />
+              </Link>
+            ) : (
+              <ChevronLeft className="size-5" />
+            )}
           </Button>
           <Button aria-current="page" size="icon" type="button">
-            1
-          </Button>
-          <Button size="icon" type="button" variant="ghost">
-            2
+            {currentPage}
           </Button>
           <Button
             aria-label="Trang sau"
+            asChild={currentPage < totalPages}
+            disabled={currentPage >= totalPages}
             size="icon"
             type="button"
             variant="outline"
           >
-            <ChevronRight className="size-5" />
+            {currentPage < totalPages ? (
+              <Link
+                href={getCompanyHref({ page: currentPage + 1, search })}
+              >
+                <ChevronRight className="size-5" />
+              </Link>
+            ) : (
+              <ChevronRight className="size-5" />
+            )}
           </Button>
         </div>
       </footer>
