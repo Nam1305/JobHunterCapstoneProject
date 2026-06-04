@@ -18,10 +18,12 @@ public static class ServiceCollectionExtensions
         // Repositories
         services.AddScoped<ITokenRepository, TokenRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IJobRepository, JobRepository>();
        
         // Use cases
         services.AddScoped<IAuthUseCase, AuthUseCase>();
         services.AddScoped<IUserUseCase, UserUseCase>();
+        services.AddScoped<IJobUseCase, JobUseCase>();
         
         // Services
         services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();

@@ -1,0 +1,35 @@
+using JobHunter.Domain;
+using JobHunter.Service.DTOs;
+using JobHunter.Service.DTOs.Job;
+using JobHunter.Service.Interface.UseCase;
+using JobHunter.Service.Utils;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace JobHunter.WebAPI.Controllers;
+
+[Route("api/jobs")]
+[ApiController]
+public class JobController : ControllerBase
+{
+    private readonly IJobUseCase _jobUseCase;
+
+    public JobController(IJobUseCase jobUseCase)
+    {
+        _jobUseCase = jobUseCase;
+    }
+
+    [HttpGet("mine")]
+    [Authorize(Roles = "HR")]
+    public async Task<ActionResult<ResponseBase<PageResult<JobPostingDto>>>> GetJobs(
+        [FromQuery] string? search,
+        [FromQuery] JobStatus? status,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var userId = User.GetUserId();
+        var jobs = await _jobUseCase.GetJobs(userId, search, status, page, pageSize);
+
+        return new ResponseBase<PageResult<JobPostingDto>>(jobs);
+    }
+}
