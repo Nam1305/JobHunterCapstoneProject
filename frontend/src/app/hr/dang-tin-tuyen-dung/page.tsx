@@ -5,8 +5,6 @@ import Link from "next/link"
 import {
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
   useReactTable,
   type ColumnDef,
   type PaginationState,
@@ -23,6 +21,7 @@ import {
   SearchIcon,
 } from "lucide-react"
 
+import { useJobPostingsQuery, type getJobPostingsParams } from "@/api/job.api"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -43,129 +42,33 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import type { JobPosting } from "@/types/job"
 
-type JobPostingStatus = "open" | "closed"
+type JobPostingStatusFilter = "all" | "open" | "closed"
 
-interface JobPosting {
-  id: string
-  title: string
-  createdAt: string
-  expiredAt: string
-  updatedAt: string
-  status: JobPostingStatus
-  applicantCount: number
+const formatDate = (value: string) => {
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return value
+  }
+
+  return new Intl.DateTimeFormat("vi-VN").format(date)
 }
 
-const jobPostings: JobPosting[] = [
-  {
-    id: "frontend-developer",
-    title: "Frontend Developer",
-    createdAt: "10/01/2025",
-    expiredAt: "30/06/2025",
-    updatedAt: "01/05/2025",
-    status: "open",
-    applicantCount: 12,
-  },
-  {
-    id: "backend-engineer",
-    title: "Backend Engineer",
-    createdAt: "01/02/2025",
-    expiredAt: "15/05/2025",
-    updatedAt: "20/04/2025",
-    status: "closed",
-    applicantCount: 8,
-  },
-  {
-    id: "product-manager",
-    title: "Product Manager",
-    createdAt: "05/03/2025",
-    expiredAt: "01/07/2025",
-    updatedAt: "10/05/2025",
-    status: "open",
-    applicantCount: 5,
-  },
-  {
-    id: "ux-designer",
-    title: "UX Designer",
-    createdAt: "20/01/2025",
-    expiredAt: "30/04/2025",
-    updatedAt: "28/04/2025",
-    status: "closed",
-    applicantCount: 20,
-  },
-  {
-    id: "devops-engineer",
-    title: "DevOps Engineer",
-    createdAt: "01/04/2025",
-    expiredAt: "01/08/2025",
-    updatedAt: "15/05/2025",
-    status: "open",
-    applicantCount: 3,
-  },
-  {
-    id: "data-analyst",
-    title: "Data Analyst",
-    createdAt: "15/02/2025",
-    expiredAt: "01/06/2025",
-    updatedAt: "02/05/2025",
-    status: "open",
-    applicantCount: 7,
-  },
-  {
-    id: "qa-engineer",
-    title: "QA Engineer",
-    createdAt: "20/03/2025",
-    expiredAt: "31/05/2025",
-    updatedAt: "18/05/2025",
-    status: "closed",
-    applicantCount: 11,
-  },
-  {
-    id: "mobile-developer",
-    title: "Mobile Developer",
-    createdAt: "10/04/2025",
-    expiredAt: "01/09/2025",
-    updatedAt: "12/05/2025",
-    status: "open",
-    applicantCount: 6,
-  },
-  {
-    id: "business-analyst",
-    title: "Business Analyst",
-    createdAt: "18/04/2025",
-    expiredAt: "18/08/2025",
-    updatedAt: "19/05/2025",
-    status: "open",
-    applicantCount: 9,
-  },
-  {
-    id: "hr-specialist",
-    title: "HR Specialist",
-    createdAt: "22/04/2025",
-    expiredAt: "22/07/2025",
-    updatedAt: "22/05/2025",
-    status: "closed",
-    applicantCount: 14,
-  },
-  {
-    id: "scrum-master",
-    title: "Scrum Master",
-    createdAt: "25/04/2025",
-    expiredAt: "25/08/2025",
-    updatedAt: "25/05/2025",
-    status: "open",
-    applicantCount: 4,
-  },
-  {
-    id: "system-admin",
-    title: "System Administrator",
-    createdAt: "28/04/2025",
-    expiredAt: "28/07/2025",
-    updatedAt: "28/05/2025",
-    status: "closed",
-    applicantCount: 10,
-  },
-]
+const getErrorMessage = (error: unknown) => {
+  if (typeof error === "object" && error !== null && "response" in error) {
+    const response = (
+      error as { response?: { data?: { message?: unknown } } }
+    ).response
+
+    if (typeof response?.data?.message === "string") {
+      return response.data.message
+    }
+  }
+
+  return "Không thể tải danh sách tin tuyển dụng."
+}
 
 const columns: ColumnDef<JobPosting>[] = [
   {
@@ -179,28 +82,34 @@ const columns: ColumnDef<JobPosting>[] = [
     accessorKey: "createdAt",
     header: "Ngày tạo",
     cell: ({ row }) => (
-      <span className="text-muted-foreground">{row.original.createdAt}</span>
+      <span className="text-muted-foreground">
+        {formatDate(row.original.createdAt)}
+      </span>
     ),
   },
   {
     accessorKey: "expiredAt",
     header: "Ngày hết hạn",
     cell: ({ row }) => (
-      <span className="text-muted-foreground">{row.original.expiredAt}</span>
+      <span className="text-muted-foreground">
+        {formatDate(row.original.expiredAt)}
+      </span>
     ),
   },
   {
     accessorKey: "updatedAt",
     header: "Cập nhật lần cuối",
     cell: ({ row }) => (
-      <span className="text-muted-foreground">{row.original.updatedAt}</span>
+      <span className="text-muted-foreground">
+        {formatDate(row.original.updatedAt)}
+      </span>
     ),
   },
   {
     accessorKey: "status",
     header: "Trạng thái",
     cell: ({ row }) => {
-      const isOpen = row.original.status === "open"
+      const isOpen = row.original.status === "Open"
 
       return (
         <Badge variant={isOpen ? "default" : "secondary"}>
@@ -210,10 +119,10 @@ const columns: ColumnDef<JobPosting>[] = [
     },
   },
   {
-    accessorKey: "applicantCount",
+    accessorKey: "applicationCount",
     header: () => <div className="text-right">Số ứng viên</div>,
     cell: ({ row }) => (
-      <div className="text-right">{row.original.applicantCount}</div>
+      <div className="text-right">{row.original.applicationCount}</div>
     ),
   },
   {
@@ -249,25 +158,33 @@ const columns: ColumnDef<JobPosting>[] = [
 
 export default function JobPostingPage() {
   const [search, setSearch] = React.useState("")
-  const [status, setStatus] = React.useState("all")
+  const [status, setStatus] = React.useState<JobPostingStatusFilter>("all")
   const [pagination, setPagination] = React.useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   })
 
-  const filteredData = React.useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase()
+  const queryParams = React.useMemo<getJobPostingsParams>(
+    () => ({
+      search: search.trim() || undefined,
+      status:
+        status === "all" ? undefined : status === "open" ? "Open" : "Closed",
+      page: pagination.pageIndex + 1,
+      limit: pagination.pageSize,
+    }),
+    [pagination.pageIndex, pagination.pageSize, search, status]
+  )
 
-    return jobPostings.filter((posting) => {
-      const matchesSearch = posting.title.toLowerCase().includes(normalizedSearch)
-      const matchesStatus = status === "all" || posting.status === status
+  const { data, error, isFetching, isLoading } =
+    useJobPostingsQuery(queryParams)
 
-      return matchesSearch && matchesStatus
-    })
-  }, [search, status])
+  const pageData = data?.data
+  const jobPostings = pageData?.items ?? []
+  const totalCount = pageData?.totalCount ?? 0
+  const pageCount = Math.max(1, Math.ceil(totalCount / pagination.pageSize))
 
   const table = useReactTable({
-    data: filteredData,
+    data: jobPostings,
     columns,
     state: {
       pagination,
@@ -275,11 +192,10 @@ export default function JobPostingPage() {
     getRowId: (row) => row.id,
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: true,
+    pageCount,
   })
 
-  const totalCount = filteredData.length
   const pageIndex = table.getState().pagination.pageIndex
 
   React.useEffect(() => {
@@ -294,7 +210,7 @@ export default function JobPostingPage() {
             Quản lí tin tuyển dụng
           </h1>
           <p className="text-sm text-muted-foreground">
-            {jobPostings.length} tin tuyển dụng
+            {isFetching ? "Đang tải..." : `${totalCount} tin tuyển dụng`}
           </p>
         </div>
         <Button asChild className="w-full md:w-auto">
@@ -315,7 +231,12 @@ export default function JobPostingPage() {
             onChange={(event) => setSearch(event.target.value)}
           />
         </div>
-        <Select value={status} onValueChange={setStatus}>
+        <Select
+          value={status}
+          onValueChange={(value) =>
+            setStatus(value as JobPostingStatusFilter)
+          }
+        >
           <SelectTrigger className="w-full md:w-44">
             <SelectValue placeholder="Trạng thái" />
           </SelectTrigger>
@@ -346,7 +267,19 @@ export default function JobPostingPage() {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.length ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  Đang tải tin tuyển dụng...
+                </TableCell>
+              </TableRow>
+            ) : error ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  {getErrorMessage(error)}
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
@@ -410,14 +343,13 @@ export default function JobPostingPage() {
             </Select>
           </div>
           <div className="text-sm font-medium">
-            Trang {table.getState().pagination.pageIndex + 1} /{" "}
-            {table.getPageCount() || 1}
+            Trang {pageIndex + 1} / {pageCount}
           </div>
           <Button
             variant="outline"
             className="hidden size-8 p-0 md:flex"
             onClick={() => table.setPageIndex(0)}
-            disabled={!table.getCanPreviousPage()}
+            disabled={!table.getCanPreviousPage() || isFetching}
           >
             <ChevronsLeftIcon />
             <span className="sr-only">Đến trang đầu</span>
@@ -426,18 +358,19 @@ export default function JobPostingPage() {
             variant="outline"
             size="sm"
             onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            disabled={!table.getCanPreviousPage() || isFetching}
           >
             <ChevronLeftIcon />
             Trước
           </Button>
-          {Array.from({ length: table.getPageCount() || 1 }, (_, index) => (
+          {Array.from({ length: pageCount }, (_, index) => (
             <Button
               key={index}
               variant={pageIndex === index ? "default" : "outline"}
               size="icon"
               className="size-9"
               onClick={() => table.setPageIndex(index)}
+              disabled={isFetching}
             >
               {index + 1}
             </Button>
@@ -446,7 +379,7 @@ export default function JobPostingPage() {
             variant="outline"
             size="sm"
             onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            disabled={!table.getCanNextPage() || isFetching}
           >
             Tiếp
             <ChevronRightIcon />
@@ -454,8 +387,8 @@ export default function JobPostingPage() {
           <Button
             variant="outline"
             className="hidden size-8 p-0 md:flex"
-            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-            disabled={!table.getCanNextPage()}
+            onClick={() => table.setPageIndex(pageCount - 1)}
+            disabled={!table.getCanNextPage() || isFetching}
           >
             <ChevronsRightIcon />
             <span className="sr-only">Đến trang cuối</span>
