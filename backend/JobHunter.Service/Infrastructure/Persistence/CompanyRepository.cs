@@ -46,4 +46,12 @@ public class CompanyRepository : ICompanyRepository
 
         return (items, totalCount);
     }
+
+    public Task<Company?> GetCompanyBySlug(string slug)
+    {
+        return _context.Companies
+            .AsNoTracking()
+            .Include(c => c.CompanyBranches)
+            .FirstOrDefaultAsync(c => c.Slug == slug);
+    }
 }

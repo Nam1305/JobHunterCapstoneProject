@@ -33,4 +33,11 @@ public class CompanyController : ControllerBase
         var result = await _companyUseCase.GetCompanies(search, page, pageSize);
         return new ResponseBase<PageResult<CompanyCardDto>>(result);
     }
+
+    [HttpGet("~/api/companies/{slug}")]
+    public async Task<ActionResult<ResponseBase<CompanyDetailsDto>>> GetCompanyBySlug(string slug)
+    {
+        var company = await _companyUseCase.GetCompanyBySlug(slug);
+        return new ResponseBase<CompanyDetailsDto>(company);
+    }
 }

@@ -7,4 +7,5 @@ public interface ICompanyUseCase
 {
     Task<List<CompanyCardDto>> GetTopCompanies(int limit);
     Task<PageResult<CompanyCardDto>> GetCompanies(string? search, int page, int pageSize);
+    Task<CompanyDetailsDto> GetCompanyBySlug(string slug);
 }

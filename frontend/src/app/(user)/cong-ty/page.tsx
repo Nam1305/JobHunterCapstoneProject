@@ -9,7 +9,7 @@ import { getImageUrl } from "@/lib/utils"
 import type { PageResult, ResponseEntity } from "@/types/base"
 import type { CompanyCard as CompanyCardData } from "@/types/company"
 
-const API_BASE_URL = "http://localhost:5000/api"
+const API_BASE_URL = process.env.API_BASE_URL
 const PAGE_SIZE = 9
 
 type CompaniesSearchParams = Promise<{

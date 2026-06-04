@@ -8,133 +8,62 @@ import {
   Users,
   WalletCards,
 } from "lucide-react"
+import { Suspense } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { UserContainer } from "@/components/user/user-container"
-import type { JobCard } from "@/types/job"
+import type { ResponseEntity } from "@/types/base"
 import type { Company } from "@/types/company"
+import type { JobCard } from "@/types/job"
+import type { JobsResult } from "@/types/jobs"
 
-const companyResponse: Company = {
-  id: "f3f52d35-3b68-46f5-9c62-14444ad7b3dd",
-  name: "FPT IS",
-  websiteUrl: "https://fpt-is.com",
-  country: "Vietnam",
-  companyType: "Information Technology",
-  logoUrl: null,
-  coverPhotoUrl: null,
-  overview: `
-    <p>As a cornerstone of FPT Corporation, a leader in integrated solutions and IT services in Vietnam for nearly three decades, FPT IS proudly stands as a trusted partner committed to co-creating future value through technology alongside top enterprises and organizations, both domestically and globally.</p>
-    <p>Recognized for its technical expertise by customers and partners worldwide, FPT IS has been instrumental in designing and implementing comprehensive IT products, projects, and platforms across finance, public services, telecommunications, healthcare, and education.</p>
-  `,
-  benefits: `
-    <ul>
-      <li>Lương tháng 13 và thưởng KPI. Xem xét tăng lương hằng năm.</li>
-      <li>Môi trường làm việc thân thiện, năng động.</li>
-      <li>Được tham gia bảo hiểm đầy đủ theo quy định của pháp luật và khám sức khỏe định kỳ hằng năm.</li>
-      <li>Được tham gia bảo hiểm FPTCare cho bản thân và gia đình.</li>
-      <li>Được học hỏi, đào tạo và tham gia vào các dự án phần mềm lớn theo xu hướng công nghệ 4.0 trong lĩnh vực: Chính phủ, Y tế 4.0, SmartCity, Doanh nghiệp, Ngân hàng...</li>
-      <li>Tham gia các hoạt động văn hoá, sự kiện hấp dẫn của Công ty FPT IS và Tập đoàn FPT.</li>
-      <li>Du lịch/nghỉ mát cùng công ty hằng năm.</li>
-      <li>Thời gian làm việc từ thứ 2 - thứ 6 (8h00 - 17h30).</li>
-      <li>12 ngày phép, 03 ngày nghỉ mát/năm và các ngày nghỉ Lễ theo quy định.</li>
-    </ul>
-  `,
-  teamPhotoUrls: ["Team Event 1", "Team Event 2", "Team Event 3"],
-  teamSize: "Hơn 1000",
-  slug: "fpt-is",
-  companyBranches: [
-    {
-      id: "953f1b63-4c4d-4bb9-b7d3-fc9429b49059",
-      companyId: "f3f52d35-3b68-46f5-9c62-14444ad7b3dd",
-      name: "FPT IS Hồ Chí Minh",
-      address:
-        "Đường Sáng Tạo, KCX Tân Thuận, Phường Tân Thuận Đông, Quận 7, Thành phố Hồ Chí Minh",
-      city: "Thành phố Hồ Chí Minh",
-      citySlug: "ho-chi-minh",
-    },
-    {
-      id: "76a5939c-6812-4db8-8e6b-54f53278103e",
-      companyId: "f3f52d35-3b68-46f5-9c62-14444ad7b3dd",
-      name: "FPT IS Hà Nội",
-      address: "Quận Nam Từ Liêm, Hà Nội",
-      city: "Hà Nội",
-      citySlug: "ha-noi",
-    },
-    {
-      id: "ee67c968-e442-410b-8194-1675926130f2",
-      companyId: "f3f52d35-3b68-46f5-9c62-14444ad7b3dd",
-      name: "FPT IS Cầu Giấy",
-      address: "Quận Cầu Giấy, Hà Nội",
-      city: "Hà Nội",
-      citySlug: "ha-noi",
-    },
-  ],
-}
+import { TeamPhotoGallery } from "./team-photo-gallery"
 
-const companyJobsResponse: JobCard[] = [
-  {
-    id: "fbda6cfd-4c78-46ed-b142-59adfd2c642f",
-    title: "AI ENGINEER (INSURANCE DOMAIN)",
-    companyName: "FPT IS",
-    companyImage: null,
-    salaryRange: "Thương lượng",
-    experienceRequirement: "3 năm",
-    workType: "Onsite",
-    expiredAt: "2026-07-31T17:00:00+07:00",
-    tags: ["Java", "Python", "AI"],
-    slug: "ai-engineer-insurance-domain",
-    city: "Hà Nội",
-    jobLevels: [
-      "Middle",
-      "Senior",
-    ],
-  },
-  {
-    id: "e198671c-1a06-4330-99ef-4e54903b6682",
-    title: "BACKEND DEVELOPER (.NET)",
-    companyName: "FPT IS",
-    companyImage: null,
-    salaryRange: "25 - 40 triệu",
-    experienceRequirement: "4 năm",
-    workType: "Hybrid",
-    expiredAt: "2026-08-15T17:00:00+07:00",
-    tags: [".NET", "C#", "SQL Server"],
-    slug: "backend-developer-dotnet",
-    city: "Thành phố Hồ Chí Minh",
-    jobLevels: [
-      "Senior",
-    ],
-  },
-  {
-    id: "f6dd5bc4-3942-4289-9a2d-e15133f0fe6f",
-    title: "BUSINESS ANALYST (BANKING)",
-    companyName: "FPT IS",
-    companyImage: null,
-    salaryRange: "20 - 35 triệu",
-    experienceRequirement: "2 năm",
-    workType: "Onsite",
-    expiredAt: "2026-08-31T17:00:00+07:00",
-    tags: ["BA", "Banking", "Agile"],
-    slug: "business-analyst-banking",
-    city: "Hà Nội",
-    jobLevels: [
-      "Middle",
-    ],
-  },
-]
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 async function getCompanyBySlug(slug: string) {
-  // TODO: replace with GET /api/companies/{slug}
-  return companyResponse.slug === slug ? companyResponse : companyResponse
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/companies/${encodeURIComponent(slug)}`,
+      {
+        cache: "no-store",
+      }
+    )
+
+    if (!response.ok) {
+      return null
+    }
+
+    const payload = (await response.json()) as ResponseEntity<Company>
+
+    return payload.success ? payload.data : null
+  } catch {
+    return null
+  }
 }
 
-async function getCompanyJobs(_companyId: string) {
-  // TODO: replace with GET /api/companies/{companyId}/jobs
-  void _companyId
+async function getCompanyJobs(companySlug: string) {
+  const params = new URLSearchParams({
+    companySlug
+  })
 
-  return companyJobsResponse
+  try {
+    const response = await fetch(`${API_BASE_URL}/jobs?${params}`, {
+      cache: "no-store",
+    })
+
+    if (!response.ok) {
+      return []
+    }
+
+    const payload = (await response.json()) as ResponseEntity<JobsResult>
+
+    return payload.success && payload.data ? payload.data.items : []
+  } catch {
+    return []
+  }
 }
 
 export default async function CompanyPage({
@@ -143,80 +72,78 @@ export default async function CompanyPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const company = await getCompanyBySlug(slug)
-  const jobs = await getCompanyJobs(company.id)
 
   return (
     <UserContainer className="py-6">
       <main className="space-y-5">
-        <CompanyHero company={company} />
+        <Suspense fallback={<CompanyDetailsSkeleton />}>
+          <CompanyDetailsSection slug={slug} />
+        </Suspense>
 
-        <InfoSection title="Tổng quan công ty">
-          <HtmlContent html={company.overview ?? ""} />
-          <Button className="mt-2 px-0" size="sm" variant="ghost">
-            see more
-          </Button>
-        </InfoSection>
-
-        <InfoSection title="Chi nhánh công ty">
-          <div className="grid gap-3 md:grid-cols-2">
-            {company.companyBranches.map((branch) => (
-              <article key={branch.id} className="rounded-lg border p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-                    <MapPin className="size-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="font-medium leading-5">
-                      {branch.name ?? "Chi nhánh công ty"}
-                    </h3>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {branch.city ?? "Chưa cập nhật thành phố"}
-                    </p>
-                    <p className="mt-2 text-sm leading-6">
-                      {branch.address ?? "Chưa cập nhật địa chỉ"}
-                    </p>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </InfoSection>
-
-        <InfoSection title="Chế độ đãi ngộ">
-          <HtmlContent html={company.benefits ?? ""} />
-        </InfoSection>
-
-        <InfoSection title="Đội ngũ của chúng tôi">
-          <div className="grid gap-3 sm:grid-cols-3">
-            {company.teamPhotoUrls.map((photo, index) => (
-              <div
-                key={photo}
-                className="flex aspect-video items-center justify-center rounded-md bg-muted text-sm text-muted-foreground"
-              >
-                {index === company.teamPhotoUrls.length - 1
-                  ? `${photo} +1`
-                  : photo}
-              </div>
-            ))}
-          </div>
-        </InfoSection>
-
-        <InfoSection title="Việc làm đang tuyển dụng">
-          <div className="grid gap-4 md:grid-cols-2">
-            {jobs.map((job) => (
-              <CompanyJobCard key={job.id} job={job} />
-            ))}
-          </div>
-        </InfoSection>
+        <Suspense fallback={<CompanyJobsSkeleton />}>
+          <CompanyJobsSection companySlug={slug} />
+        </Suspense>
       </main>
     </UserContainer>
   )
 }
 
-function CompanyHero({ company }: { company: Company }) {
-  const primaryBranch = company.companyBranches[0]
+async function CompanyDetailsSection({ slug }: { slug: string }) {
+  const company = await getCompanyBySlug(slug)
 
+  if (!company) {
+    return (
+      <Card>
+        <CardContent className="py-10 text-center text-sm text-muted-foreground">
+          Không tìm thấy công ty.
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <>
+      <CompanyHero company={company} />
+
+      <InfoSection title="Tổng quan công ty">
+        <HtmlContent html={company.overview ?? "Chưa cập nhật tổng quan."} />
+        <Button className="mt-2 px-0" size="sm" variant="ghost">
+          see more
+        </Button>
+      </InfoSection>
+
+      <InfoSection title="Chế độ đãi ngộ">
+        <HtmlContent html={company.benefits ?? "Chưa cập nhật chế độ đãi ngộ."} />
+      </InfoSection>
+
+      <InfoSection title="Đội ngũ của chúng tôi">
+        <TeamPhotoGallery photos={company.teamPhotoUrls} />
+      </InfoSection>
+    </>
+  )
+}
+
+async function CompanyJobsSection({ companySlug }: { companySlug: string }) {
+  const jobs = await getCompanyJobs(companySlug)
+
+  return (
+    <InfoSection title="Việc làm đang tuyển dụng">
+      {jobs.length > 0 ? (
+        <div className="grid gap-4 md:grid-cols-2">
+          {jobs.map((job) => (
+            <CompanyJobCard key={job.id} job={job} />
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          Công ty hiện chưa có việc làm đang tuyển dụng.
+        </p>
+      )}
+    </InfoSection>
+  )
+}
+
+function CompanyHero({ company }: { company: Company }) {
   return (
     <Card className="gap-0 py-0">
       <div className="flex h-56 items-center justify-center rounded-t-2xl border-b bg-muted text-sm text-muted-foreground">
@@ -256,10 +183,17 @@ function CompanyHero({ company }: { company: Company }) {
           <h1 className="text-2xl font-semibold tracking-normal">
             {company.name}
           </h1>
-          <p className="flex items-start gap-1.5 text-sm text-muted-foreground">
-            <MapPin className="mt-0.5 size-3.5 shrink-0" />
-            {primaryBranch?.address ?? "Chưa cập nhật địa chỉ"}
-          </p>
+          {company.companyBranches.length === 0
+            ? "Chưa cập nhật địa chỉ"
+            : company.companyBranches.map((branch) => (
+              <p
+                key={branch.id}
+                className="flex items-start gap-1.5 text-sm text-muted-foreground"
+              >
+                <MapPin className="mt-0.5 size-3.5 shrink-0" />
+                {branch.address ?? "Chưa cập nhật địa chỉ"}
+              </p>
+            ))}
         </div>
 
         <Separator />
@@ -290,6 +224,69 @@ function CompanyHero({ company }: { company: Company }) {
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+function CompanyDetailsSkeleton() {
+  return (
+    <>
+      <Card className="gap-0 py-0">
+        <div className="h-56 rounded-t-2xl border-b bg-muted" />
+        <CardContent className="space-y-5 pb-6 pt-0">
+          <div className="-mt-3 flex items-end justify-between">
+            <div className="size-20 rounded-lg border bg-muted" />
+            <div className="h-9 w-24 rounded-md bg-muted" />
+          </div>
+          <div className="space-y-2">
+            <div className="h-7 w-48 rounded-md bg-muted" />
+            <div className="h-4 w-full max-w-xl rounded-md bg-muted" />
+            <div className="h-4 w-full max-w-md rounded-md bg-muted" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {[1, 2, 3].map((item) => (
+        <Card key={item}>
+          <CardContent>
+            <div className="h-6 w-44 rounded-md bg-muted" />
+            <Separator className="my-5" />
+            <div className="space-y-3">
+              <div className="h-4 w-full rounded-md bg-muted" />
+              <div className="h-4 w-5/6 rounded-md bg-muted" />
+              <div className="h-4 w-2/3 rounded-md bg-muted" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </>
+  )
+}
+
+function CompanyJobsSkeleton() {
+  return (
+    <InfoSection title="Việc làm đang tuyển dụng">
+      <div className="grid gap-4 md:grid-cols-2">
+        {[1, 2, 3, 4].map((item) => (
+          <div key={item} className="space-y-4 rounded-xl border p-4">
+            <div className="grid grid-cols-[2.5rem_1fr_auto] gap-3">
+              <div className="size-10 rounded-md bg-muted" />
+              <div className="space-y-2">
+                <div className="h-4 w-full rounded-md bg-muted" />
+                <div className="h-3 w-28 rounded-md bg-muted" />
+              </div>
+              <div className="size-8 rounded-md bg-muted" />
+            </div>
+            <div className="h-4 w-36 rounded-md bg-muted" />
+            <div className="grid gap-2 sm:grid-cols-2">
+              <div className="h-3 w-24 rounded-md bg-muted" />
+              <div className="h-3 w-28 rounded-md bg-muted" />
+              <div className="h-3 w-20 rounded-md bg-muted" />
+              <div className="h-3 w-32 rounded-md bg-muted" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </InfoSection>
   )
 }
 

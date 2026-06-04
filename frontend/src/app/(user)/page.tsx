@@ -40,7 +40,7 @@ import type { ResponseEntity } from "@/types/base"
 import type { CompanyCard } from "@/types/company"
 import type { JobCard } from "@/types/job"
 
-const API_BASE_URL = "http://localhost:5000/api"
+const API_BASE_URL = process.env.API_BASE_URL
 
 const tools = [
   {

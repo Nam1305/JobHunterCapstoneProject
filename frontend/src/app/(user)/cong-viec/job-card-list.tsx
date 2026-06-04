@@ -161,7 +161,10 @@ export function JobCardList({
   const pageStart = (result.page - 1) * result.pageSize
   const paginationItems = getPaginationItems(currentPage, totalPages)
 
-  const replaceQuery = (update: (params: URLSearchParams) => void) => {
+  const replaceQuery = (
+    update: (params: URLSearchParams) => void,
+    options: { smoothScrollToTop?: boolean } = {}
+  ) => {
     const params = new URLSearchParams(searchParams.toString())
 
     update(params)
@@ -170,6 +173,13 @@ export function JobCardList({
     router.replace(queryString ? `${pathname}?${queryString}` : pathname, {
       scroll: false,
     })
+
+    if (options.smoothScrollToTop) {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      })
+    }
   }
 
   const goToPage = (nextPage: number) => {
@@ -178,7 +188,7 @@ export function JobCardList({
     replaceQuery((params) => {
       params.set("page", String(normalizedPage))
       params.delete("jobSlug")
-    })
+    }, { smoothScrollToTop: true })
   }
 
   const selectJob = (slug: string) => {

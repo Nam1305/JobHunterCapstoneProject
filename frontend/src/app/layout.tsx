@@ -1,6 +1,9 @@
 import { Geist_Mono, Inter } from "next/font/google"
 
 import "./globals.css"
+import "yet-another-react-lightbox/styles.css"
+import "yet-another-react-lightbox/plugins/counter.css"
+import "yet-another-react-lightbox/plugins/thumbnails.css"
 import { ThemeProvider } from "@/providers/theme-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils";

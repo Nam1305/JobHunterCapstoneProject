@@ -1,5 +1,8 @@
+using System.Text.Json;
+using JobHunter.Domain.Entities;
 using JobHunter.Service.DTOs;
 using JobHunter.Service.DTOs.Company;
+using JobHunter.Service.DTOs.Job;
 using JobHunter.Service.Interface.Persistence;
 using JobHunter.Service.Interface.UseCase;
 
@@ -59,5 +62,61 @@ public class CompanyUseCase : ICompanyUseCase
             PageSize = pageSize,
             TotalCount = totalCount
         };
+    }
+
+    public async Task<CompanyDetailsDto> GetCompanyBySlug(string slug)
+    {
+        if (string.IsNullOrWhiteSpace(slug)) throw new ArgumentException("Slug is required");
+
+        var company = await _companyRepository.GetCompanyBySlug(slug);
+        if (company == null) throw new KeyNotFoundException("Company not found");
+
+        return ToCompanyDetails(company);
+    }
+
+    private static CompanyDetailsDto ToCompanyDetails(Company company) => new()
+    {
+        Id = company.Id,
+        Name = company.Name,
+        WebsiteUrl = company.WebsiteUrl,
+        Country = company.Country,
+        CompanyType = company.CompanyType,
+        LogoUrl = company.LogoUrl,
+        CoverPhotoUrl = company.CoverPhotoUrl,
+        Overview = company.Overview,
+        Benefits = company.Benefits,
+        TeamPhotoUrls = ParseTeamPhotoUrls(company),
+        TeamSize = company.TeamSize,
+        Slug = company.Slug,
+        CompanyBranches = company.CompanyBranches.Select(b => new CompanyBranchResponseDto
+        {
+            Id = b.Id,
+            CompanyId = b.CompanyId,
+            Name = b.Name,
+            Address = b.Address,
+            City = b.City,
+            CitySlug = b.CitySlug
+        }).ToList()
+    };
+
+    private static List<string> ParseTeamPhotoUrls(Company company)
+    {
+        if (company.TeamPhotoUrls == null) return [];
+
+        try
+        {
+            return company.TeamPhotoUrls.RootElement.EnumerateArray()
+                .Select(e => e.GetString() ?? string.Empty)
+                .Where(s => !string.IsNullOrEmpty(s))
+                .ToList();
+        }
+        catch (InvalidOperationException)
+        {
+            return [];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
     }
 }
