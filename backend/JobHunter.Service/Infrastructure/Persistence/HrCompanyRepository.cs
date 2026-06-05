@@ -28,5 +28,19 @@ namespace JobHunter.Service.Infrastructure.Persistence
         {
             return await _context.Companies.FindAsync(companyId);
         }
+
+        public async Task DeleteTeamImagesAsync(Guid companyId, string imageUrl)
+        {
+            var company = await _context.Companies.FindAsync(companyId);
+            if (company == null)
+            {
+                throw new Exception("Company not found");
+            }
+
+            var imageUrls = JsonSerializer.Deserialize<List<string>>(company.TeamPhotoUrls);
+            imageUrls?.Remove(imageUrl);
+            company.TeamPhotoUrls = JsonSerializer.SerializeToDocument(imageUrls);
+            await _context.SaveChangesAsync();
+        }
     }
 }

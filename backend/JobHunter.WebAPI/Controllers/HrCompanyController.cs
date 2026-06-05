@@ -33,6 +33,13 @@ namespace JobHunter.WebAPI.Controllers
 
         }
             
+        [HttpDelete("Branding/TeamImages")]
+        public async Task<ActionResult<ResponseBase<string>>> DeleteTeamImage([FromQuery] string imageUrl)
+        {
+            var userId = User.GetUserId();
+            await _hrCompanyUseCase.DeleteTeamImageAsync(userId, imageUrl);
+            return new ResponseBase<string>("Xóa ảnh thành công");
+        }
     }
 }
 

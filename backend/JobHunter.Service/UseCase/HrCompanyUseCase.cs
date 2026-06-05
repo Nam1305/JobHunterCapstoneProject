@@ -28,7 +28,6 @@ public class HrCompanyUseCase : IHrCompanyUseCase
         if (brandImageDto.Images.Count > 5)
             throw new ArgumentException("Chỉ được upload tối đa 5 ảnh cùng lúc.", nameof(brandImageDto.Images));
 
-        //  2. lấy thông tin cty qua uid
         var user = await _userRepository.GetUserById(brandImageDto.UserId);
         if (user == null)
         {
@@ -46,13 +45,11 @@ public class HrCompanyUseCase : IHrCompanyUseCase
             throw new KeyNotFoundException("Company not found");
         }
 
-        // 3. Upload ảnh song song lên S3
         var newUploadedUrls = await _fileService.UploadMultipleFilesAsync(brandImageDto.Images);
         
         if (!newUploadedUrls.Any())
             throw new InvalidOperationException("Upload ảnh thất bại.");
 
-        // 4. Xử lý JsonDocument (Phần quan trọng nhất)
         List<string> currentUrls = new List<string>();
 
         if (company.TeamPhotoUrls != null)
@@ -72,5 +69,21 @@ public class HrCompanyUseCase : IHrCompanyUseCase
 
         return newUploadedUrls;
     
+    }
+
+    public async Task DeleteTeamImageAsync(Guid userId, string imageUrl)
+    {
+        var user = await _userRepository.GetUserById(userId);
+        if (user == null)
+        {
+            throw new KeyNotFoundException("User not found");
+        }
+
+        if (!user.CompanyId.HasValue)
+        {
+            throw new InvalidOperationException("User is not assigned to a company");
+        }
+
+        await _hrCompanyRepository.DeleteTeamImagesAsync(user.CompanyId.Value, imageUrl);
     }
 }
