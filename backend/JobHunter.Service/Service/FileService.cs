@@ -2,19 +2,21 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using JobHunter.Service.Interface.Service;
 using Microsoft.AspNetCore.Http;
-using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 
 namespace JobHunter.Service.Service;
 
 public class FileService : IFileService
 {
     private readonly IAmazonS3 _s3Client;
+    private readonly ILogger<FileService> _logger;
     private readonly string _bucketName;
     private readonly string _publicUrl;
-    
-    public FileService(IAmazonS3 s3Client, string bucketName, string publicUrl)
+
+    public FileService(IAmazonS3 s3Client, ILogger<FileService> logger, string bucketName, string publicUrl)
     {
         _s3Client = s3Client;
+        _logger = logger;
         _bucketName = bucketName;
         _publicUrl = publicUrl;
     }
@@ -60,24 +62,33 @@ public class FileService : IFileService
 
     public async Task<List<string>> UploadMultipleFilesAsync(List<IFormFile> files)
     {
-        var successfulUrls = new ConcurrentBag<string>(); // list thread-safe để lưu các URL thành công
+        if (files == null || files.Count == 0)
+        {
+            throw new ArgumentException("No files uploaded.", nameof(files));
+        }
 
-        var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 5 }; // Giới hạn số lượng file upload đồng thời
-        await Parallel.ForEachAsync(files, parallelOptions, async (file, cancellationToken) =>
+        var uploadedUrls = new string?[files.Count];
+        var indexedFiles = files.Select((file, index) => new { File = file, Index = index });
+        var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 5 };
+
+        await Parallel.ForEachAsync(indexedFiles, parallelOptions, async (item, cancellationToken) =>
         {
             try
             {
-                var url = await UploadFileAsync(file);
-                lock (successfulUrls)
-                {
-                    successfulUrls.Add(url);
-                }
+                uploadedUrls[item.Index] = await UploadFileAsync(item.File);
             }
-            catch
+            catch (Exception ex)
             {
-                
+                _logger.LogWarning(
+                    ex,
+                    "Failed to upload file {FileName} in multiple file upload.",
+                    item.File?.FileName);
             }
         });
-        return successfulUrls.ToList();  
+
+        return uploadedUrls
+            .Where(url => url != null)
+            .Select(url => url!)
+            .ToList();
     }
 }
