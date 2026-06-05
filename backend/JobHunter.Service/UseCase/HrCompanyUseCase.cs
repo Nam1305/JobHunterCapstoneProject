@@ -85,5 +85,37 @@ public class HrCompanyUseCase : IHrCompanyUseCase
         }
 
         await _hrCompanyRepository.DeleteTeamImagesAsync(user.CompanyId.Value, imageUrl);
+        await _fileService.DeleteFileAsync(imageUrl);
+    }
+
+    public async Task<BrandingResponseDto> GetBrandingByUserIdAsync(Guid userId)
+    {
+        var user = await _userRepository.GetUserById(userId);
+        if (user == null)
+        {
+            throw new KeyNotFoundException("User not found");
+        }
+
+        if (!user.CompanyId.HasValue)
+        {
+            throw new InvalidOperationException("User is not assigned to a company");
+        }
+
+        var company = await _hrCompanyRepository.GetByIdAsync(user.CompanyId.Value);
+        if (company == null)
+        {
+            throw new KeyNotFoundException("Company not found");
+        }
+
+        var brandingResponse = new BrandingResponseDto
+        {
+            Overview = company.Overview,
+            Benefits = company.Benefits,
+            TeamPhotoUrls = company.TeamPhotoUrls != null
+                ? JsonSerializer.Deserialize<List<string>>(company.TeamPhotoUrls)
+                : new List<string>()
+        };
+
+        return brandingResponse;
     }
 }

@@ -15,26 +15,19 @@ import {
   ListOrderedIcon,
   XIcon,
 } from "lucide-react"
+import { useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 
+import {
+  useAddTeamImages,
+  useDeleteTeamImage,
+  useGetBranding,
+} from "@/api/company.api"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 
-const brandingMockData = {
-  overview: `<p>Nexora Technology xây dựng nền tảng tuyển dụng thông minh cho các doanh nghiệp đang tăng trưởng nhanh.</p>
-<p>Chúng tôi tập trung vào trải nghiệm ứng viên, dữ liệu minh bạch và một môi trường làm việc nơi mỗi thành viên có quyền thử nghiệm ý tưởng mới.</p>`,
-  benefits: `<ul>
-  <li>Lương thưởng cạnh tranh theo năng lực và đánh giá định kỳ.</li>
-  <li>Bảo hiểm sức khỏe mở rộng cho nhân viên.</li>
-  <li>Ngân sách học tập hằng năm và chương trình mentoring nội bộ.</li>
-  <li>Lịch làm việc linh hoạt, hỗ trợ hybrid cho các nhóm sản phẩm.</li>
-</ul>`,
-  teamPhotoUrls: [
-    "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=900&q=80",
-    "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=900&q=80",
-    "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=900&q=80",
-  ],
-}
+const COMPANY_BRANDING_QUERY_KEY = ["companyBranding"]
 
 type UploadedTeamPhoto = {
   id: string
@@ -65,11 +58,13 @@ function EditorToolbarButton({
 function BrandingHtmlInput({
   id,
   label,
-  defaultValue,
+  value,
+  onChange,
 }: {
   id: string
   label: string
-  defaultValue: string
+  value: string
+  onChange: (value: string) => void
 }) {
   return (
     <div className="space-y-3">
@@ -94,7 +89,8 @@ function BrandingHtmlInput({
         <Textarea
           id={id}
           name={id}
-          defaultValue={defaultValue}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
           className="min-h-48 rounded-none border-0 bg-background px-4 py-3 font-mono text-sm shadow-none focus-visible:ring-0"
           spellCheck={false}
         />
@@ -103,13 +99,24 @@ function BrandingHtmlInput({
   )
 }
 
-function TeamPhotoUrlList() {
+function TeamPhotoUrlList({
+  initialTeamPhotoUrls,
+}: {
+  initialTeamPhotoUrls: string[]
+}) {
+  const queryClient = useQueryClient()
+  const addTeamImages = useAddTeamImages()
+  const deleteTeamImage = useDeleteTeamImage()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const uploadedPhotosRef = useRef<UploadedTeamPhoto[]>([])
-  const [teamPhotoUrls, setTeamPhotoUrls] = useState(
-    brandingMockData.teamPhotoUrls
-  )
+  const [teamPhotoUrls, setTeamPhotoUrls] = useState(initialTeamPhotoUrls)
   const [uploadedPhotos, setUploadedPhotos] = useState<UploadedTeamPhoto[]>([])
+  const [deletingImageUrl, setDeletingImageUrl] = useState<string | null>(null)
+  const isMutatingImages = addTeamImages.isPending || deleteTeamImage.isPending
+
+  useEffect(() => {
+    setTeamPhotoUrls(initialTeamPhotoUrls)
+  }, [initialTeamPhotoUrls])
 
   useEffect(() => {
     uploadedPhotosRef.current = uploadedPhotos
@@ -123,42 +130,65 @@ function TeamPhotoUrlList() {
     }
   }, [])
 
-  function syncFileInput(nextPhotos: UploadedTeamPhoto[]) {
-    if (!fileInputRef.current) {
-      return
-    }
-
-    const dataTransfer = new DataTransfer()
-    nextPhotos.forEach((photo) => dataTransfer.items.add(photo.file))
-    fileInputRef.current.files = dataTransfer.files
-  }
-
-  function handleUploadPhoto(event: ChangeEvent<HTMLInputElement>) {
+  async function handleUploadPhoto(event: ChangeEvent<HTMLInputElement>) {
     const selectedFiles = Array.from(event.target.files ?? [])
 
     if (selectedFiles.length === 0) {
       return
     }
 
-    setUploadedPhotos((currentPhotos) => {
-      const nextPhotos = [
-        ...currentPhotos,
-        ...selectedFiles.map((file) => ({
-          id: `${file.name}-${file.lastModified}-${crypto.randomUUID()}`,
-          file,
-          previewUrl: URL.createObjectURL(file),
-        })),
-      ]
+    const previewPhotos = selectedFiles.map((file) => ({
+      id: `${file.name}-${file.lastModified}-${crypto.randomUUID()}`,
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }))
 
-      syncFileInput(nextPhotos)
-      return nextPhotos
-    })
+    setUploadedPhotos((currentPhotos) => [...currentPhotos, ...previewPhotos])
+
+    try {
+      await addTeamImages.mutateAsync({ images: selectedFiles })
+      toast.success("Tải ảnh đội ngũ thành công")
+      await queryClient.invalidateQueries({
+        queryKey: COMPANY_BRANDING_QUERY_KEY,
+      })
+    } catch {
+      toast.error("Không thể tải ảnh đội ngũ")
+    } finally {
+      previewPhotos.forEach((photo) => URL.revokeObjectURL(photo.previewUrl))
+      setUploadedPhotos((currentPhotos) =>
+        currentPhotos.filter(
+          (photo) =>
+            !previewPhotos.some((previewPhoto) => previewPhoto.id === photo.id)
+        )
+      )
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+    }
   }
 
-  function handleRemoveExistingPhoto(indexToRemove: number) {
+  async function handleRemoveExistingPhoto(
+    imageUrl: string,
+    indexToRemove: number
+  ) {
+    setDeletingImageUrl(imageUrl)
     setTeamPhotoUrls((currentUrls) =>
       currentUrls.filter((_, index) => index !== indexToRemove)
     )
+
+    try {
+      await deleteTeamImage.mutateAsync({ imageUrl })
+      toast.success("Xóa ảnh đội ngũ thành công")
+      await queryClient.invalidateQueries({
+        queryKey: COMPANY_BRANDING_QUERY_KEY,
+      })
+    } catch {
+      toast.error("Không thể xóa ảnh đội ngũ")
+      setTeamPhotoUrls(initialTeamPhotoUrls)
+    } finally {
+      setDeletingImageUrl(null)
+    }
   }
 
   function handleRemoveUploadedPhoto(photoId: string) {
@@ -170,7 +200,6 @@ function TeamPhotoUrlList() {
         URL.revokeObjectURL(removedPhoto.previewUrl)
       }
 
-      syncFileInput(nextPhotos)
       return nextPhotos
     })
   }
@@ -204,7 +233,8 @@ function TeamPhotoUrlList() {
               size="icon-sm"
               aria-label={`Xóa ảnh đội ngũ ${index + 1}`}
               className="absolute right-2 top-2 bg-background/90 text-foreground shadow-sm hover:bg-background"
-              onClick={() => handleRemoveExistingPhoto(index)}
+              disabled={isMutatingImages || deletingImageUrl === url}
+              onClick={() => handleRemoveExistingPhoto(url, index)}
             >
               <XIcon />
             </Button>
@@ -241,12 +271,14 @@ function TeamPhotoUrlList() {
           accept="image/*"
           multiple
           className="hidden"
+          disabled={isMutatingImages}
           onChange={handleUploadPhoto}
         />
         <Button
           type="button"
           variant="outline"
           className="flex aspect-video h-auto flex-col gap-2 border-dashed bg-background text-muted-foreground hover:text-foreground"
+          disabled={isMutatingImages}
           onClick={() => fileInputRef.current?.click()}
         >
           <ImagePlusIcon className="size-7" />
@@ -258,21 +290,33 @@ function TeamPhotoUrlList() {
 }
 
 export function CompanyBrandingForm() {
+  const { data: brandingResponse } = useGetBranding()
+  const branding = brandingResponse?.data
+  const [overview, setOverview] = useState("")
+  const [benefits, setBenefits] = useState("")
+
+  useEffect(() => {
+    setOverview(branding?.overview ?? "")
+    setBenefits(branding?.benefits ?? "")
+  }, [branding])
+
   return (
     <form className="space-y-8">
       <BrandingHtmlInput
         id="company-overview"
         label="Tổng quan công ty (Overview)"
-        defaultValue={brandingMockData.overview}
+        value={overview}
+        onChange={setOverview}
       />
 
       <BrandingHtmlInput
         id="company-benefits"
         label="Phúc lợi (Benefits)"
-        defaultValue={brandingMockData.benefits}
+        value={benefits}
+        onChange={setBenefits}
       />
 
-      <TeamPhotoUrlList />
+      <TeamPhotoUrlList initialTeamPhotoUrls={branding?.teamPhotoUrls ?? []} />
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <Button type="button" variant="outline" size="lg">
