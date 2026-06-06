@@ -46,7 +46,7 @@ public class JobUseCase : IJobUseCase
 
         if (!user.CompanyId.HasValue)
         {
-            throw new ArgumentException("User is not assigned to a company");
+            throw new InvalidOperationException("User is not assigned to a company");
         }
 
         var jobs = await _jobRepository.GetJobs(user.CompanyId.Value, search, status, page, pageSize);
@@ -86,10 +86,7 @@ public class JobUseCase : IJobUseCase
 
     public async Task<JobDetailDto> CreateJob(Guid userId, CreateJobRequestDto request)
     {
-        if (request == null)
-        {
-            throw new ArgumentException("Request body is required");
-        }
+        ValidateCreateJobRequest(request);
 
         var user = await _userRepository.GetUserById(userId);
         if (user == null)
@@ -99,7 +96,7 @@ public class JobUseCase : IJobUseCase
 
         if (!user.CompanyId.HasValue)
         {
-            throw new ArgumentException("User is not assigned to a company");
+            throw new InvalidOperationException("User is not assigned to a company");
         }
 
         var subcategory = await _jobRepository.GetSubcategoryById(request.SubCategory);
@@ -121,6 +118,7 @@ public class JobUseCase : IJobUseCase
             throw new ArgumentException("One or more experience levels are invalid");
         }
 
+        var expiredDate = request.ExperiedDate ?? throw new ArgumentException("Expired date is required");
         var now = DateTimeOffset.UtcNow;
         var tags = request.Tags?
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
@@ -135,7 +133,7 @@ public class JobUseCase : IJobUseCase
             Title = request.Name,
             SalaryRange = request.SalaryRange,
             WorkType = request.JobWorkType,
-            ExpiredAt = request.ExperiedDate!.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
+            ExpiredAt = expiredDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
             ExperienceRequirement = request.ExperienceRequirement,
             Tags = JsonDocument.Parse(JsonSerializer.Serialize(tags)),
             Responsibilities = request.Responsibilities,
@@ -157,6 +155,54 @@ public class JobUseCase : IJobUseCase
         job.Subcategory = subcategory;
 
         return MapJobDetail(job);
+    }
+
+    private static void ValidateCreateJobRequest(CreateJobRequestDto? request)
+    {
+        if (request == null)
+        {
+            throw new ArgumentException("Request body is required");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            throw new ArgumentException("Job name is required");
+        }
+
+        if (!request.JobWorkType.HasValue)
+        {
+            throw new ArgumentException("Job work type is required");
+        }
+
+        if (!request.ExperiedDate.HasValue)
+        {
+            throw new ArgumentException("Expired date is required");
+        }
+
+        if (request.Category == Guid.Empty)
+        {
+            throw new ArgumentException("Category is required");
+        }
+
+        if (request.SubCategory == Guid.Empty)
+        {
+            throw new ArgumentException("Subcategory is required");
+        }
+
+        if (request.Branch == Guid.Empty)
+        {
+            throw new ArgumentException("Branch is required");
+        }
+
+        if (request.ExperienceLevels == null || request.ExperienceLevels.Count == 0)
+        {
+            throw new ArgumentException("At least one experience level is required");
+        }
+
+        if (request.ExperienceLevels.Any(levelId => levelId == Guid.Empty))
+        {
+            throw new ArgumentException("One or more experience levels are invalid");
+        }
     }
 
     private static JobDetailDto MapJobDetail(Job job)
