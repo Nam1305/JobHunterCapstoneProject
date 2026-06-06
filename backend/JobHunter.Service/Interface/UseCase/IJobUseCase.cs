@@ -9,4 +9,6 @@ public interface IJobUseCase
     Task<PageResult<JobPostingDto>> GetJobs(Guid userId, string? search, JobStatus? status, int page, int pageSize);
 
     Task<JobDetailDto> GetJobDetailsById(Guid uid);
+
+    Task<JobDetailDto> CreateJob(Guid userId, CreateJobRequestDto request);
 }

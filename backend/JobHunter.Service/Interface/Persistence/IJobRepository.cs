@@ -10,4 +10,12 @@ public interface IJobRepository
     Task<int> CountJobs(Guid companyId, string? search, JobStatus? status);
 
     Task<Job?> GetJobById(Guid id);
+
+    Task<JobSubcategory?> GetSubcategoryById(Guid id);
+
+    Task<CompanyBranch?> GetBranchById(Guid companyId, Guid branchId);
+
+    Task<List<JobLevel>> GetJobLevelsByIds(List<Guid> ids);
+
+    Task CreateJob(Job job);
 }
