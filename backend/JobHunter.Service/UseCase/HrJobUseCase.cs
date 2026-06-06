@@ -10,12 +10,12 @@ using System.Text.Json.Nodes;
 
 namespace JobHunter.Service.UseCase;
 
-public class JobUseCase : IJobUseCase
+public class HrJobUseCase : IHrJobUseCase
 {
     private readonly IJobRepository _jobRepository;
     private readonly IUserRepository _userRepository;
 
-    public JobUseCase(IJobRepository jobRepository, IUserRepository userRepository)
+    public HrJobUseCase(IJobRepository jobRepository, IUserRepository userRepository)
     {
         _jobRepository = jobRepository;
         _userRepository = userRepository;

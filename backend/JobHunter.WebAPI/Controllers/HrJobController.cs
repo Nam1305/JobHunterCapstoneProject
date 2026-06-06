@@ -8,13 +8,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JobHunter.WebAPI.Controllers;
 
-[Route("api/Jobs")]
+[Route("api/hr/jobs")]
 [ApiController]
-public class JobController : ControllerBase
+public class HrJobController : ControllerBase
 {
-    private readonly IJobUseCase _jobUseCase;
+    private readonly IHrJobUseCase _jobUseCase;
 
-    public JobController(IJobUseCase jobUseCase)
+    public HrJobController(IHrJobUseCase jobUseCase)
     {
         _jobUseCase = jobUseCase;
     }

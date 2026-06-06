@@ -4,7 +4,7 @@ using JobHunter.Service.DTOs.Job;
 
 namespace JobHunter.Service.Interface.UseCase;
 
-public interface IJobUseCase
+public interface IHrJobUseCase
 {
     Task<PageResult<JobPostingDto>> GetJobs(Guid userId, string? search, JobStatus? status, int page, int pageSize);
 

@@ -25,7 +25,7 @@ public static class ServiceCollectionExtensions
         // Use cases
         services.AddScoped<IAuthUseCase, AuthUseCase>();
         services.AddScoped<IUserUseCase, UserUseCase>();
-        services.AddScoped<IJobUseCase, JobUseCase>();
+        services.AddScoped<IHrJobUseCase, HrJobUseCase>();
         services.AddScoped<IHrCompanyUseCase, HrCompanyUseCase>();
         
         // Services
