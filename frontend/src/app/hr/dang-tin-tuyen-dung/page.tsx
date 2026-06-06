@@ -181,7 +181,7 @@ export default function JobPostingPage() {
   const pageData = data?.data
   const jobPostings = pageData?.items ?? []
   const totalCount = pageData?.totalCount ?? 0
-  const pageCount = Math.max(1, Math.ceil(totalCount / pagination.pageSize))
+  const pageCount = pageData?.totalPage ?? 0
 
   const table = useReactTable({
     data: jobPostings,

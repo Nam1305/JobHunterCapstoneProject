@@ -7,4 +7,13 @@ public interface IHrCompanyRepository
     public Task DeleteTeamImagesAsync(Guid companyId, string imageUrl);
 
     public Task<Company> GetByIdAsync(Guid companyId);
+
+    public Task UpdateBrandingAsync(Guid companyId, string? overview, string? benefits);
+
+    public Task UpdateLogoAsync(Guid companyId, string logoUrl);
+
+    public Task UpdateCoverImageAsync(Guid companyId, string coverImageUrl);
+
+    public Task UpdateGeneralInfoAsync(Guid companyId, string name, string? country, string? websiteUrl, string? companyType, string? TeamSize);
+
 }

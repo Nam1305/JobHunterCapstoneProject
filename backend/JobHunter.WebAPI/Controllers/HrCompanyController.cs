@@ -24,12 +24,7 @@ namespace JobHunter.WebAPI.Controllers
         {
             // get userId from claim
             var userId = User.GetUserId();
-            var brandImageDto = new BrandImageDto
-            {
-                Images = images,
-                UserId = userId
-            };
-            var newImageUrls = await _hrCompanyUseCase.AddTeamImagesAsync(brandImageDto);
+            var newImageUrls = await _hrCompanyUseCase.AddTeamImagesAsync(userId, images);
             return new ResponseBase<List<string>>(newImageUrls);
 
         }
@@ -47,8 +42,51 @@ namespace JobHunter.WebAPI.Controllers
         {
             var userId = User.GetUserId();
             var brandingInfo = await _hrCompanyUseCase.GetBrandingByUserIdAsync(userId);
-            brandingInfo.UserId = userId;
             return new ResponseBase<BrandingResponseDto>(brandingInfo);
+        }
+
+        // update overview and benefits
+        [HttpPut("branding")]
+        public async Task<ActionResult<ResponseBase<BrandingResponseDto>>> UpdateBranding([FromBody] EditBrandingDto request)
+        {
+            var userId = User.GetUserId();
+            var updatedBranding = await _hrCompanyUseCase.UpdateBrandingAsync(userId, request);
+            return new ResponseBase<BrandingResponseDto>(updatedBranding);
+        }
+
+        [HttpPut("logo")]
+        public async Task<ActionResult<ResponseBase<string>>> UpdateLogo(IFormFile logoFile)
+        {
+            var userId = User.GetUserId();
+            await _hrCompanyUseCase.UpdateLogoAsync(userId, logoFile);
+            return new ResponseBase<string>("Cập nhật logo thành công");
+        }
+
+        // update cover image
+        [HttpPut("cover-image")]
+        public async Task<ActionResult<ResponseBase<string>>> UpdateCoverImage(IFormFile coverImageFile)
+        {
+            var userId = User.GetUserId();
+            await _hrCompanyUseCase.UpdateCoverImageAsync(userId, coverImageFile);
+            return new ResponseBase<string>("Cập nhật ảnh bìa thành công");
+        }
+
+        // update General
+        [HttpPut("general")]
+        public async Task<ActionResult<ResponseBase<string>>> UpdateGeneralInfo([FromBody] EditGeneralDto request)
+        {
+            var userId = User.GetUserId();
+            await _hrCompanyUseCase.UpdateGeneralInfoAsync(userId, request);
+            return new ResponseBase<string>("Cập nhật thông tin chung thành công");
+        }
+
+        // get General
+        [HttpGet("general")]
+        public async Task<ActionResult<ResponseBase<GeneralResponseDto>>> GetGeneralInfo()
+        {
+            var userId = User.GetUserId();
+            var generalInfo = await _hrCompanyUseCase.GetGeneralInfoAsync(userId);
+            return new ResponseBase<GeneralResponseDto>(generalInfo);
         }
     }
 }

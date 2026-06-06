@@ -1,15 +1,18 @@
-public class EditBrandingDto
+namespace JobHunter.Service.DTOs.Company
 {
-    public Guid UserId { get; set; }
+    public class EditBrandingDto
+    {
+        // public Guid UserId { get; set; }
 
-    public string? Overview { get; set; }
+        public string? Overview { get; set; }
 
-    public string? Benefits { get; set; }
+        public string? Benefits { get; set; }
 
-}
+    }
 
-public class BrandingResponseDto : EditBrandingDto
-{
+    public class BrandingResponseDto : EditBrandingDto
+    {
 
-    public List<string>? TeamPhotoUrls { get; set; }
+        public List<string>? TeamPhotoUrls { get; set; }
+    }
 }
