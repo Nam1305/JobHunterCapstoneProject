@@ -7,7 +7,7 @@ import {
   type ChangeEvent,
   type FormEvent,
 } from "react"
-import { ImagePlusIcon, XIcon } from "lucide-react"
+import { ImagePlusIcon, Loader2Icon, XIcon } from "lucide-react"
 import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
@@ -244,11 +244,13 @@ function TeamPhotoUrlList({
 
 export function CompanyBrandingForm() {
   const queryClient = useQueryClient()
-  const { data: brandingResponse } = useGetBranding()
+  const { data: brandingResponse, isLoading: isBrandingLoading } =
+    useGetBranding()
   const updateBranding = useUpdateBranding()
   const branding = brandingResponse?.data
   const [overview, setOverview] = useState("")
   const [benefits, setBenefits] = useState("")
+  const isFormLoading = isBrandingLoading || updateBranding.isPending
 
   useEffect(() => {
     setOverview(branding?.overview ?? "")
@@ -283,6 +285,10 @@ export function CompanyBrandingForm() {
     <form className="space-y-7" onSubmit={handleSubmit}>
       <Card>
         <CardContent className="space-y-6 p-4 md:p-6">
+          <fieldset
+            className="space-y-6 disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={isFormLoading}
+          >
       <BrandingHtmlInput
         id="company-overview"
         label="Tổng quan công ty (Overview)"
@@ -317,6 +323,7 @@ export function CompanyBrandingForm() {
           <Separator />
 
           <TeamPhotoUrlList initialTeamPhotoUrls={branding?.teamPhotoUrls ?? []} />
+          </fieldset>
         </CardContent>
       </Card>
     </form>

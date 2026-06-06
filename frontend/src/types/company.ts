@@ -14,8 +14,15 @@ export interface BrandingRequestDto {
   benefits?: string;
 }
 
-export interface CompanyBranding {
-  overview: string;
-  benefits: string;
-  teamPhotoUrls: string[];
+export interface CompanyGeneralRequestDto {
+  name?: string;
+  teamSize?: string;
+  websiteUrl?: string;
+  country?: string;
+  companyType?: string;
+}
+
+export interface CompanyGeneralResponseDto extends CompanyGeneralRequestDto {
+  logoUrl?: string;
+  coverUrl?: string;
 }
