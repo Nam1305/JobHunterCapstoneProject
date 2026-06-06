@@ -6,7 +6,6 @@ using JobHunter.Service.Interface.Persistence;
 using JobHunter.Service.Interface.UseCase;
 using JobHunter.Service.Utils;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 
 namespace JobHunter.Service.UseCase;
 
@@ -220,26 +219,9 @@ public class HrJobUseCase : IHrJobUseCase
             ExperienceRequirement = job.ExperienceRequirement,
             Level = string.Join(", ", job.JobLevels.Select(level => level.Title).Where(title => !string.IsNullOrWhiteSpace(title))),
             Tag = job.Tags?.RootElement.ToString(),
-            Requirements = ParseJsonValue(job.Requirements),
-            Responsibilities = ParseJsonValue(job.Responsibilities),
-            Benefits = ParseJsonValue(job.Benefits)
+            Requirements = job.Requirements,
+            Responsibilities = job.Responsibilities,
+            Benefits = job.Benefits
         };
-    }
-
-    private static JsonNode? ParseJsonValue(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return null;
-        }
-
-        try
-        {
-            return JsonNode.Parse(value);
-        }
-        catch (JsonException)
-        {
-            return JsonValue.Create(value);
-        }
     }
 }

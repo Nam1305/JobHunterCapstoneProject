@@ -1,5 +1,3 @@
-using System.Text.Json.Nodes;
-
 namespace JobHunter.Service.DTOs.Job;
 
 public class JobDetailDto
@@ -26,9 +24,9 @@ public class JobDetailDto
 
     public string? Tag { get; set; }
 
-    public JsonNode? Requirements { get; set; }
+    public string? Requirements { get; set; }
 
-    public JsonNode? Responsibilities { get; set; }
+    public string? Responsibilities { get; set; }
 
-    public JsonNode? Benefits { get; set; }
+    public string? Benefits { get; set; }
 }
