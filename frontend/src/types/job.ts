@@ -23,3 +23,4 @@ export interface JobPostDetail {
   Requirements: string;
   Benefits: string;
 }
+
