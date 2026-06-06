@@ -37,6 +37,33 @@ public class JobRepository : IJobRepository
             .FirstOrDefaultAsync(job => job.Id == id);
     }
 
+    public Task<JobSubcategory?> GetSubcategoryById(Guid id)
+    {
+        return _context.JobSubcategories
+            .AsNoTracking()
+            .FirstOrDefaultAsync(subcategory => subcategory.Id == id);
+    }
+
+    public Task<CompanyBranch?> GetBranchById(Guid companyId, Guid branchId)
+    {
+        return _context.CompanyBranches
+            .AsNoTracking()
+            .FirstOrDefaultAsync(branch => branch.CompanyId == companyId && branch.Id == branchId);
+    }
+
+    public Task<List<JobLevel>> GetJobLevelsByIds(List<Guid> ids)
+    {
+        return _context.JobLevels
+            .Where(level => ids.Contains(level.Id))
+            .ToListAsync();
+    }
+
+    public async Task CreateJob(Job job)
+    {
+        await _context.Jobs.AddAsync(job);
+        await _context.SaveChangesAsync();
+    }
+
     private IQueryable<Job> BuildQuery(Guid companyId, string? search, JobStatus? status)
     {
         var query = _context.Jobs

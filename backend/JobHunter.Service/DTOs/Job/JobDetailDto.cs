@@ -18,7 +18,7 @@ public class JobDetailDto
 
     public Guid? SubCategory { get; set; }
 
-    public Guid Brand { get; set; }
+    public Guid Branch { get; set; }
 
     public string? ExperienceRequirement { get; set; }
 

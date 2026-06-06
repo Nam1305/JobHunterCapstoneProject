@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JobHunter.WebAPI.Controllers;
 
-[Route("api/jobs")]
+[Route("api/Jobs")]
 [ApiController]
 public class JobController : ControllerBase
 {
@@ -31,6 +31,20 @@ public class JobController : ControllerBase
         var jobs = await _jobUseCase.GetJobs(userId, search, status, page, pageSize);
 
         return new ResponseBase<PageResult<JobPostingDto>>(jobs);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "HR")]
+    public async Task<ActionResult<ResponseBase<JobDetailDto>>> CreateJob([FromBody] CreateJobRequestDto request)
+    {
+        var userId = User.GetUserId();
+        var job = await _jobUseCase.CreateJob(userId, request);
+        var response = new ResponseBase<JobDetailDto>(job)
+        {
+            Status = StatusCodes.Status201Created
+        };
+
+        return CreatedAtAction(nameof(GetJobDetail), new { uid = job.Id }, response);
     }
 
     [HttpGet("{uid:guid}")]
