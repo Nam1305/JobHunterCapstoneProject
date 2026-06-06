@@ -1,8 +1,8 @@
 import { Suspense } from "react"
 
-import { JobCardList } from "./job-card-list"
-import { JobsSearch } from "./jobs-search"
-import { SelectedJobDetail } from "./selected-job-detail"
+import { JobCardList } from "./_components/job-card-list"
+import { JobsSearch } from "./_components/jobs-search"
+import { SelectedJobDetail } from "./_components/selected-job-detail"
 import {
   JobCardListSkeleton,
   JobsSearchSkeleton,

@@ -1,4 +1,5 @@
 import { BriefcaseIcon, Clock3, MapPin } from "lucide-react"
+import Link from "next/link"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -41,6 +42,16 @@ function getCompanyMark(name: string | null | undefined) {
     .toUpperCase()
 }
 
+function getCompanySlug(companyName: string | null | undefined) {
+  return (companyName ?? "company")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+}
+
 function formatDeadline(expiredAt: string | null) {
   if (!expiredAt) return "Chưa cập nhật"
 
@@ -75,11 +86,19 @@ export function SelectedJobDetail({ job }: { job: JobDetails | null }) {
               <div className="flex gap-3">
                 <div className="min-w-0 flex-1">
                   <h1 className="text-lg font-semibold sm:text-xl">
-                    {job.title ?? "Chưa cập nhật tiêu đề"}
+                    <Link
+                      className="hover:text-primary focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                      href={`/cong-viec/${job.slug}`}
+                    >
+                      {job.title ?? "Chưa cập nhật tiêu đề"}
+                    </Link>
                   </h1>
-                  <p className="mt-0.5 text-sm text-muted-foreground">
+                  <Link
+                    className="mt-0.5 inline-block text-sm text-muted-foreground hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                    href={`/cong-ty/${getCompanySlug(job.companyName)}`}
+                  >
                     {job.companyName}
-                  </p>
+                  </Link>
                 </div>
               </div>
               <p className="mt-2 flex items-center gap-1.5 text-sm">

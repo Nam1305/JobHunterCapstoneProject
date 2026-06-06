@@ -2,12 +2,12 @@ import {
   Building2,
   Clock,
   Globe,
-  Heart,
   MapPin,
   Plus,
   Users,
   WalletCards,
 } from "lucide-react"
+import Link from "next/link"
 import { Suspense } from "react"
 
 import { Button } from "@/components/ui/button"
@@ -16,6 +16,7 @@ import { Separator } from "@/components/ui/separator"
 import { UserContainer } from "@/components/user/user-container"
 import { getCompanyBySlug } from "@/data/companies"
 import { getJobs, type JobsListQuery } from "@/data/jobs"
+import { getImageUrl } from "@/lib/utils"
 import type { Company } from "@/types/company"
 import type { JobCard } from "@/types/job"
 
@@ -41,6 +42,16 @@ async function getCompanyJobs(companySlug: string) {
   })
 
   return result.items
+}
+
+function getCompanyMark(name: string | null | undefined) {
+  return (name ?? "CO")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase()
 }
 
 export default async function CompanyPage({
@@ -305,35 +316,37 @@ function CompanyJobCard({
   job: JobCard
 }) {
   const levels = job.jobLevels.join(", ")
+  const companyImage = getImageUrl(job.companyImage)
 
   return (
     <article className="rounded-xl border p-4">
-      <div className="grid grid-cols-[2.5rem_1fr_auto] gap-3">
+      <div className="grid grid-cols-[2.5rem_1fr] gap-3">
         <div className="flex size-10 items-center justify-center overflow-hidden rounded-md border bg-muted text-xs text-muted-foreground">
-          {job.companyImage ? (
+          {companyImage ? (
             <span
               aria-label={`${job.companyName} logo`}
               className="size-full bg-contain bg-center bg-no-repeat"
               role="img"
-              style={{ backgroundImage: `url(${job.companyImage})` }}
+              style={{ backgroundImage: `url("${companyImage}")` }}
             />
           ) : (
-            "LOGO"
+            getCompanyMark(job.companyName)
           )}
         </div>
 
         <div className="min-w-0">
           <h3 className="line-clamp-2 text-sm font-semibold leading-5">
-            {job.title ?? "Chưa cập nhật tiêu đề"}
+            <Link
+              className="hover:text-primary focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+              href={`/cong-viec/${job.slug ?? job.id}`}
+            >
+              {job.title ?? "Chưa cập nhật tiêu đề"}
+            </Link>
           </h3>
           <p className="mt-1 text-xs text-muted-foreground">
             {job.companyName}
           </p>
         </div>
-
-        <Button aria-label="Lưu công việc" size="icon-sm" variant="ghost">
-          <Heart />
-        </Button>
       </div>
 
       <p className="mt-4 flex items-center gap-2 text-sm">
