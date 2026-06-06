@@ -2,7 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "./api";
 import { ResponseEntity } from "@/types/base";
 import { ApiError } from "next/dist/server/api-utils";
-import { BrandingResponseDto } from "@/types/company";
+import { BrandingRequestDto, BrandingResponseDto } from "@/types/company";
 
 export const companyApi = {
     async addTeamImages(images: File[]): Promise<string[]>{
@@ -27,6 +27,10 @@ export const companyApi = {
     async getBranding(): Promise<ResponseEntity<BrandingResponseDto>> {
         const res = await api.get<ResponseEntity<BrandingResponseDto>>(`hr/company/branding`);
         return res.data;
+    },
+    async updateBranding(brandingData: BrandingRequestDto): Promise<ResponseEntity<null>> {
+        const res = await api.put<ResponseEntity<null>>(`hr/company/branding`, brandingData);
+        return res.data;
     }
 }
 
@@ -47,5 +51,11 @@ export function useGetBranding() {
         queryKey: ['companyBranding'],
         queryFn: () => companyApi.getBranding(),
         staleTime: 5 * 60 * 1000, // 5 minutes
+    });
+}
+
+export function useUpdateBranding() {
+    return useMutation<ResponseEntity<null>, ApiError, {brandingData: BrandingRequestDto}>({
+        mutationFn: ({ brandingData }) => companyApi.updateBranding(brandingData),
     });
 }

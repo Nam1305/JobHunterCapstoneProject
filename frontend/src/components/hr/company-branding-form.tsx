@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type ChangeEvent,
+  type FormEvent,
 } from "react"
 import { ImagePlusIcon, XIcon } from "lucide-react"
 import { useQueryClient } from "@tanstack/react-query"
@@ -14,9 +15,12 @@ import {
   useAddTeamImages,
   useDeleteTeamImage,
   useGetBranding,
+  useUpdateBranding,
 } from "@/api/company.api"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
 import { HtmlInput } from "@/components/hr/html-input"
 
 const COMPANY_BRANDING_QUERY_KEY = ["companyBranding"]
@@ -239,7 +243,9 @@ function TeamPhotoUrlList({
 }
 
 export function CompanyBrandingForm() {
+  const queryClient = useQueryClient()
   const { data: brandingResponse } = useGetBranding()
+  const updateBranding = useUpdateBranding()
   const branding = brandingResponse?.data
   const [overview, setOverview] = useState("")
   const [benefits, setBenefits] = useState("")
@@ -249,8 +255,34 @@ export function CompanyBrandingForm() {
     setBenefits(branding?.benefits ?? "")
   }, [branding])
 
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    try {
+      await updateBranding.mutateAsync({
+        brandingData: {
+          overview,
+          benefits,
+        },
+      })
+      toast.success("Cập nhật thương hiệu công ty thành công")
+      await queryClient.invalidateQueries({
+        queryKey: COMPANY_BRANDING_QUERY_KEY,
+      })
+    } catch {
+      toast.error("Không thể cập nhật thương hiệu công ty")
+    }
+  }
+
+  function handleReset() {
+    setOverview(branding?.overview ?? "")
+    setBenefits(branding?.benefits ?? "")
+  }
+
   return (
-    <form className="space-y-8">
+    <form className="space-y-7" onSubmit={handleSubmit}>
+      <Card>
+        <CardContent className="space-y-6 p-4 md:p-6">
       <BrandingHtmlInput
         id="company-overview"
         label="Tổng quan công ty (Overview)"
@@ -265,16 +297,28 @@ export function CompanyBrandingForm() {
         onChange={setBenefits}
       />
 
-      <TeamPhotoUrlList initialTeamPhotoUrls={branding?.teamPhotoUrls ?? []} />
-
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <Button type="button" variant="outline" size="lg">
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          disabled={updateBranding.isPending}
+          onClick={handleReset}
+        >
           Hủy
         </Button>
-        <Button type="submit" size="lg">
+        <Button type="submit" size="lg" disabled={updateBranding.isPending}>
           Lưu thay đổi
         </Button>
       </div>
+
+      
+
+          <Separator />
+
+          <TeamPhotoUrlList initialTeamPhotoUrls={branding?.teamPhotoUrls ?? []} />
+        </CardContent>
+      </Card>
     </form>
   )
 }

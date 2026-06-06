@@ -4,8 +4,18 @@ export interface TeamImages {
   urls: File[]
 }
 
-export interface BrandingResponseDto {
-    overview?: string;
-    benefits?: string;
+export interface BrandingResponseDto extends BrandingRequestDto {
+
     teamPhotoUrls?: string[];
+}
+
+export interface BrandingRequestDto {
+  overview?: string;
+  benefits?: string;
+}
+
+export interface CompanyBranding {
+  overview: string;
+  benefits: string;
+  teamPhotoUrls: string[];
 }
