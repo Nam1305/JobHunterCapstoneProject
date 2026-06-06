@@ -12,8 +12,8 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn, getImageUrl } from "@/lib/utils"
-import type { JobCard } from "@/types/job"
-import type { JobsResult } from "@/types/jobs"
+import type { JobCard, JobsResult } from "@/types/job"
+import { PageResult } from "@/types/base"
 
 function getPaginationItems(currentPage: number, totalPages: number) {
   if (totalPages <= 5) {
@@ -149,7 +149,7 @@ export function JobCardList({
   result,
   selectedSlug,
 }: {
-  result: JobsResult
+  result: PageResult<JobCard>
   selectedSlug: string
 }) {
   const router = useRouter()
@@ -213,9 +213,9 @@ export function JobCardList({
         <span>
           {jobs.length > 0
             ? `${pageStart + 1}-${Math.min(
-                pageStart + result.pageSize,
-                result.totalCount
-              )} / ${result.totalCount}`
+              pageStart + result.pageSize,
+              result.totalCount
+            )} / ${result.totalCount}`
             : "0 / 0"}
         </span>
         <div className="flex max-w-full items-center gap-1.5">

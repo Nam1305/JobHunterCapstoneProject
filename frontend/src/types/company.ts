@@ -1,4 +1,4 @@
-import { CompanyBranchResponse } from "./job"
+import type { CompanyBranchResponse } from "./job"
 
 export interface CompanyCard {
   id: string

@@ -36,11 +36,9 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { getImageUrl } from "@/lib/utils"
-import type { ResponseEntity } from "@/types/base"
-import type { CompanyCard } from "@/types/company"
-import type { JobCard } from "@/types/job"
+import { getTopCompanies } from "@/data/companies"
+import { getTopJobs } from "@/data/jobs"
 
-const API_BASE_URL = process.env.API_BASE_URL
 
 const tools = [
   {
@@ -115,31 +113,6 @@ function getCompanySlug(companyName: string | null | undefined) {
     .replace(/^-+|-+$/g, "")
 }
 
-async function fetchTopList<T>(path: string) {
-  try {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-      cache: "no-store",
-    })
-
-    if (!response.ok) {
-      return []
-    }
-
-    const payload = (await response.json()) as ResponseEntity<T[]>
-
-    return payload.data ?? []
-  } catch {
-    return []
-  }
-}
-
-function getTopJobs() {
-  return fetchTopList<JobCard>("/jobs/top?limit=9")
-}
-
-function getTopCompanies() {
-  return fetchTopList<CompanyCard>("/companies/top?limit=10")
-}
 
 export default async function UserHomePage() {
   const [topJobs, topCompanies] = await Promise.all([

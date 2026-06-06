@@ -51,7 +51,7 @@ import type {
   JobFilterOptions,
   JobsSearchState,
   SlugOption,
-} from "@/types/jobs"
+} from "@/types/job"
 
 function toggleValue(
   setter: Dispatch<SetStateAction<string[]>>,
@@ -111,7 +111,7 @@ function MultiFilterPopover({
                 className={cn(
                   "flex size-4 items-center justify-center rounded-[6px] border",
                   selected.includes(value) &&
-                    "border-primary bg-primary text-primary-foreground"
+                  "border-primary bg-primary text-primary-foreground"
                 )}
               >
                 {selected.includes(value) && <Check className="size-3" />}

@@ -5,12 +5,9 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { UserContainer } from "@/components/user/user-container"
+import { COMPANY_PAGE_SIZE, getCompanies } from "@/data/companies"
 import { getImageUrl } from "@/lib/utils"
-import type { PageResult, ResponseEntity } from "@/types/base"
 import type { CompanyCard as CompanyCardData } from "@/types/company"
-
-const API_BASE_URL = process.env.API_BASE_URL
-const PAGE_SIZE = 9
 
 type CompaniesSearchParams = Promise<{
   search?: string | string[]
@@ -46,55 +43,6 @@ function getCompanyHref({
   const query = params.toString()
 
   return query ? `/cong-ty?${query}` : "/cong-ty"
-}
-
-async function getCompanies({
-  page,
-  search,
-}: {
-  page: number
-  search: string
-}) {
-  const params = new URLSearchParams({
-    page: String(page),
-    pageSize: String(PAGE_SIZE),
-  })
-
-  if (search) params.set("search", search)
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/companies?${params}`, {
-      cache: "no-store",
-    })
-
-    if (!response.ok) {
-      return {
-        items: [],
-        page,
-        pageSize: PAGE_SIZE,
-        totalCount: 0,
-      } satisfies PageResult<CompanyCardData>
-    }
-
-    const payload =
-      (await response.json()) as ResponseEntity<PageResult<CompanyCardData>>
-
-    return (
-      payload.data ?? {
-        items: [],
-        page,
-        pageSize: PAGE_SIZE,
-        totalCount: 0,
-      }
-    )
-  } catch {
-    return {
-      items: [],
-      page,
-      pageSize: PAGE_SIZE,
-      totalCount: 0,
-    } satisfies PageResult<CompanyCardData>
-  }
 }
 
 function CompanyCard({
@@ -186,11 +134,20 @@ export default async function CompaniesPage({
   const pageParam = Number(getParamValue(params.page) ?? "1")
   const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1
   const companies = await getCompanies({ page, search })
-  const totalPages = Math.max(1, Math.ceil(companies.totalCount / PAGE_SIZE))
+  const totalPages = Math.max(
+    1,
+    companies.totalPage ||
+      Math.ceil(companies.totalCount / COMPANY_PAGE_SIZE)
+  )
   const currentPage = Math.min(page, totalPages)
   const startItem =
-    companies.totalCount === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1
-  const endItem = Math.min(currentPage * PAGE_SIZE, companies.totalCount)
+    companies.totalCount === 0
+      ? 0
+      : (currentPage - 1) * COMPANY_PAGE_SIZE + 1
+  const endItem = Math.min(
+    currentPage * COMPANY_PAGE_SIZE,
+    companies.totalCount
+  )
 
   return (
     <UserContainer className="py-6">

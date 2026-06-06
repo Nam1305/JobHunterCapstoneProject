@@ -9,31 +9,13 @@ import {
   SelectedJobDetailSkeleton,
 } from "@/components/skeleton/jobs-page-skeletons"
 import { UserContainer } from "@/components/user/user-container"
-import type { ResponseEntity } from "@/types/base"
-import type { JobDetails } from "@/types/job"
-import type {
-  JobFilterOptions,
-  JobsResult,
-  JobsSearchState,
-} from "@/types/jobs"
-
-const API_BASE_URL = "http://localhost:5000"
-const PAGE_SIZE = 10
-
-const emptyFilterOptions: JobFilterOptions = {
-  categories: [],
-  levels: [],
-  workTypes: [],
-  locations: [],
-}
-
-const emptyJobsResult: JobsResult = {
-  items: [],
-  page: 1,
-  pageSize: PAGE_SIZE,
-  totalCount: 0,
-  totalPage: 1,
-}
+import {
+  getJobBySlug,
+  getJobFilterOptions,
+  getJobs,
+  type JobsListQuery,
+} from "@/data/jobs"
+import type { JobsSearchState } from "@/types/job"
 
 type RawSearchParams = {
   [key: string]: string | string[] | undefined
@@ -45,7 +27,7 @@ type JobsQueryState = JobsSearchState & {
   jobSlug: string
 }
 
-type JobsListQueryState = Omit<JobsQueryState, "jobSlug">
+type JobsListQueryState = JobsListQuery
 
 function getStringParam(
   searchParams: RawSearchParams,
@@ -117,30 +99,6 @@ function getSearchKey(query: JobsQueryState) {
   })
 }
 
-function appendParams(url: URL, key: string, values: string[]) {
-  values.forEach((value) => {
-    url.searchParams.append(key, value)
-  })
-}
-
-async function getJobFilterOptions(): Promise<JobFilterOptions> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/jobs/filter-options`, {
-      cache: "no-store",
-    })
-
-    if (!response.ok) {
-      return emptyFilterOptions
-    }
-
-    const payload = (await response.json()) as ResponseEntity<JobFilterOptions>
-
-    return payload.success && payload.data ? payload.data : emptyFilterOptions
-  } catch {
-    return emptyFilterOptions
-  }
-}
-
 async function JobsSearchSection({
   query,
 }: {
@@ -155,37 +113,6 @@ async function JobsSearchSection({
       initialState={query}
     />
   )
-}
-
-async function getJobs(query: JobsListQueryState): Promise<JobsResult> {
-  try {
-    const url = new URL(`${API_BASE_URL}/api/jobs`)
-
-    if (query.search) url.searchParams.set("search", query.search)
-    if (query.location) url.searchParams.set("location", query.location)
-    if (query.companySlug) {
-      url.searchParams.set("companySlug", query.companySlug)
-    }
-
-    appendParams(url, "categorySlugs", query.categorySlugs)
-    appendParams(url, "subcategorySlugs", query.subcategorySlugs)
-    appendParams(url, "levelSlugs", query.levelSlugs)
-    appendParams(url, "workTypes", query.workTypes)
-    url.searchParams.set("page", String(query.page))
-    url.searchParams.set("pageSize", String(PAGE_SIZE))
-
-    const response = await fetch(url, { cache: "no-store" })
-
-    if (!response.ok) {
-      return emptyJobsResult
-    }
-
-    const payload = (await response.json()) as ResponseEntity<JobsResult>
-
-    return payload.success && payload.data ? payload.data : emptyJobsResult
-  } catch {
-    return emptyJobsResult
-  }
 }
 
 async function JobsBrowserSection({
@@ -209,27 +136,6 @@ async function JobsBrowserSection({
       </Suspense>
     </>
   )
-}
-
-async function getJobBySlug(slug: string): Promise<JobDetails | null> {
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/api/jobs/${encodeURIComponent(slug)}`,
-      {
-        cache: "no-store",
-      }
-    )
-
-    if (!response.ok) {
-      return null
-    }
-
-    const payload = (await response.json()) as ResponseEntity<JobDetails>
-
-    return payload.success ? payload.data : null
-  } catch {
-    return null
-  }
 }
 
 async function SelectedJobDetailSection({

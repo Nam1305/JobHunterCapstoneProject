@@ -14,56 +14,33 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { UserContainer } from "@/components/user/user-container"
-import type { ResponseEntity } from "@/types/base"
+import { getCompanyBySlug } from "@/data/companies"
+import { getJobs, type JobsListQuery } from "@/data/jobs"
 import type { Company } from "@/types/company"
 import type { JobCard } from "@/types/job"
-import type { JobsResult } from "@/types/jobs"
 
 import { TeamPhotoGallery } from "./team-photo-gallery"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
-
-async function getCompanyBySlug(slug: string) {
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/companies/${encodeURIComponent(slug)}`,
-      {
-        cache: "no-store",
-      }
-    )
-
-    if (!response.ok) {
-      return null
-    }
-
-    const payload = (await response.json()) as ResponseEntity<Company>
-
-    return payload.success ? payload.data : null
-  } catch {
-    return null
+function getEmptyJobsQuery(): JobsListQuery {
+  return {
+    search: "",
+    location: "",
+    companySlug: "",
+    categorySlugs: [],
+    subcategorySlugs: [],
+    levelSlugs: [],
+    workTypes: [],
+    page: 1,
   }
 }
 
 async function getCompanyJobs(companySlug: string) {
-  const params = new URLSearchParams({
-    companySlug
+  const result = await getJobs({
+    ...getEmptyJobsQuery(),
+    companySlug,
   })
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/jobs?${params}`, {
-      cache: "no-store",
-    })
-
-    if (!response.ok) {
-      return []
-    }
-
-    const payload = (await response.json()) as ResponseEntity<JobsResult>
-
-    return payload.success && payload.data ? payload.data.items : []
-  } catch {
-    return []
-  }
+  return result.items
 }
 
 export default async function CompanyPage({
