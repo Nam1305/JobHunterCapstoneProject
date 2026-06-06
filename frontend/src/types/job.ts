@@ -28,6 +28,7 @@ export interface JobDetails extends JobCard {
   companyId: string
   branchId: string | null
   subcategoryId: string | null
+  subcategorySlug?: string | null
   applicants: number
   responsibilities: string | null
   requirements: string | null

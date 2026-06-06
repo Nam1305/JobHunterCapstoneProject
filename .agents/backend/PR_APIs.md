@@ -163,6 +163,7 @@ type JobDetails = {
   companyId: string;
   branchId: string | null;
   subcategoryId: string | null;
+  subcategorySlug: string | null;
   applicants: number;
   responsibilities: string | null;
   requirements: string | null;
@@ -184,6 +185,7 @@ type JobDetails = {
         "companyId": "0935c729-42a3-4a58-9558-543d514386c9",
         "branchId": "34f7a76a-f881-47ed-9f14-8f7791208d0e",
         "subcategoryId": null,
+        "subcategorySlug": null,
         "title": "Chuyên viên Phân tích nghiệp vụ (BA)",
         "companyName": "Công ty Dịch vụ Số Bưu điện (Vietnam Post Digital)",
         "companyImage": null,
@@ -243,6 +245,7 @@ type JobDetails = {
   companyId: string;
   branchId: string | null;
   subcategoryId: string | null;
+  subcategorySlug: string | null;
   applicants: number;
   responsibilities: string | null;
   requirements: string | null;
@@ -262,6 +265,7 @@ type JobDetails = {
     "companyId": "fedf1fc7-1765-4df9-a39c-ef34c070054d",
     "branchId": "0f7a5db5-a75d-44a6-b167-fdc5c8b8d826",
     "subcategoryId": null,
+    "subcategorySlug": null,
     "title": "Content Marketing",
     "companyName": "DaouKiwoom Innovation",
     "companyImage": null,

@@ -83,6 +83,7 @@ public class JobRepository : IJobRepository
             .Include(j => j.Company)
             .Include(j => j.Branch)
             .Include(j => j.JobLevels)
+            .Include(j => j.Subcategory)
             .FirstOrDefaultAsync(j => j.Slug == slug);
     }
 

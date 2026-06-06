@@ -116,6 +116,7 @@ public class JobUseCase : IJobUseCase
         CompanyId = job.CompanyId,
         BranchId = job.BranchId,
         SubcategoryId = job.SubcategoryId,
+        SubcategorySlug = job.Subcategory?.Slug,
         Applicants = 0,
         Responsibilities = job.Responsibilities,
         Requirements = job.Requirements,

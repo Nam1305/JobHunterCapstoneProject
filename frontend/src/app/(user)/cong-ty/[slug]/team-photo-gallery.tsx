@@ -4,7 +4,6 @@ import { useMemo, useState } from "react"
 import Lightbox from "yet-another-react-lightbox"
 import {
   Counter,
-  Download,
   Fullscreen,
   Thumbnails,
   Zoom,
@@ -66,7 +65,7 @@ export function TeamPhotoGallery({ photos }: TeamPhotoGalleryProps) {
         close={() => setIndex(-1)}
         index={index}
         open={index >= 0}
-        plugins={[Counter, Download, Fullscreen, Thumbnails, Zoom]}
+        plugins={[Counter, Fullscreen, Thumbnails, Zoom]}
         slides={images.map((src) => ({
           download: src,
           src,
