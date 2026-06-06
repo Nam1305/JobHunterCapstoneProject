@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 
 const htmlInputTextareaClassName =
   "min-h-48 rounded-none border-0 bg-background px-4 py-3 font-mono text-sm shadow-none focus-visible:ring-0"
+
 type HtmlInputProps = Omit<ComponentProps<typeof Textarea>, "onChange"> & {
   onChange?: ComponentProps<typeof Textarea>["onChange"]
   onValueChange?: (value: string) => void
@@ -32,7 +33,6 @@ function EditorToolbarButton({
       variant="ghost"
       size="icon-sm"
       aria-label={label}
-      className="rounded-lg"
     >
       {children}
     </Button>
