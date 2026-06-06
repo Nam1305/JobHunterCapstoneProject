@@ -1,14 +1,7 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import {
-  BoldIcon,
-  CalendarIcon,
-  ChevronDownIcon,
-  ItalicIcon,
-  ListIcon,
-  ListOrderedIcon,
-} from "lucide-react"
+import { CalendarIcon, ChevronDownIcon } from "lucide-react"
 import { useState, type ReactNode } from "react"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -42,7 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
+import { HtmlInput as HtmlEditorInput } from "@/components/hr/html-input"
 
 const workTypes = ["Toàn thời gian", "Bán thời gian", "Remote", "Hybrid"]
 const categories = ["Công nghệ thông tin", "Marketing", "Kinh doanh", "Thiết kế"]
@@ -203,37 +196,13 @@ function HtmlInput({
   return (
     <FormItem>
       <FormLabel>{label}</FormLabel>
-      <div className="overflow-hidden rounded-xl border bg-background">
-        <div className="flex h-11 items-center gap-1 border-b bg-muted/50 px-3">
-          <Button type="button" variant="ghost" size="icon-sm" aria-label="In đậm">
-            <BoldIcon />
-          </Button>
-          <Button type="button" variant="ghost" size="icon-sm" aria-label="In nghiêng">
-            <ItalicIcon />
-          </Button>
-          <Button type="button" variant="ghost" size="icon-sm" aria-label="Danh sách">
-            <ListIcon />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Danh sách số"
-          >
-            <ListOrderedIcon />
-          </Button>
-        </div>
-        <FormControl>
-          <Textarea
-            name={field.name}
-            value={field.value}
-            className="min-h-48 rounded-none border-0 bg-background px-4 py-3 font-mono text-sm shadow-none focus-visible:ring-0"
-            spellCheck={false}
-            onBlur={field.onBlur}
-            onChange={(event) => field.onChange(event.target.value)}
-          />
-        </FormControl>
-      </div>
+      <HtmlEditorInput
+        name={field.name}
+        value={field.value}
+        onBlur={field.onBlur}
+        onValueChange={field.onChange}
+        textareaWrapper={(textarea) => <FormControl>{textarea}</FormControl>}
+      />
       <FormMessage />
     </FormItem>
   )

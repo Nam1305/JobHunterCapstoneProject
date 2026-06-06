@@ -5,16 +5,8 @@ import {
   useRef,
   useState,
   type ChangeEvent,
-  type ReactNode,
 } from "react"
-import {
-  BoldIcon,
-  ImagePlusIcon,
-  ItalicIcon,
-  ListIcon,
-  ListOrderedIcon,
-  XIcon,
-} from "lucide-react"
+import { ImagePlusIcon, XIcon } from "lucide-react"
 import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
@@ -25,7 +17,7 @@ import {
 } from "@/api/company.api"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { HtmlInput } from "@/components/hr/html-input"
 
 const COMPANY_BRANDING_QUERY_KEY = ["companyBranding"]
 
@@ -33,26 +25,6 @@ type UploadedTeamPhoto = {
   id: string
   file: File
   previewUrl: string
-}
-
-function EditorToolbarButton({
-  label,
-  children,
-}: {
-  label: string
-  children: ReactNode
-}) {
-  return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon-sm"
-      aria-label={label}
-      className="rounded-lg"
-    >
-      {children}
-    </Button>
-  )
 }
 
 function BrandingHtmlInput({
@@ -71,30 +43,7 @@ function BrandingHtmlInput({
       <Label htmlFor={id} className="text-base font-semibold">
         {label}
       </Label>
-      <div className="overflow-hidden rounded-xl border bg-background">
-        <div className="flex h-11 items-center gap-1 border-b bg-muted/50 px-3">
-          <EditorToolbarButton label="In đậm">
-            <BoldIcon />
-          </EditorToolbarButton>
-          <EditorToolbarButton label="In nghiêng">
-            <ItalicIcon />
-          </EditorToolbarButton>
-          <EditorToolbarButton label="Danh sách">
-            <ListIcon />
-          </EditorToolbarButton>
-          <EditorToolbarButton label="Danh sách số">
-            <ListOrderedIcon />
-          </EditorToolbarButton>
-        </div>
-        <Textarea
-          id={id}
-          name={id}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          className="min-h-48 rounded-none border-0 bg-background px-4 py-3 font-mono text-sm shadow-none focus-visible:ring-0"
-          spellCheck={false}
-        />
-      </div>
+      <HtmlInput id={id} name={id} value={value} onValueChange={onChange} />
     </div>
   )
 }
