@@ -11,10 +11,10 @@ namespace JobHunter.Service.UseCase;
 
 public class HrJobUseCase : IHrJobUseCase
 {
-    private readonly IJobRepository _jobRepository;
+    private readonly IHrJobRepository _jobRepository;
     private readonly IUserRepository _userRepository;
 
-    public HrJobUseCase(IJobRepository jobRepository, IUserRepository userRepository)
+    public HrJobUseCase(IHrJobRepository jobRepository, IUserRepository userRepository)
     {
         _jobRepository = jobRepository;
         _userRepository = userRepository;
@@ -151,6 +151,84 @@ public class HrJobUseCase : IHrJobUseCase
         }
 
         await _jobRepository.CreateJob(job);
+        job.Subcategory = subcategory;
+
+        return MapJobDetail(job);
+    }
+
+    public async Task<JobDetailDto> UpdateJob(Guid userId, Guid uid, CreateJobRequestDto request)
+    {
+        ValidateCreateJobRequest(request);
+
+        var user = await _userRepository.GetUserById(userId);
+        if (user == null)
+        {
+            throw new KeyNotFoundException("User not found");
+        }
+
+        if (!user.CompanyId.HasValue)
+        {
+            throw new InvalidOperationException("User is not assigned to a company");
+        }
+
+        var job = await _jobRepository.GetJobByIdForUpdate(uid);
+        if (job == null || job.CompanyId != user.CompanyId.Value)
+        {
+            throw new KeyNotFoundException("Job not found");
+        }
+
+        var subcategory = await _jobRepository.GetSubcategoryById(request.SubCategory);
+        if (subcategory == null || subcategory.CategoryId != request.Category)
+        {
+            throw new ArgumentException("Subcategory does not belong to category");
+        }
+
+        var branch = await _jobRepository.GetBranchById(user.CompanyId.Value, request.Branch);
+        if (branch == null)
+        {
+            throw new KeyNotFoundException("Branch not found");
+        }
+
+        var distinctLevelIds = request.ExperienceLevels.Distinct().ToList();
+        var levels = await _jobRepository.GetJobLevelsByIds(distinctLevelIds);
+        if (levels.Count != distinctLevelIds.Count)
+        {
+            throw new ArgumentException("One or more experience levels are invalid");
+        }
+
+        var expiredDate = request.ExperiedDate ?? throw new ArgumentException("Expired date is required");
+        var now = DateTimeOffset.UtcNow;
+        var tags = request.Tags?
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList() ?? new List<string>();
+        var shouldUpdateSlug = !string.Equals(job.Title, request.Name, StringComparison.Ordinal);
+
+        job.BranchId = branch.Id;
+        job.SubcategoryId = subcategory.Id;
+        job.Title = request.Name;
+        job.SalaryRange = request.SalaryRange;
+        job.WorkType = request.JobWorkType;
+        job.ExpiredAt = expiredDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        job.ExperienceRequirement = request.ExperienceRequirement;
+        job.Tags = JsonDocument.Parse(JsonSerializer.Serialize(tags));
+        job.Responsibilities = request.Responsibilities;
+        job.Requirements = request.Requirements;
+        job.Benefits = request.Benefits;
+        job.UpdatedAt = now;
+        job.UpdatedBy = userId.ToString();
+
+        if (shouldUpdateSlug)
+        {
+            job.Slug = $"{SlugGenerator.GenerateSlug(request.Name)}-{now.ToUnixTimeMilliseconds()}";
+        }
+
+        job.JobLevels.Clear();
+        foreach (var level in levels)
+        {
+            job.JobLevels.Add(level);
+        }
+
+        await _jobRepository.SaveChanges();
         job.Subcategory = subcategory;
 
         return MapJobDetail(job);

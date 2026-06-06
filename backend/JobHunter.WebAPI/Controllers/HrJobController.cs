@@ -47,6 +47,16 @@ public class HrJobController : ControllerBase
         return CreatedAtAction(nameof(GetJobDetail), new { uid = job.Id }, response);
     }
 
+    [HttpPut("{uid:guid}")]
+    [Authorize(Roles = "HR")]
+    public async Task<ActionResult<ResponseBase<JobDetailDto>>> UpdateJob(Guid uid, [FromBody] CreateJobRequestDto request)
+    {
+        var userId = User.GetUserId();
+        var job = await _jobUseCase.UpdateJob(userId, uid, request);
+
+        return new ResponseBase<JobDetailDto>(job);
+    }
+
     [HttpGet("{uid:guid}")]
     [Authorize(Roles = "HR")]
     public async Task<ActionResult<ResponseBase<JobDetailDto>>> GetJobDetail(Guid uid)

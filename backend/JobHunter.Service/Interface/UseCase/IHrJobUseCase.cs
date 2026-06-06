@@ -11,4 +11,6 @@ public interface IHrJobUseCase
     Task<JobDetailDto> GetJobDetailsById(Guid uid);
 
     Task<JobDetailDto> CreateJob(Guid userId, CreateJobRequestDto request);
+
+    Task<JobDetailDto> UpdateJob(Guid userId, Guid uid, CreateJobRequestDto request);
 }

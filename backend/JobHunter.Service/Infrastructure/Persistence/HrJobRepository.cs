@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace JobHunter.Service.Infrastructure.Persistence;
 
-public class JobRepository : IJobRepository
+public class HrJobRepository : IHrJobRepository
 {
     private readonly JobhunterContext _context;
 
-    public JobRepository(JobhunterContext context)
+    public HrJobRepository(JobhunterContext context)
     {
         _context = context;
     }
@@ -32,6 +32,14 @@ public class JobRepository : IJobRepository
     {
         return _context.Jobs
             .AsNoTracking()
+            .Include(job => job.Subcategory)
+            .Include(job => job.JobLevels)
+            .FirstOrDefaultAsync(job => job.Id == id);
+    }
+
+    public Task<Job?> GetJobByIdForUpdate(Guid id)
+    {
+        return _context.Jobs
             .Include(job => job.Subcategory)
             .Include(job => job.JobLevels)
             .FirstOrDefaultAsync(job => job.Id == id);
@@ -62,6 +70,11 @@ public class JobRepository : IJobRepository
     {
         await _context.Jobs.AddAsync(job);
         await _context.SaveChangesAsync();
+    }
+
+    public Task SaveChanges()
+    {
+        return _context.SaveChangesAsync();
     }
 
     private IQueryable<Job> BuildQuery(Guid companyId, string? search, JobStatus? status)

@@ -3,13 +3,15 @@ using JobHunter.Domain.Entities;
 
 namespace JobHunter.Service.Interface.Persistence;
 
-public interface IJobRepository
+public interface IHrJobRepository
 {
     Task<List<Job>> GetJobs(Guid companyId, string? search, JobStatus? status, int page, int pageSize);
 
     Task<int> CountJobs(Guid companyId, string? search, JobStatus? status);
 
     Task<Job?> GetJobById(Guid id);
+
+    Task<Job?> GetJobByIdForUpdate(Guid id);
 
     Task<JobSubcategory?> GetSubcategoryById(Guid id);
 
@@ -18,4 +20,6 @@ public interface IJobRepository
     Task<List<JobLevel>> GetJobLevelsByIds(List<Guid> ids);
 
     Task CreateJob(Job job);
+
+    Task SaveChanges();
 }

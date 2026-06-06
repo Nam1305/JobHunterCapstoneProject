@@ -19,7 +19,7 @@ public static class ServiceCollectionExtensions
         // Repositories
         services.AddScoped<ITokenRepository, TokenRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IJobRepository, JobRepository>();
+        services.AddScoped<IHrJobRepository, HrJobRepository>();
         services.AddScoped<IHrCompanyRepository, HrCompanyRepository>();
        
         // Use cases
