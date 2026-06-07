@@ -21,12 +21,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IHrJobRepository, HrJobRepository>();
         services.AddScoped<IHrCompanyRepository, HrCompanyRepository>();
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
        
         // Use cases
         services.AddScoped<IAuthUseCase, AuthUseCase>();
         services.AddScoped<IUserUseCase, UserUseCase>();
         services.AddScoped<IHrJobUseCase, HrJobUseCase>();
         services.AddScoped<IHrCompanyUseCase, HrCompanyUseCase>();
+        services.AddScoped<ICategoryUseCase, CategoryUseCase>();
         
         // Services
         services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
