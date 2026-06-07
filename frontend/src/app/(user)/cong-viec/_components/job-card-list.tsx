@@ -12,7 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn, getImageUrl } from "@/lib/utils"
-import type { JobCard, JobsResult } from "@/types/job"
+import type { JobCard } from "@/types/job"
 import { PageResult } from "@/types/base"
 
 function getPaginationItems(currentPage: number, totalPages: number) {

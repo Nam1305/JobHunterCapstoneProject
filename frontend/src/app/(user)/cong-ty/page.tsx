@@ -1,4 +1,4 @@
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import Form from "next/form"
 import Link from "next/link"
 
@@ -9,10 +9,14 @@ import { COMPANY_PAGE_SIZE, getCompanies } from "@/data/companies"
 import { getImageUrl } from "@/lib/utils"
 import type { CompanyCard as CompanyCardData } from "@/types/company"
 
+import { CompanyPagination } from "./company-pagination"
+
 type CompaniesSearchParams = Promise<{
   search?: string | string[]
   page?: string | string[]
 }>
+
+type PaginationItem = number | "start-ellipsis" | "end-ellipsis"
 
 function getParamValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value
@@ -28,21 +32,23 @@ function getCompanyMark(name: string) {
     .toUpperCase()
 }
 
-function getCompanyHref({
-  page,
-  search,
-}: {
-  page: number
-  search: string
-}) {
-  const params = new URLSearchParams()
+function getPaginationItems(
+  currentPage: number,
+  totalPages: number
+): PaginationItem[] {
+  if (totalPages <= 5) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1)
+  }
 
-  if (search) params.set("search", search)
-  if (page > 1) params.set("page", String(page))
+  if (currentPage <= 3) {
+    return [1, 2, 3, "end-ellipsis", totalPages]
+  }
 
-  const query = params.toString()
+  if (currentPage >= totalPages - 2) {
+    return [1, "start-ellipsis", totalPages - 2, totalPages - 1, totalPages]
+  }
 
-  return query ? `/cong-ty?${query}` : "/cong-ty"
+  return [1, "start-ellipsis", currentPage, "end-ellipsis", totalPages]
 }
 
 function CompanyCard({
@@ -137,7 +143,7 @@ export default async function CompaniesPage({
   const totalPages = Math.max(
     1,
     companies.totalPage ||
-      Math.ceil(companies.totalCount / COMPANY_PAGE_SIZE)
+    Math.ceil(companies.totalCount / COMPANY_PAGE_SIZE)
   )
   const currentPage = Math.min(page, totalPages)
   const startItem =
@@ -148,6 +154,7 @@ export default async function CompaniesPage({
     currentPage * COMPANY_PAGE_SIZE,
     companies.totalCount
   )
+  const paginationItems = getPaginationItems(currentPage, totalPages)
 
   return (
     <UserContainer className="py-6">
@@ -200,47 +207,12 @@ export default async function CompaniesPage({
           Hiển thị {startItem}-{endItem} trong {companies.totalCount} công ty
         </p>
 
-        <div className="flex items-center gap-2">
-          <Button
-            aria-label="Trang trước"
-            asChild={currentPage > 1}
-            disabled={currentPage <= 1}
-            size="icon"
-            type="button"
-            variant="outline"
-          >
-            {currentPage > 1 ? (
-              <Link
-                href={getCompanyHref({ page: currentPage - 1, search })}
-              >
-                <ChevronLeft className="size-5" />
-              </Link>
-            ) : (
-              <ChevronLeft className="size-5" />
-            )}
-          </Button>
-          <Button aria-current="page" size="icon" type="button">
-            {currentPage}
-          </Button>
-          <Button
-            aria-label="Trang sau"
-            asChild={currentPage < totalPages}
-            disabled={currentPage >= totalPages}
-            size="icon"
-            type="button"
-            variant="outline"
-          >
-            {currentPage < totalPages ? (
-              <Link
-                href={getCompanyHref({ page: currentPage + 1, search })}
-              >
-                <ChevronRight className="size-5" />
-              </Link>
-            ) : (
-              <ChevronRight className="size-5" />
-            )}
-          </Button>
-        </div>
+        <CompanyPagination
+          currentPage={currentPage}
+          paginationItems={paginationItems}
+          search={search}
+          totalPages={totalPages}
+        />
       </footer>
     </UserContainer>
   )
