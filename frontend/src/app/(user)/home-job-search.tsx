@@ -39,7 +39,7 @@ export function HomeJobSearch() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            className="h-10 pl-9"
+            className="pl-9"
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Tìm kiếm công việc, công ty, kỹ năng..."
             type="search"
@@ -48,7 +48,7 @@ export function HomeJobSearch() {
         </div>
         <div className="w-full shrink-0 sm:w-48">
           <Select value={location} onValueChange={setLocation}>
-            <SelectTrigger className="h-10 w-full">
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Địa điểm" />
             </SelectTrigger>
             <SelectContent>

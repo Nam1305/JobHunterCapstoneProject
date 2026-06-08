@@ -231,13 +231,13 @@ export default async function UserHomePage() {
               const companyImage = getImageUrl(job.companyImage)
 
               return (
-                <Card key={job.id} className="group relative">
+                <Card key={job.id} className="group relative h-full">
                   <Link
                     aria-label={`Xem việc làm ${job.title ?? ""}`}
                     className="absolute inset-0 rounded-lg focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
                     href={`/cong-viec/${job.slug ?? job.id}`}
                   />
-                  <CardContent className="relative">
+                  <CardContent className="relative flex h-full flex-col">
                     <div className="flex items-start gap-3">
                       <Link
                         className="relative z-10 flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-background text-xs font-semibold text-muted-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
@@ -277,43 +277,56 @@ export default async function UserHomePage() {
                       </div>
                     </div>
 
-                    <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-muted-foreground">
-                      <p className="col-span-2 flex items-center gap-1.5 text-sm font-semibold text-foreground">
-                        <WalletCards className="size-3.5" />
-                        {job.salaryRange ?? "Thương lượng"}
+                    <div className="mt-3 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-4 gap-y-2 text-xs text-muted-foreground">
+                      <p className="col-span-2 flex min-w-0 items-center gap-1.5 text-sm font-semibold text-foreground">
+                        <WalletCards className="size-3.5 shrink-0" />
+                        <span className="min-w-0 truncate">
+                          {job.salaryRange ?? "Thương lượng"}
+                        </span>
                       </p>
-                      <p className="flex items-center gap-1.5">
-                        <MapPin className="size-3" />
-                        {job.city || "Chưa cập nhật"}
+                      <p className="flex min-w-0 items-center gap-1.5">
+                        <MapPin className="size-3 shrink-0" />
+                        <span className="min-w-0 truncate">
+                          {job.city || "Chưa cập nhật"}
+                        </span>
                       </p>
-                      <p className="flex items-center gap-1.5">
-                        <ChartBar className="size-3" />
-                        {job.jobLevels.join(", ") || "Chưa cập nhật"}
+                      <p className="flex min-w-0 items-center gap-1.5">
+                        <ChartBar className="size-3 shrink-0" />
+                        <span className="min-w-0 truncate">
+                          {job.jobLevels.join(", ") || "Chưa cập nhật"}
+                        </span>
                       </p>
-                      <p className="flex items-center gap-1.5">
-                        <Clock className="size-3" />
-                        {job.workType ?? "Chưa cập nhật"}
+                      <p className="flex min-w-0 items-center gap-1.5">
+                        <Clock className="size-3 shrink-0" />
+                        <span className="min-w-0 truncate">
+                          {job.workType ?? "Chưa cập nhật"}
+                        </span>
                       </p>
-                      <p className="flex items-center gap-1.5">
-                        <BriefcaseBusiness className="size-3" />
-                        {job.experienceRequirement ?? "Chưa cập nhật"}
+                      <p className="flex min-w-0 items-center gap-1.5">
+                        <BriefcaseBusiness className="size-3 shrink-0" />
+                        <span className="min-w-0 truncate">
+                          {job.experienceRequirement ?? "Chưa cập nhật"}
+                        </span>
                       </p>
                     </div>
 
                     {job.tags.length > 0 ? (
-                      <div className="mt-3 flex flex-wrap gap-1.5">
+                      <div className="my-3 flex min-w-0 flex-wrap gap-1.5">
                         {getDisplayJobTags(job.tags).map((tag, index) => (
                           <Badge
                             key={`${tag.label}-${index}`}
+                            className="max-w-full"
                             variant="outline"
                           >
-                            {tag.label}
+                            <span className="min-w-0 truncate">
+                              {tag.label}
+                            </span>
                           </Badge>
                         ))}
                       </div>
                     ) : null}
 
-                    <div className="mt-3 flex items-center justify-between border-t pt-3">
+                    <div className="mt-auto flex items-center justify-between border-t pt-3">
                       <p className="text-xs text-muted-foreground">
                         {formatDaysUntil(job.expiredAt)}
                       </p>
