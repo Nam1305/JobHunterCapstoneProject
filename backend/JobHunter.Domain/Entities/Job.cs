@@ -38,4 +38,6 @@ public partial class Job : BaseEntity
     public virtual JobSubcategory? Subcategory { get; set; }
 
     public virtual ICollection<JobLevel> JobLevels { get; set; } = new List<JobLevel>();
+
+    public virtual ICollection<Application> Applications { get; set; } = new List<Application>();
 }
