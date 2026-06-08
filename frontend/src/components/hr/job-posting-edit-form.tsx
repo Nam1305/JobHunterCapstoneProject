@@ -3,13 +3,17 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { AxiosError } from "axios"
-import { CalendarIcon, ChevronDownIcon } from "lucide-react"
-import { useEffect, useState, type ReactNode } from "react"
+import { ChevronDownIcon } from "lucide-react"
+import { useEffect, useMemo, useState, type ReactNode } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
 
-import { jobApi, useJobPostingDetailQuery } from "@/api/job.api"
+import {
+  jobApi,
+  useCategoriesQuery,
+  useJobPostingDetailQuery,
+} from "@/api/job.api"
 import { HtmlInput as HtmlEditorInput } from "@/components/hr/html-input"
 import { Button } from "@/components/ui/button"
 import {
@@ -43,35 +47,17 @@ import {
 import type { ResponseEntity } from "@/types/base"
 import type {
   JobPostDetail,
-  JobPostingCategory,
+  JobPostingCategory as Category,
   JobPostingOption,
   UpdateJobPostRequest,
 } from "@/types/job"
 
 const workTypes = ["Toàn thời gian", "Bán thời gian", "Remote", "Hybrid"]
-const jobCategories: JobPostingCategory[] = [
-  {
-    id: "cat-1",
-    name: "Công nghệ thông tin",
-    subcategories: [
-      { id: "sub-11", name: "C# / .NET" },
-      { id: "sub-12", name: "Golang" },
-      { id: "sub-13", name: "React / Frontend" },
-    ],
-  },
-  {
-    id: "cat-2",
-    name: "Kinh doanh & Marketing",
-    subcategories: [
-      { id: "sub-21", name: "Marketing Mix 7Ps" },
-      { id: "sub-22", name: "Business Model Canvas" },
-    ],
-  },
-]
 const branches = ["Hồ Chí Minh", "Hà Nội", "Đà Nẵng"]
 const experienceLevels = ["Intern", "Fresher", "Junior", "Middle"]
 const workTypeOptions = workTypes.map((name) => ({ id: name, name }))
 const branchOptions = branches.map((name) => ({ id: name, name }))
+const emptyCategoryOptions: Category[] = []
 const emptySubCategoryOptions: JobPostingOption[] = []
 
 const requiredMessage = "Vui lòng nhập thông tin này"
@@ -146,8 +132,12 @@ function findOptionValue(options: JobPostingOption[], value: string) {
   )
 }
 
-function findSubCategoryValue(categoryValue: string, subCategoryValue: string) {
-  const category = jobCategories.find(
+function findSubCategoryValue(
+  categories: Category[],
+  categoryValue: string,
+  subCategoryValue: string
+) {
+  const category = categories.find(
     (item) => item.id === categoryValue || item.name === categoryValue
   )
 
@@ -156,8 +146,8 @@ function findSubCategoryValue(categoryValue: string, subCategoryValue: string) {
     : subCategoryValue
 }
 
-function toFormValues(job: JobPostDetail): FormValues {
-  const category = findOptionValue(jobCategories, job.category ?? "")
+function toFormValues(job: JobPostDetail, categories: Category[]): FormValues {
+  const category = findOptionValue(categories, job.category ?? "")
 
   return {
     title: job.name ?? "",
@@ -165,7 +155,11 @@ function toFormValues(job: JobPostDetail): FormValues {
     jobWorkType: job.jobWorkType ?? "",
     expiredDate: toDateInputValue(job.experiedDate),
     category,
-    subCategory: findSubCategoryValue(category, job.subCategory ?? ""),
+    subCategory: findSubCategoryValue(
+      categories,
+      category,
+      job.subCategory ?? ""
+    ),
     branch: job.branch ?? "",
     experienceLevels: job.experienceLevels ?? [],
     experienceYears: job.experienceReuirement ?? "",
@@ -226,9 +220,11 @@ function PostingSelect({
 }) {
   return (
     <Select disabled={disabled} value={value} onValueChange={onChange}>
-      <SelectTrigger className="h-11 w-full bg-muted/50 px-4 text-base md:text-sm">
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
+      <FormControl>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+      </FormControl>
       <SelectContent>
         {options.map((option) => (
           <SelectItem key={option.id} value={option.id}>
@@ -345,6 +341,8 @@ export function JobPostingEditForm({
     error: jobPostingDetailError,
     isLoading: isJobPostingDetailLoading,
   } = useJobPostingDetailQuery(isEditMode ? jobId ?? "" : "")
+  const { data: categoriesData, isLoading: isCategoriesLoading } =
+    useCategoriesQuery()
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -368,7 +366,7 @@ export function JobPostingEditForm({
       queryClient.invalidateQueries({ queryKey: ["jobPostingDetail", jobId] })
 
       if (response.data) {
-        form.reset(toFormValues(response.data))
+        form.reset(toFormValues(response.data, categoriesData ?? []))
       }
 
       toast.success(response.message || "Cập nhật tin tuyển dụng thành công")
@@ -384,9 +382,9 @@ export function JobPostingEditForm({
 
   useEffect(() => {
     if (isEditMode && jobPostingDetail?.data) {
-      form.reset(toFormValues(jobPostingDetail.data))
+      form.reset(toFormValues(jobPostingDetail.data, categoriesData ?? []))
     }
-  }, [form, isEditMode, jobPostingDetail])
+  }, [categoriesData, form, isEditMode, jobPostingDetail])
 
   const onSubmit = (values: FormValues) => {
     form.clearErrors("root")
@@ -398,9 +396,11 @@ export function JobPostingEditForm({
 
   const isSubmitting = updateJobPostingMutation.isPending
   const isFormDisabled = isJobPostingDetailLoading || isSubmitting
+  const categories = categoriesData ?? emptyCategoryOptions
   const selectedCategoryId = form.watch("category")
-  const selectedCategory = jobCategories.find(
-    (category) => category.id === selectedCategoryId
+  const selectedCategory = useMemo(
+    () => categories.find((category) => category.id === selectedCategoryId),
+    [categories, selectedCategoryId]
   )
   const subCategoryOptions =
     selectedCategory?.subcategories ?? emptySubCategoryOptions
@@ -414,6 +414,7 @@ export function JobPostingEditForm({
 
     if (
       currentSubCategory &&
+      selectedCategory &&
       !subCategoryOptions.some((option) => option.id === currentSubCategory)
     ) {
       form.setValue("subCategory", "", {
@@ -421,7 +422,7 @@ export function JobPostingEditForm({
         shouldValidate: true,
       })
     }
-  }, [form, selectedCategoryId, subCategoryOptions])
+  }, [form, selectedCategory, subCategoryOptions])
 
   return (
     <Form {...form}>
@@ -463,11 +464,7 @@ export function JobPostingEditForm({
               <FormItem>
                 <FormLabel>Tên công việc</FormLabel>
                 <FormControl>
-                  <Input
-                    disabled={isFormDisabled}
-                    className="h-11 bg-muted/50 px-4 text-base md:text-sm"
-                    {...field}
-                  />
+                  <Input disabled={isFormDisabled} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -481,11 +478,7 @@ export function JobPostingEditForm({
               <FormItem>
                 <FormLabel>Mức lương</FormLabel>
                 <FormControl>
-                  <Input
-                    disabled={isFormDisabled}
-                    className="h-11 bg-muted/50 px-4 text-base md:text-sm"
-                    {...field}
-                  />
+                  <Input disabled={isFormDisabled} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -518,15 +511,7 @@ export function JobPostingEditForm({
                 <FormItem>
                   <FormLabel>Ngày hết hạn</FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <CalendarIcon className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        disabled={isFormDisabled}
-                        type="date"
-                        className="h-11 bg-background pl-11 text-base md:text-sm"
-                        {...field}
-                      />
-                    </div>
+                    <Input disabled={isFormDisabled} type="date" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -544,16 +529,13 @@ export function JobPostingEditForm({
                 <FormItem>
                   <FormLabel>Danh mục</FormLabel>
                   <PostingSelect
-                    disabled={isFormDisabled}
-                    options={jobCategories}
+                    disabled={isFormDisabled || isCategoriesLoading}
+                    options={categories}
                     placeholder="Chọn danh mục"
                     value={field.value}
                     onChange={(value) => {
                       field.onChange(value)
-                      form.setValue("subCategory", "", {
-                        shouldDirty: true,
-                        shouldValidate: true,
-                      })
+                      form.setValue("subCategory", "")
                     }}
                   />
                   <FormMessage />
@@ -568,9 +550,15 @@ export function JobPostingEditForm({
                 <FormItem>
                   <FormLabel>Danh mục con</FormLabel>
                   <PostingSelect
-                    disabled={isFormDisabled || !selectedCategoryId}
+                    disabled={
+                      isFormDisabled || isCategoriesLoading || !selectedCategory
+                    }
                     options={subCategoryOptions}
-                    placeholder="Chọn danh mục trước"
+                    placeholder={
+                      selectedCategoryId
+                        ? "Chọn danh mục con..."
+                        : "Vui lòng chọn danh mục chính"
+                    }
                     value={field.value}
                     onChange={field.onChange}
                   />
@@ -622,11 +610,7 @@ export function JobPostingEditForm({
                 <FormItem>
                   <FormLabel>Số năm kinh nghiệm</FormLabel>
                   <FormControl>
-                    <Input
-                      disabled={isFormDisabled}
-                      className="h-11 bg-muted/50 px-4 text-base md:text-sm"
-                      {...field}
-                    />
+                    <Input disabled={isFormDisabled} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -641,11 +625,7 @@ export function JobPostingEditForm({
               <FormItem>
                 <FormLabel>Tags</FormLabel>
                 <FormControl>
-                  <Input
-                    disabled={isFormDisabled}
-                    className="h-11 bg-background px-4 text-base md:text-sm"
-                    {...field}
-                  />
+                  <Input disabled={isFormDisabled} {...field} />
                 </FormControl>
                 <p className="text-sm text-muted-foreground">
                   Nhấn Enter hoặc dấu phẩy để thêm tag.
