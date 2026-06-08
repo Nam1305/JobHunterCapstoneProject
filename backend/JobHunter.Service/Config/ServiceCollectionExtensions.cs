@@ -22,6 +22,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IHrJobRepository, HrJobRepository>();
         services.AddScoped<IHrCompanyRepository, HrCompanyRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<IExperienceLevelRepository, ExperienceLevelRepository>();
        
         // Use cases
         services.AddScoped<IAuthUseCase, AuthUseCase>();
@@ -29,6 +30,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IHrJobUseCase, HrJobUseCase>();
         services.AddScoped<IHrCompanyUseCase, HrCompanyUseCase>();
         services.AddScoped<ICategoryUseCase, CategoryUseCase>();
+        services.AddScoped<IExperienceLevelUseCase, ExperienceLevelUseCase>();
         
         // Services
         services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
