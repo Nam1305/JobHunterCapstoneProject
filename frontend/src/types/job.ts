@@ -9,18 +9,28 @@ export interface JobPosting {
 }
 
 export interface JobPostDetail {
-  Name: string;
-  SalaryRange: string;
-  JobWorkType: string;
-  ExperiedDate: string; // Lưu ý: Backend đang viết sai chính tả từ "Expired"
-  category: string; // GUID
-  subCategory: string; // GUID
+  name: string;
+  salaryRange: string;
+  jobWorkType: string;
+  experiedDate: string;
+  category: string;
+  subCategory: string;
   branch: string;
-  experienceLevels: string[]; // Mảng các ID
-  ExperienceRequirement: string;
+  experienceLevels: string[];
+  experienceReuirement: string;
   tags: string;
-  Responsibilities: string;
-  Requirements: string;
-  Benefits: string;
+  reponsibilities: string;
+  requirements: string;
+  benefits: string;
 }
 
+export type UpdateJobPostRequest = JobPostDetail;
+
+export interface JobPostingOption {
+  id: string;
+  name: string;
+}
+
+export interface JobPostingCategory extends JobPostingOption {
+  subcategories: JobPostingOption[];
+}

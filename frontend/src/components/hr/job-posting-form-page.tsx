@@ -15,11 +15,12 @@ import {
 
 interface JobPostingFormPageProps {
   mode: "create" | "edit"
+  jobId?: string
 }
 
 const jobPostingListHref = "/hr/dang-tin-tuyen-dung"
 
-export function JobPostingFormPage({ mode }: JobPostingFormPageProps) {
+export function JobPostingFormPage({ jobId, mode }: JobPostingFormPageProps) {
   const router = useRouter()
   const pageTitle = mode === "create" ? "Tạo tin mới" : "Chỉnh sửa tin"
 
@@ -42,6 +43,7 @@ export function JobPostingFormPage({ mode }: JobPostingFormPageProps) {
       </div>
 
       <JobPostingEditForm
+        jobId={jobId}
         mode={mode}
         onCancel={() => router.push(jobPostingListHref)}
       />

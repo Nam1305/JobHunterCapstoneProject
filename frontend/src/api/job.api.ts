@@ -1,6 +1,6 @@
 import { PageResult, ResponseEntity } from "@/types/base";
 import api from "./api";
-import { JobPostDetail, JobPosting } from "@/types/job";
+import { JobPostDetail, JobPosting, UpdateJobPostRequest } from "@/types/job";
 import { useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
@@ -16,13 +16,17 @@ export interface getJobPostingsParams {
 
 export const jobApi = {
     async getJobPostings(params: getJobPostingsParams) {
-        const res = await api.get<ResponseEntity<PageResult<JobPosting>>>("/jobs", {
+        const res = await api.get<ResponseEntity<PageResult<JobPosting>>>("hr/jobs", {
             params,
         });
         return res.data;
     },
     async getJobPostingDetail(jobId: string) {
-        const res = await api.get<ResponseEntity<JobPostDetail>>(`/jobs/${jobId}`);
+        const res = await api.get<ResponseEntity<JobPostDetail>>(`hr/jobs/${jobId}`);
+        return res.data;
+    },
+    async updateJobPosting(jobId: string, payload: UpdateJobPostRequest) {
+        const res = await api.put<ResponseEntity<JobPostDetail>>(`hr/jobs/${jobId}`, payload);
         return res.data;
     }
 };
@@ -38,5 +42,6 @@ export function useJobPostingDetailQuery(jobId: string) {
     return useQuery<ResponseEntity<JobPostDetail>, AxiosError>({
         queryKey: ["jobPostingDetail", jobId],
         queryFn: () => jobApi.getJobPostingDetail(jobId),
+        enabled: Boolean(jobId),
     });
 }
