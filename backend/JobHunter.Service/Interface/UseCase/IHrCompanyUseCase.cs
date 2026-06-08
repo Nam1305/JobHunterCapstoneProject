@@ -18,4 +18,6 @@ public interface IHrCompanyUseCase
     public Task UpdateGeneralInfoAsync(Guid userId, EditGeneralDto request);
 
     public Task<GeneralResponseDto> GetGeneralInfoAsync(Guid userId);
+
+    public Task<List<BranchDto>> GetBranchesByUserIdAsync(Guid userId);
 }
