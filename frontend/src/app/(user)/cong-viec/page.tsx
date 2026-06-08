@@ -17,6 +17,21 @@ import {
 } from "@/data/jobs"
 import type { JobsSearchState } from "@/types/job"
 
+/*
+ * Component tree
+ * JobsPage
+ * ├─ Suspense(JobsSearchSkeleton)
+ * │  └─ JobsSearchSection
+ * │     └─ JobsSearch
+ * └─ UserContainer
+ *    └─ Suspense(JobCardListSkeleton)
+ *       └─ JobsBrowserSection
+ *          ├─ JobCardList
+ *          └─ Suspense(SelectedJobDetailSkeleton)
+ *             └─ SelectedJobDetailSection
+ *                └─ SelectedJobDetail
+ */
+
 type RawSearchParams = {
   [key: string]: string | string[] | undefined
 }
@@ -99,6 +114,7 @@ function getSearchKey(query: JobsQueryState) {
   })
 }
 
+// Fetches filter options and renders the search/filter bar.
 async function JobsSearchSection({
   query,
 }: {
@@ -115,6 +131,7 @@ async function JobsSearchSection({
   )
 }
 
+// Fetches the paged job list and coordinates list selection with the detail pane.
 async function JobsBrowserSection({
   query,
   jobSlug,
@@ -138,6 +155,7 @@ async function JobsBrowserSection({
   )
 }
 
+// Fetches and renders the currently selected job details.
 async function SelectedJobDetailSection({
   jobSlug,
 }: {
@@ -148,6 +166,7 @@ async function SelectedJobDetailSection({
   return <SelectedJobDetail job={selectedJob} />
 }
 
+// Server page that parses URL filters and renders the jobs browser shell.
 export default async function JobsPage({
   searchParams,
 }: {

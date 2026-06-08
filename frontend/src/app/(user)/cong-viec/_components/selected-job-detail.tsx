@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { getImageUrl } from "@/lib/utils"
 import type { JobDetails } from "@/types/job"
+import { getCompanyMark, getCompanySlug } from "@/utils/company"
+import { getDisplayJobTags } from "@/utils/job-tags"
 
 function CompanyMark({
   image,
@@ -30,26 +32,6 @@ function CompanyMark({
       )}
     </div>
   )
-}
-
-function getCompanyMark(name: string | null | undefined) {
-  return (name ?? "CO")
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0])
-    .join("")
-    .toUpperCase()
-}
-
-function getCompanySlug(companyName: string | null | undefined) {
-  return (companyName ?? "company")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
 }
 
 function formatDeadline(expiredAt: string | null) {
@@ -117,9 +99,9 @@ export function SelectedJobDetail({ job }: { job: JobDetails | null }) {
               </div>
               <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex flex-wrap gap-1.5">
-                  {job.tags.map((tag) => (
-                    <Badge key={tag} variant="outline">
-                      {tag}
+                  {getDisplayJobTags(job.tags).map((tag, index) => (
+                    <Badge key={`${tag.label}-${index}`} variant="outline">
+                      {tag.label}
                     </Badge>
                   ))}
                 </div>

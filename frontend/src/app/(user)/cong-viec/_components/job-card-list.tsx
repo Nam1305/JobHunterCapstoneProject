@@ -14,6 +14,9 @@ import { Button } from "@/components/ui/button"
 import { cn, getImageUrl } from "@/lib/utils"
 import type { JobCard } from "@/types/job"
 import { PageResult } from "@/types/base"
+import { getCompanyMark } from "@/utils/company"
+import { getDisplayJobTags } from "@/utils/job-tags"
+import { formatDaysUntil } from "@/utils/jobs"
 
 function getPaginationItems(currentPage: number, totalPages: number) {
   if (totalPages <= 5) {
@@ -56,29 +59,10 @@ function CompanyMark({
   )
 }
 
-function getCompanyMark(name: string | null | undefined) {
-  return (name ?? "CO")
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0])
-    .join("")
-    .toUpperCase()
-}
-
 function shortLocation(location: string | null | undefined) {
   if (!location) return "Chưa cập nhật"
 
   return location.includes(",") ? `${location.split(",")[0]}...` : location
-}
-
-function formatDaysUntil(expiredAt: string | null) {
-  if (!expiredAt) return "Chưa cập nhật hạn"
-
-  const diff = new Date(expiredAt).getTime() - Date.now()
-  const days = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
-
-  return days === 0 ? "Hết hạn hôm nay" : `Còn ${days} ngày`
 }
 
 function JobListCard({
@@ -130,9 +114,9 @@ function JobListCard({
             </span>
           </div>
           <div className="mt-2 flex flex-wrap gap-1.5">
-            {job.tags.map((tag) => (
-              <Badge key={tag} variant="outline">
-                {tag}
+            {getDisplayJobTags(job.tags).map((tag, index) => (
+              <Badge key={`${tag.label}-${index}`} variant="outline">
+                {tag.label}
               </Badge>
             ))}
           </div>

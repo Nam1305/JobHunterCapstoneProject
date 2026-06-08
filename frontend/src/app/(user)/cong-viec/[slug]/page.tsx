@@ -21,10 +21,36 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { UserContainer } from "@/components/user/user-container"
 import { getCompanies } from "@/data/companies"
-import { getJobBySlug, getJobs, type JobsListQuery } from "@/data/jobs"
+import { getJobBySlug, getJobs } from "@/data/jobs"
 import { getImageUrl } from "@/lib/utils"
 import type { CompanyCard as CompanyCardData } from "@/types/company"
 import type { JobCard, JobDetails } from "@/types/job"
+import { getCompanyMark } from "@/utils/company"
+import { getDisplayJobTags } from "@/utils/job-tags"
+import { formatDaysUntil, getEmptyJobsQuery } from "@/utils/jobs"
+
+/*
+ * Component tree
+ * JobDetailsPage
+ * └─ UserContainer
+ *    └─ Suspense(JobDetailsPageSkeleton)
+ *       └─ JobDetailsContent
+ *          ├─ main
+ *          │  ├─ JobHeaderCard
+ *          │  ├─ JobDescriptionCard
+ *          │  │  └─ HtmlContent
+ *          │  └─ Similar jobs card
+ *          │     └─ Suspense(SimilarJobsSkeleton)
+ *          │        └─ SimilarJobsSection
+ *          │           └─ SimilarJobRow
+ *          │              └─ CompanyLogo
+ *          └─ aside
+ *             └─ Suspense(CompanyCardSkeleton)
+ *                └─ CompanySection
+ *                   ├─ CompanyCard
+ *                   └─ CompanyJobsCard
+ *                      └─ CompanyLogo
+ */
 
 // ─── Data fetching helpers ────────────────────────────────────────────────────
 
@@ -41,19 +67,6 @@ async function getCompanyForJob(
     companies.items[0] ??
     null
   )
-}
-
-function getEmptyJobsQuery(): JobsListQuery {
-  return {
-    search: "",
-    location: "",
-    companySlug: "",
-    categorySlugs: [],
-    subcategorySlugs: [],
-    levelSlugs: [],
-    workTypes: [],
-    page: 1,
-  }
 }
 
 /**
@@ -124,27 +137,9 @@ function getJobSections(job: JobDetails) {
   )
 }
 
-function formatDaysUntil(expiredAt: string | null) {
-  if (!expiredAt) return "Chưa cập nhật hạn"
-
-  const diff = new Date(expiredAt).getTime() - Date.now()
-  const days = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
-
-  return days === 0 ? "Hết hạn hôm nay" : `Còn ${days} ngày`
-}
-
-function getCompanyMark(name: string | null | undefined) {
-  return (name ?? "CO")
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0])
-    .join("")
-    .toUpperCase()
-}
-
 // ─── Shared UI components ─────────────────────────────────────────────────────
 
+// Renders trusted HTML content with page-specific typography rules.
 function HtmlContent({ html }: { html: string }) {
   return (
     <div
@@ -161,6 +156,7 @@ function HtmlContent({ html }: { html: string }) {
   )
 }
 
+// Renders a compact company logo or fallback initials mark.
 function CompanyLogo({
   image,
   name,
@@ -192,6 +188,7 @@ function CompanyLogo({
 
 // ─── Page entry point ─────────────────────────────────────────────────────────
 
+// Server page entry point for a single job detail route.
 export default async function JobDetailsPage({
   params,
 }: {
@@ -213,6 +210,7 @@ export default async function JobDetailsPage({
 // async section components, each behind its own Suspense boundary so they
 // stream in independently without blocking one another.
 
+// Builds the main job detail layout after the primary job has loaded.
 async function JobDetailsContent({ slug }: { slug: string }) {
   const job = await getJobBySlug(slug)
 
@@ -262,6 +260,7 @@ async function JobDetailsContent({ slug }: { slug: string }) {
 
 // Company card + company jobs are chained (jobs depend on company.slug),
 // so they share one Suspense boundary and one async component.
+// Fetches company context and renders the right sidebar cards.
 async function CompanySection({ job }: { job: JobDetails }) {
   const company = await getCompanyForJob(job)
   const companyJobs = await getCompanyJobs({
@@ -277,6 +276,7 @@ async function CompanySection({ job }: { job: JobDetails }) {
   )
 }
 
+// Fetches and renders jobs similar to the current job.
 async function SimilarJobsSection({ job }: { job: JobDetails }) {
   const similarJobs = await getSimilarJobs(job)
 
@@ -299,6 +299,7 @@ async function SimilarJobsSection({ job }: { job: JobDetails }) {
 
 // ─── Pure presentational cards ────────────────────────────────────────────────
 
+// Renders the primary job title, metadata, deadline, and actions.
 function JobHeaderCard({ job }: { job: JobDetails }) {
   return (
     <Card>
@@ -355,6 +356,7 @@ function JobHeaderCard({ job }: { job: JobDetails }) {
   )
 }
 
+// Renders responsibilities, requirements, benefits, and required skill tags.
 function JobDescriptionCard({ job }: { job: JobDetails }) {
   const jobSections = getJobSections(job)
 
@@ -390,8 +392,8 @@ function JobDescriptionCard({ job }: { job: JobDetails }) {
           </div>
           <div className="flex flex-wrap gap-2">
             {job.tags.length > 0 ? (
-              job.tags.map((skill) => (
-                <Badge key={skill} variant="secondary">
+              job.tags.map((skill, index) => (
+                <Badge key={`${skill}-${index}`} variant="secondary">
                   {skill}
                 </Badge>
               ))
@@ -407,6 +409,7 @@ function JobDescriptionCard({ job }: { job: JobDetails }) {
   )
 }
 
+// Renders a compact company summary card for the sidebar.
 function CompanyCard({
   company,
   job,
@@ -504,6 +507,7 @@ function CompanyCard({
   )
 }
 
+// Renders a sidebar list of other jobs from the same company.
 function CompanyJobsCard({
   companySlug,
   jobs,
@@ -541,9 +545,12 @@ function CompanyJobsCard({
                         {job.salaryRange ?? "Thương lượng"}
                       </p>
                       <div className="mt-2 flex flex-wrap gap-1.5">
-                        {job.tags.map((tag) => (
-                          <Badge key={tag} variant="outline">
-                            {tag}
+                        {getDisplayJobTags(job.tags).map((tag, index) => (
+                          <Badge
+                            key={`${tag.label}-${index}`}
+                            variant="outline"
+                          >
+                            {tag.label}
                           </Badge>
                         ))}
                       </div>
@@ -566,7 +573,7 @@ function CompanyJobsCard({
 
             {companySlug ? (
               <Button asChild className="mt-4 w-full" variant="ghost" size="sm">
-                <Link href={`/cong-viec?companySlug=${companySlug}`}>
+                <Link href={`/cong-viec`}>
                   Xem thêm việc làm
                   <ExternalLink className="size-3.5" />
                 </Link>
@@ -583,6 +590,7 @@ function CompanyJobsCard({
   )
 }
 
+// Renders one similar-job row inside the similar jobs card.
 function SimilarJobRow({ job }: { job: JobCard }) {
   return (
     <div className="rounded-xl border p-4">
@@ -621,9 +629,9 @@ function SimilarJobRow({ job }: { job: JobCard }) {
           </p>
 
           <div className="mt-2 flex flex-wrap gap-1.5">
-            {job.tags.map((tag) => (
-              <Badge key={tag} variant="outline">
-                {tag}
+            {getDisplayJobTags(job.tags).map((tag, index) => (
+              <Badge key={`${tag.label}-${index}`} variant="outline">
+                {tag.label}
               </Badge>
             ))}
           </div>
@@ -646,6 +654,7 @@ function SimilarJobRow({ job }: { job: JobCard }) {
 
 // ─── Skeletons ────────────────────────────────────────────────────────────────
 
+// Placeholder layout while the job details page streams in.
 function JobDetailsPageSkeleton() {
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18.25rem] lg:items-start">
@@ -692,6 +701,7 @@ function JobDetailsPageSkeleton() {
   )
 }
 
+// Placeholder layout for the company sidebar Suspense boundary.
 function CompanyCardSkeleton() {
   return (
     <div className="space-y-4">
@@ -714,6 +724,7 @@ function CompanyCardSkeleton() {
   )
 }
 
+// Placeholder rows for the similar jobs Suspense boundary.
 function SimilarJobsSkeleton() {
   return (
     <div className="space-y-3">

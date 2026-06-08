@@ -15,25 +15,35 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { UserContainer } from "@/components/user/user-container"
 import { getCompanyBySlug } from "@/data/companies"
-import { getJobs, type JobsListQuery } from "@/data/jobs"
+import { getJobs } from "@/data/jobs"
 import { getImageUrl } from "@/lib/utils"
 import type { Company } from "@/types/company"
 import type { JobCard } from "@/types/job"
+import { getCompanyMark } from "@/utils/company"
+import { getDisplayJobTags } from "@/utils/job-tags"
+import { getEmptyJobsQuery } from "@/utils/jobs"
 
 import { TeamPhotoGallery } from "./team-photo-gallery"
 
-function getEmptyJobsQuery(): JobsListQuery {
-  return {
-    search: "",
-    location: "",
-    companySlug: "",
-    categorySlugs: [],
-    subcategorySlugs: [],
-    levelSlugs: [],
-    workTypes: [],
-    page: 1,
-  }
-}
+/*
+ * Component tree
+ * CompanyPage
+ * └─ UserContainer
+ *    └─ main
+ *       ├─ Suspense(CompanyDetailsSkeleton)
+ *       │  └─ CompanyDetailsSection
+ *       │     ├─ CompanyHero
+ *       │     ├─ InfoSection
+ *       │     │  └─ HtmlContent
+ *       │     ├─ InfoSection
+ *       │     │  └─ HtmlContent
+ *       │     └─ InfoSection
+ *       │        └─ TeamPhotoGallery
+ *       └─ Suspense(CompanyJobsSkeleton)
+ *          └─ CompanyJobsSection
+ *             └─ InfoSection
+ *                └─ CompanyJobCard
+ */
 
 async function getCompanyJobs(companySlug: string) {
   const result = await getJobs({
@@ -44,16 +54,7 @@ async function getCompanyJobs(companySlug: string) {
   return result.items
 }
 
-function getCompanyMark(name: string | null | undefined) {
-  return (name ?? "CO")
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0])
-    .join("")
-    .toUpperCase()
-}
-
+// Server page entry point for a single company detail route.
 export default async function CompanyPage({
   params,
 }: {
@@ -76,6 +77,7 @@ export default async function CompanyPage({
   )
 }
 
+// Fetches company details and renders the profile sections.
 async function CompanyDetailsSection({ slug }: { slug: string }) {
   const company = await getCompanyBySlug(slug)
 
@@ -111,6 +113,7 @@ async function CompanyDetailsSection({ slug }: { slug: string }) {
   )
 }
 
+// Fetches and renders all active jobs for the current company.
 async function CompanyJobsSection({ companySlug }: { companySlug: string }) {
   const jobs = await getCompanyJobs(companySlug)
 
@@ -131,6 +134,7 @@ async function CompanyJobsSection({ companySlug }: { companySlug: string }) {
   )
 }
 
+// Renders the company cover, logo, core details, and profile links.
 function CompanyHero({ company }: { company: Company }) {
   return (
     <Card className="gap-0 py-0">
@@ -215,6 +219,7 @@ function CompanyHero({ company }: { company: Company }) {
   )
 }
 
+// Placeholder layout while company details stream in.
 function CompanyDetailsSkeleton() {
   return (
     <>
@@ -250,6 +255,7 @@ function CompanyDetailsSkeleton() {
   )
 }
 
+// Placeholder layout while company job cards stream in.
 function CompanyJobsSkeleton() {
   return (
     <InfoSection title="Việc làm đang tuyển dụng">
@@ -278,6 +284,7 @@ function CompanyJobsSkeleton() {
   )
 }
 
+// Wraps each company content block in the shared card section shell.
 function InfoSection({
   title,
   children,
@@ -296,6 +303,7 @@ function InfoSection({
   )
 }
 
+// Renders trusted company HTML content with page-specific typography rules.
 function HtmlContent({ html }: { html: string }) {
   return (
     <div
@@ -310,6 +318,7 @@ function HtmlContent({ html }: { html: string }) {
   )
 }
 
+// Renders one job card in the company jobs grid.
 function CompanyJobCard({
   job,
 }: {
@@ -374,12 +383,12 @@ function CompanyJobCard({
       </div>
 
       <div className="mt-3 flex flex-wrap gap-1.5">
-        {job.tags.map((tag) => (
+        {getDisplayJobTags(job.tags).map((tag, index) => (
           <span
-            key={tag}
+            key={`${tag.label}-${index}`}
             className="inline-flex h-5 items-center rounded-4xl border bg-background px-2 text-xs"
           >
-            {tag}
+            {tag.label}
           </span>
         ))}
       </div>

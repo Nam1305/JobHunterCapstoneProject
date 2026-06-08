@@ -38,7 +38,25 @@ import { Input } from "@/components/ui/input"
 import { getImageUrl } from "@/lib/utils"
 import { getTopCompanies } from "@/data/companies"
 import { getTopJobs } from "@/data/jobs"
+import { getCompanyMark, getCompanySlug } from "@/utils/company"
+import { getDisplayJobTags } from "@/utils/job-tags"
+import { formatDaysUntil } from "@/utils/jobs"
 
+/*
+ * Component tree
+ * UserHomePage
+ * ├─ Hero/search section
+ * ├─ Top companies section
+ * │  ├─ SectionHeading
+ * │  └─ Carousel
+ * │     └─ Company card links
+ * ├─ Top jobs section
+ * │  ├─ SectionHeading
+ * │  └─ Job cards
+ * └─ Tools section
+ *    ├─ SectionHeading
+ *    └─ Tool cards
+ */
 
 const tools = [
   {
@@ -67,6 +85,7 @@ const tools = [
   },
 ]
 
+// Renders a reusable section title and supporting description.
 function SectionHeading({
   title,
   description,
@@ -84,36 +103,7 @@ function SectionHeading({
   )
 }
 
-function formatDaysUntil(expiredAt: string | null) {
-  if (!expiredAt) return "Chưa cập nhật hạn"
-
-  const diff = new Date(expiredAt).getTime() - Date.now()
-  const days = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
-
-  return days === 0 ? "Hết hạn hôm nay" : `Còn ${days} ngày`
-}
-
-function getCompanyMark(name: string | null | undefined) {
-  return (name ?? "CO")
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0])
-    .join("")
-    .toUpperCase()
-}
-
-function getCompanySlug(companyName: string | null | undefined) {
-  return (companyName ?? "company")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-}
-
-
+// Server page for the public user home experience.
 export default async function UserHomePage() {
   const [topJobs, topCompanies] = await Promise.all([
     getTopJobs(),
@@ -344,6 +334,19 @@ export default async function UserHomePage() {
                         {job.experienceRequirement ?? "Chưa cập nhật"}
                       </p>
                     </div>
+
+                    {job.tags.length > 0 ? (
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {getDisplayJobTags(job.tags).map((tag, index) => (
+                          <Badge
+                            key={`${tag.label}-${index}`}
+                            variant="outline"
+                          >
+                            {tag.label}
+                          </Badge>
+                        ))}
+                      </div>
+                    ) : null}
 
                     <div className="mt-3 flex items-center justify-between border-t pt-3">
                       <p className="text-xs text-muted-foreground">
