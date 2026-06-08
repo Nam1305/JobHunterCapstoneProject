@@ -9,7 +9,6 @@ import {
   Heart,
   MapPin,
   MessageSquare,
-  Search,
   UserCheck,
   Users,
   WalletCards,
@@ -27,14 +26,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
 import { getImageUrl } from "@/lib/utils"
 import { getTopCompanies } from "@/data/companies"
 import { getTopJobs } from "@/data/jobs"
@@ -42,10 +33,13 @@ import { getCompanyMark, getCompanySlug } from "@/utils/company"
 import { getDisplayJobTags } from "@/utils/job-tags"
 import { formatDaysUntil } from "@/utils/jobs"
 
+import { HomeJobSearch } from "./home-job-search"
+
 /*
  * Component tree
  * UserHomePage
  * ├─ Hero/search section
+ * │  └─ HomeJobSearch
  * ├─ Top companies section
  * │  ├─ SectionHeading
  * │  └─ Carousel
@@ -122,36 +116,7 @@ export default async function UserHomePage() {
             chờ đón bạn
           </p>
 
-          {/* Search bar */}
-          <div className="mt-10 w-full max-w-3xl rounded-lg border bg-background p-2">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  className="h-10 pl-9"
-                  placeholder="Tìm kiếm công việc, công ty, kỹ năng..."
-                  type="search"
-                />
-              </div>
-              <div className="w-full shrink-0 sm:w-48">
-                <Select defaultValue="all">
-                  <SelectTrigger className="h-10 w-full">
-                    <SelectValue placeholder="Địa điểm" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tất cả địa điểm</SelectItem>
-                    <SelectItem value="ha-noi">Hà Nội</SelectItem>
-                    <SelectItem value="tp-hcm">TP.HCM</SelectItem>
-                    <SelectItem value="da-nang">Đà Nẵng</SelectItem>
-                    <SelectItem value="remote">Remote</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button asChild size="lg" className="w-full sm:w-auto">
-                <Link href="/cong-viec">Tìm kiếm</Link>
-              </Button>
-            </div>
-          </div>
+          <HomeJobSearch />
 
           <div className="mt-7 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-2">
