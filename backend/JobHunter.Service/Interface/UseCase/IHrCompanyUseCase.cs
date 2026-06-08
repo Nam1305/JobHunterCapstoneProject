@@ -20,4 +20,6 @@ public interface IHrCompanyUseCase
     public Task<GeneralResponseDto> GetGeneralInfoAsync(Guid userId);
 
     public Task<List<BranchDto>> GetBranchesByUserIdAsync(Guid userId);
+
+    public Task<List<BranchDetailsDto>> GetCompanyBranchesByUserIdAsync(Guid userId);
 }

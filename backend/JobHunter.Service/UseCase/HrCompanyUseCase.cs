@@ -183,6 +183,36 @@ public class HrCompanyUseCase : IHrCompanyUseCase
         }).ToList();
     }
 
+    public async Task<List<BranchDetailsDto>> GetCompanyBranchesByUserIdAsync(Guid userId)
+    {
+        var user = await _userRepository.GetUserById(userId);
+        if (user == null)
+        {
+            throw new KeyNotFoundException("User not found");
+        }
+
+        if (!user.CompanyId.HasValue)
+        {
+            throw new InvalidOperationException("User is not assigned to a company");
+        }
+
+        var company = await _hrCompanyRepository.GetByIdAsync(user.CompanyId.Value);
+        if (company == null)
+        {
+            throw new KeyNotFoundException("Company not found");
+        }
+
+        var branches = await _hrCompanyRepository.GetBranchesByCompanyIdAsync(company.Id);
+
+        return branches.Select(branch => new BranchDetailsDto
+        {
+            Id = branch.Id,
+            Name = branch.Name ?? string.Empty,
+            Address = branch.Address ?? string.Empty,
+            City = branch.City ?? string.Empty
+        }).ToList();
+    }
+
     public async Task<BrandingResponseDto> UpdateBrandingAsync(Guid userId, EditBrandingDto request)
     {
         var user = await _userRepository.GetUserById(userId);

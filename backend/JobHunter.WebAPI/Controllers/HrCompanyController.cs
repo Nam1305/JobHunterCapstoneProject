@@ -89,13 +89,22 @@ namespace JobHunter.WebAPI.Controllers
             return new ResponseBase<GeneralResponseDto>(generalInfo);
         }
 
-        [HttpGet("brach/getbyUId")]
+        [HttpGet("branch/getbyUid")]
         public async Task<ActionResult<ResponseBase<List<BranchDto>>>> GetBranchesByUserId()
         {
             var userId = User.GetUserId();
             var branches = await _hrCompanyUseCase.GetBranchesByUserIdAsync(userId);
 
             return new ResponseBase<List<BranchDto>>(branches);
+        }
+
+        [HttpGet("branches")]
+        public async Task<ActionResult<ResponseBase<List<BranchDetailsDto>>>> GetBranches()
+        {
+            var userId = User.GetUserId();
+            var branches = await _hrCompanyUseCase.GetCompanyBranchesByUserIdAsync(userId);
+
+            return new ResponseBase<List<BranchDetailsDto>>(branches);
         }
     }
 }
