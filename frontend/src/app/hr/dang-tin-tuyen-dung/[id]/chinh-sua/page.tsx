@@ -1,5 +1,15 @@
 import { JobPostingFormPage } from "@/components/hr/job-posting-form-page"
 
-export default function EditJobPostingPage() {
-  return <JobPostingFormPage mode="edit" />
+interface EditJobPostingPageProps {
+  params: Promise<{
+    id: string
+  }>
+}
+
+export default async function EditJobPostingPage({
+  params,
+}: EditJobPostingPageProps) {
+  const { id } = await params
+
+  return <JobPostingFormPage mode="edit" jobId={id} />
 }
