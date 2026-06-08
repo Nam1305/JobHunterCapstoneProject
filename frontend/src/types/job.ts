@@ -12,15 +12,19 @@ export interface JobPostDetail {
   name: string;
   salaryRange: string;
   jobWorkType: string;
-  experiedDate: string;
+  experiedDate?: string;
+  expiredDate?: string;
   category: string;
   subCategory: string;
   branch: string;
   experienceLevels: string[];
   level?: string;
-  experienceReuirement: string;
+  experienceReuirement?: string;
+  experienceRequirement?: string;
   tags: string;
-  reponsibilities: string;
+  tag?: string;
+  reponsibilities?: string;
+  responsibilities?: string;
   requirements: string;
   benefits: string;
 }

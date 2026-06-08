@@ -150,6 +150,7 @@ function findExperienceLevelValue(
 function toFormValues(
   job: JobPostDetail,
   categories: Category[],
+  branches: JobPostingOption[],
   experienceLevels: JobPostingOption[]
 ): FormValues {
   const category = findOptionValue(categories, job.category ?? "")
@@ -158,22 +159,23 @@ function toFormValues(
     title: job.name ?? "",
     salary: job.salaryRange ?? "",
     jobWorkType: job.jobWorkType ?? "",
-    expiredDate: toDateInputValue(job.experiedDate),
+    expiredDate: toDateInputValue(job.experiedDate ?? job.expiredDate ?? ""),
     category,
     subCategory: findSubCategoryValue(
       categories,
       category,
       job.subCategory ?? ""
     ),
-    branch: job.branch ?? "",
+    branch: findOptionValue(branches, job.branch ?? ""),
     experienceLevel: findExperienceLevelValue(
       experienceLevels,
       job.experienceLevels,
       job.level
     ),
-    experienceYears: job.experienceReuirement ?? "",
-    tags: job.tags ?? "",
-    responsibilities: job.reponsibilities ?? "",
+    experienceYears:
+      job.experienceReuirement ?? job.experienceRequirement ?? "",
+    tags: job.tags ?? job.tag ?? "",
+    responsibilities: job.reponsibilities ?? job.responsibilities ?? "",
     requirements: job.requirements ?? "",
     benefits: job.benefits ?? "",
   }
@@ -320,12 +322,14 @@ export function JobPostingEditForm({
         toFormValues(
           jobPostingDetail.data,
           categoriesData ?? [],
+          branchOptionsData ?? [],
           experienceLevelsResponse?.data ?? []
         )
       )
     }
   }, [
     categoriesData,
+    branchOptionsData,
     experienceLevelsResponse,
     form,
     isEditMode,
@@ -359,6 +363,7 @@ export function JobPostingEditForm({
                 toFormValues(
                   response.data,
                   categoriesData ?? [],
+                  branchOptionsData ?? [],
                   experienceLevelsResponse?.data ?? []
                 )
               )
