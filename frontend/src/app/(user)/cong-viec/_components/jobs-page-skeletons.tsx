@@ -24,6 +24,26 @@ export function JobsSearchSkeleton() {
   )
 }
 
+function JobCardSkeleton() {
+  return (
+    <div className="rounded-lg border bg-background p-3.5">
+      <div className="flex gap-3">
+        <div className="size-11 shrink-0 animate-pulse rounded-md bg-muted" />
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="h-4 w-4/5 animate-pulse rounded bg-muted" />
+          <div className="h-3 w-3/5 animate-pulse rounded bg-muted" />
+          <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
+          <div className="flex gap-2">
+            <div className="h-5 w-16 animate-pulse rounded-4xl bg-muted" />
+            <div className="h-5 w-20 animate-pulse rounded-4xl bg-muted" />
+          </div>
+        </div>
+      </div>
+      <div className="mt-3 h-3 w-20 animate-pulse rounded bg-muted" />
+    </div>
+  )
+}
+
 export function JobCardListSkeleton() {
   return (
     <aside className="border-r">
