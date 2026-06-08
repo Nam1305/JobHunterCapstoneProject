@@ -1,15 +1,20 @@
 ﻿"use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import type { AxiosError } from "axios"
-import { CalendarIcon, ChevronDownIcon } from "lucide-react"
-import { useEffect, useState, type ReactNode } from "react"
+import { useQueryClient } from "@tanstack/react-query"
+import { useEffect, useMemo, type ReactNode } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
 
-import { jobApi, useJobPostingDetailQuery } from "@/api/job.api"
+import {
+  useCategoriesQuery,
+  useCreateJobPosting,
+  useExperienceLevelsQuery,
+  useJobPostingDetailQuery,
+  useUpdateJobPosting,
+} from "@/api/hrjob.api"
+import { useGetBranchOption } from "@/api/hrbranch.api"
 import { HtmlInput as HtmlEditorInput } from "@/components/hr/html-input"
 import { Button } from "@/components/ui/button"
 import {
@@ -18,7 +23,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
   Form,
   FormControl,
@@ -29,76 +33,49 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import type { ResponseEntity } from "@/types/base"
 import type {
   JobPostDetail,
-  JobPostingCategory,
+  JobPostingCategory as Category,
   JobPostingOption,
   UpdateJobPostRequest,
 } from "@/types/job"
 
-const workTypes = ["ToÃ n thá»i gian", "BÃ¡n thá»i gian", "Remote", "Hybrid"]
-const jobCategories: JobPostingCategory[] = [
-  {
-    id: "cat-1",
-    name: "Công nghệ thông tin",
-    subcategories: [
-      { id: "sub-11", name: "C# / .NET" },
-      { id: "sub-12", name: "Golang" },
-      { id: "sub-13", name: "React / Frontend" },
-    ],
-  },
-  {
-    id: "cat-2",
-    name: "Kinh doanh & Marketing",
-    subcategories: [
-      { id: "sub-21", name: "Marketing Mix 7Ps" },
-      { id: "sub-22", name: "Business Model Canvas" },
-    ],
-  },
-]
-const branches = ["Há»“ ChÃ­ Minh", "HÃ  Ná»™i", "ÄÃ  Náºµng"]
-const experienceLevels = ["Intern", "Fresher", "Junior", "Middle"]
+const workTypes = ["Toàn thời gian", "Bán thời gian", "Remote", "Hybrid"]
 const workTypeOptions = workTypes.map((name) => ({ id: name, name }))
-const branchOptions = branches.map((name) => ({ id: name, name }))
+const emptyBranchOptions: JobPostingOption[] = []
+const emptyCategoryOptions: Category[] = []
+const emptyExperienceLevelOptions: JobPostingOption[] = []
 const emptySubCategoryOptions: JobPostingOption[] = []
 
-const requiredMessage = "Vui lÃ²ng nháº­p thÃ´ng tin nÃ y"
+const requiredMessage = "Vui lòng nhập thông tin này"
 
 const formSchema = z.object({
-  title: z.string().trim().min(1, "Vui lÃ²ng nháº­p tÃªn cÃ´ng viá»‡c"),
-  salary: z.string().trim().min(1, "Vui lÃ²ng nháº­p má»©c lÆ°Æ¡ng"),
-  jobWorkType: z.string().trim().min(1, "Vui lÃ²ng chá»n hÃ¬nh thá»©c lÃ m viá»‡c"),
+  title: z.string().trim().min(1, "Vui lòng nhập tên công việc"),
+  salary: z.string().trim().min(1, "Vui lòng nhập mức lương"),
+  jobWorkType: z.string().trim().min(1, "Vui lòng chọn hình thức làm việc"),
   expiredDate: z
     .string()
     .trim()
-    .min(1, "Vui lÃ²ng chá»n ngÃ y háº¿t háº¡n")
+    .min(1, "Vui lòng chọn ngày hết hạn")
     .refine((value) => {
       const selectedDate = new Date(`${value}T00:00:00`)
       const today = new Date()
       today.setHours(0, 0, 0, 0)
 
       return selectedDate > today
-    }, "NgÃ y háº¿t háº¡n pháº£i lÃ  ngÃ y trong tÆ°Æ¡ng lai"),
-  category: z.string().trim().min(1, "Vui lÃ²ng chá»n danh má»¥c"),
-  subCategory: z.string().trim().min(1, "Vui lÃ²ng chá»n danh má»¥c con"),
-  branch: z.string().trim().min(1, "Vui lÃ²ng chá»n chi nhÃ¡nh"),
-  experienceLevels: z
-    .array(z.string())
-    .min(1, "Vui lÃ²ng chá»n Ã­t nháº¥t má»™t kinh nghiá»‡m"),
-  experienceYears: z.string().trim().min(1, "Vui lÃ²ng nháº­p sá»‘ nÄƒm kinh nghiá»‡m"),
-  tags: z.string().trim().min(1, "Vui lÃ²ng nháº­p Ã­t nháº¥t má»™t tag"),
+    }, "Ngày hết hạn phải là ngày trong tương lai"),
+  category: z.string().trim().min(1, "Vui lòng chọn danh mục"),
+  subCategory: z.string().trim().min(1, "Vui lòng chọn danh mục con"),
+  branch: z.string().trim().min(1, "Vui lòng chọn chi nhánh"),
+  experienceLevel: z.string().trim().min(1, "Vui lòng chọn cấp độ kinh nghiệm"),
+  experienceYears: z.string().trim().min(1, "Vui lòng nhập số năm kinh nghiệm"),
+  tags: z.string().trim().min(1, "Vui lòng nhập ít nhất một tag"),
   responsibilities: z
     .string()
     .refine((value) => value.trim().length > 0, requiredMessage),
@@ -127,7 +104,7 @@ const defaultFormValues: FormValues = {
   category: "",
   subCategory: "",
   branch: "",
-  experienceLevels: [],
+  experienceLevel: "",
   experienceYears: "",
   tags: "",
   responsibilities: "",
@@ -146,8 +123,12 @@ function findOptionValue(options: JobPostingOption[], value: string) {
   )
 }
 
-function findSubCategoryValue(categoryValue: string, subCategoryValue: string) {
-  const category = jobCategories.find(
+function findSubCategoryValue(
+  categories: Category[],
+  categoryValue: string,
+  subCategoryValue: string
+) {
+  const category = categories.find(
     (item) => item.id === categoryValue || item.name === categoryValue
   )
 
@@ -156,21 +137,45 @@ function findSubCategoryValue(categoryValue: string, subCategoryValue: string) {
     : subCategoryValue
 }
 
-function toFormValues(job: JobPostDetail): FormValues {
-  const category = findOptionValue(jobCategories, job.category ?? "")
+function findExperienceLevelValue(
+  levels: JobPostingOption[],
+  levelValues: string[] | undefined,
+  levelName: string | undefined
+) {
+  const value = levelValues?.[0] ?? levelName?.split(",")[0]?.trim() ?? ""
+
+  return findOptionValue(levels, value)
+}
+
+function toFormValues(
+  job: JobPostDetail,
+  categories: Category[],
+  branches: JobPostingOption[],
+  experienceLevels: JobPostingOption[]
+): FormValues {
+  const category = findOptionValue(categories, job.category ?? "")
 
   return {
     title: job.name ?? "",
     salary: job.salaryRange ?? "",
     jobWorkType: job.jobWorkType ?? "",
-    expiredDate: toDateInputValue(job.experiedDate),
+    expiredDate: toDateInputValue(job.experiedDate ?? job.expiredDate ?? ""),
     category,
-    subCategory: findSubCategoryValue(category, job.subCategory ?? ""),
-    branch: job.branch ?? "",
-    experienceLevels: job.experienceLevels ?? [],
-    experienceYears: job.experienceReuirement ?? "",
-    tags: job.tags ?? "",
-    responsibilities: job.reponsibilities ?? "",
+    subCategory: findSubCategoryValue(
+      categories,
+      category,
+      job.subCategory ?? ""
+    ),
+    branch: findOptionValue(branches, job.branch ?? ""),
+    experienceLevel: findExperienceLevelValue(
+      experienceLevels,
+      job.experienceLevels,
+      job.level
+    ),
+    experienceYears:
+      job.experienceReuirement ?? job.experienceRequirement ?? "",
+    tags: job.tags ?? job.tag ?? "",
+    responsibilities: job.reponsibilities ?? job.responsibilities ?? "",
     requirements: job.requirements ?? "",
     benefits: job.benefits ?? "",
   }
@@ -185,7 +190,7 @@ function toUpdatePayload(values: FormValues): UpdateJobPostRequest {
     category: values.category,
     subCategory: values.subCategory,
     branch: values.branch,
-    experienceLevels: values.experienceLevels,
+    experienceLevels: values.experienceLevel ? [values.experienceLevel] : [],
     experienceReuirement: values.experienceYears,
     tags: values.tags,
     reponsibilities: values.responsibilities,
@@ -224,76 +229,25 @@ function PostingSelect({
   placeholder: string
   value: string
 }) {
-  return (
-    <Select disabled={disabled} value={value} onValueChange={onChange}>
-      <SelectTrigger className="h-11 w-full bg-muted/50 px-4 text-base md:text-sm">
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
-      <SelectContent>
-        {options.map((option) => (
-          <SelectItem key={option.id} value={option.id}>
-            {option.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  )
-}
-
-function ExperienceMultiSelect({
-  disabled,
-  onChange,
-  value,
-}: {
-  disabled?: boolean
-  onChange: (value: string[]) => void
-  value: string[]
-}) {
-  const [open, setOpen] = useState(false)
-
-  const toggleLevel = (level: string) => {
-    if (disabled) {
-      return
-    }
-
-    onChange(
-      value.includes(level)
-        ? value.filter((item) => item !== level)
-        : [...value, level]
-    )
-  }
+  const safeOptions = Array.isArray(options) ? options : []
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          disabled={disabled}
-          type="button"
-          variant="outline"
-          className="h-11 w-full justify-between rounded-xl bg-background px-4 text-left text-base font-normal md:text-sm"
-        >
-          <span className="truncate">
-            {value.length > 0 ? value.join(", ") : "Chá»n kinh nghiá»‡m"}
-          </span>
-          <ChevronDownIcon className="text-muted-foreground" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-44 gap-1 rounded-xl p-2">
-        {experienceLevels.map((level) => (
-          <label
-            key={level}
-            className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-accent"
-          >
-            <Checkbox
-              checked={value.includes(level)}
-              disabled={disabled}
-              onCheckedChange={() => toggleLevel(level)}
-            />
-            <span>{level}</span>
-          </label>
-        ))}
-      </PopoverContent>
-    </Popover>
+    <div className="[&_[data-slot=select-trigger]]:w-full">
+      <Select disabled={disabled} value={value} onValueChange={onChange}>
+        <FormControl>
+          <SelectTrigger>
+            <SelectValue placeholder={placeholder} />
+          </SelectTrigger>
+        </FormControl>
+        <SelectContent>
+          {safeOptions.map((option) => (
+            <SelectItem key={option.id} value={option.id}>
+              {option.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   )
 }
 
@@ -345,75 +299,136 @@ export function JobPostingEditForm({
     error: jobPostingDetailError,
     isLoading: isJobPostingDetailLoading,
   } = useJobPostingDetailQuery(isEditMode ? jobId ?? "" : "")
+  const { data: categoriesData, isLoading: isCategoriesLoading } =
+    useCategoriesQuery()
+  const { data: branchOptionsData, isLoading: isBranchOptionsLoading } =
+    useGetBranchOption()
+  const {
+    data: experienceLevelsResponse,
+    isPending: isExperienceLevelsPending,
+  } = useExperienceLevelsQuery()
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: defaultFormValues,
   })
 
-  const updateJobPostingMutation = useMutation<
-    ResponseEntity<JobPostDetail>,
-    AxiosError<ResponseEntity<unknown>>,
-    FormValues
-  >({
-    mutationFn: (values) => {
-      if (!jobId) {
-        throw new Error("Missing job posting id")
-      }
-
-      return jobApi.updateJobPosting(jobId, toUpdatePayload(values))
-    },
-    onSuccess: (response) => {
-      queryClient.invalidateQueries({ queryKey: ["jobPostings"] })
-      queryClient.invalidateQueries({ queryKey: ["jobPostingDetail", jobId] })
-
-      if (response.data) {
-        form.reset(toFormValues(response.data))
-      }
-
-      toast.success(response.message || "Cáº­p nháº­t tin tuyá»ƒn dá»¥ng thÃ nh cÃ´ng")
-    },
-    onError: (error) => {
-      const message =
-        error.response?.data.message || "KhÃ´ng thá»ƒ cáº­p nháº­t tin tuyá»ƒn dá»¥ng"
-
-      form.setError("root", { message })
-      toast.error(message)
-    },
-  })
+  const createJobPostingMutation = useCreateJobPosting()
+  const updateJobPostingMutation = useUpdateJobPosting()
 
   useEffect(() => {
     if (isEditMode && jobPostingDetail?.data) {
-      form.reset(toFormValues(jobPostingDetail.data))
+      form.reset(
+        toFormValues(
+          jobPostingDetail.data,
+          categoriesData ?? [],
+          branchOptionsData ?? [],
+          experienceLevelsResponse?.data ?? []
+        )
+      )
     }
-  }, [form, isEditMode, jobPostingDetail])
+  }, [
+    categoriesData,
+    branchOptionsData,
+    experienceLevelsResponse,
+    form,
+    isEditMode,
+    jobPostingDetail,
+  ])
 
   const onSubmit = (values: FormValues) => {
     form.clearErrors("root")
+    const payload = toUpdatePayload(values)
 
     if (isEditMode) {
-      updateJobPostingMutation.mutate(values)
+      if (!jobId) {
+        form.setError("root", { message: "Missing job posting id" })
+        return
+      }
+
+      updateJobPostingMutation.mutate(
+        {
+          jobId,
+          payload,
+        },
+        {
+          onSuccess: (response) => {
+            queryClient.invalidateQueries({ queryKey: ["jobPostings"] })
+            queryClient.invalidateQueries({
+              queryKey: ["jobPostingDetail", jobId],
+            })
+
+            if (response.data) {
+              form.reset(
+                toFormValues(
+                  response.data,
+                  categoriesData ?? [],
+                  branchOptionsData ?? [],
+                  experienceLevelsResponse?.data ?? []
+                )
+              )
+            }
+
+            toast.success(
+              response.message || "Cập nhật tin tuyển dụng thành công"
+            )
+          },
+          onError: (error) => {
+            const message =
+              error.response?.data.message ||
+              "Không thể cập nhật tin tuyển dụng"
+
+            form.setError("root", { message })
+            toast.error(message)
+          },
+        }
+      )
+
+      return
     }
+
+    createJobPostingMutation.mutate(payload, {
+      onSuccess: (response) => {
+        queryClient.invalidateQueries({ queryKey: ["jobPostings"] })
+        form.reset(defaultFormValues)
+        toast.success(response.message || "Tạo tin tuyển dụng thành công")
+      },
+      onError: (error) => {
+        const message =
+          error.response?.data.message || "Không thể tạo tin tuyển dụng"
+
+        form.setError("root", { message })
+        toast.error(message)
+      },
+    })
   }
 
-  const isSubmitting = updateJobPostingMutation.isPending
+  const isSubmitting =
+    createJobPostingMutation.isPending || updateJobPostingMutation.isPending
   const isFormDisabled = isJobPostingDetailLoading || isSubmitting
+  const categories = categoriesData ?? emptyCategoryOptions
+  const branchOptions = branchOptionsData ?? emptyBranchOptions
+  const experienceLevelOptions =
+    experienceLevelsResponse?.data ?? emptyExperienceLevelOptions
   const selectedCategoryId = form.watch("category")
-  const selectedCategory = jobCategories.find(
-    (category) => category.id === selectedCategoryId
+  const selectedCategory = useMemo(
+    () => categories.find((category) => category.id === selectedCategoryId),
+    [categories, selectedCategoryId]
   )
   const subCategoryOptions =
     selectedCategory?.subcategories ?? emptySubCategoryOptions
-  const pageTitle = isEditMode ? "Chá»‰nh sá»­a tin tuyá»ƒn dá»¥ng" : "Táº¡o tin tuyá»ƒn dá»¥ng"
+  const pageTitle = isEditMode ? "Chỉnh sửa tin tuyển dụng" : "Tạo tin tuyển dụng"
   const pageDescription = isEditMode
-    ? "Cáº­p nháº­t thÃ´ng tin bÃ i Ä‘Äƒng tuyá»ƒn dá»¥ng."
-    : "Nháº­p thÃ´ng tin Ä‘á»ƒ táº¡o bÃ i Ä‘Äƒng tuyá»ƒn dá»¥ng."
+    ? "Cập nhật thông tin bài đăng tuyển dụng."
+    : "Nhập thông tin để tạo bài đăng tuyển dụng."
+  const submitLabel = isEditMode ? "Lưu thay đổi" : "Tạo tin"
 
   useEffect(() => {
     const currentSubCategory = form.getValues("subCategory")
 
     if (
       currentSubCategory &&
+      selectedCategory &&
       !subCategoryOptions.some((option) => option.id === currentSubCategory)
     ) {
       form.setValue("subCategory", "", {
@@ -421,7 +436,7 @@ export function JobPostingEditForm({
         shouldValidate: true,
       })
     }
-  }, [form, selectedCategoryId, subCategoryOptions])
+  }, [form, selectedCategory, subCategoryOptions])
 
   return (
     <Form {...form}>
@@ -442,7 +457,7 @@ export function JobPostingEditForm({
         {jobPostingDetailError ? (
           <Card className="rounded-xl shadow-none">
             <CardContent className="p-5 text-sm text-destructive">
-              KhÃ´ng thá»ƒ táº£i thÃ´ng tin tin tuyá»ƒn dá»¥ng. Vui lÃ²ng thá»­ láº¡i sau.
+              Không thể tải thông tin tin tuyển dụng. Vui lòng thử lại sau.
             </CardContent>
           </Card>
         ) : null}
@@ -455,19 +470,15 @@ export function JobPostingEditForm({
           </Card>
         ) : null}
 
-        <Section title="ThÃ´ng tin cÆ¡ báº£n">
+        <Section title="Thông tin cơ bản">
           <FormField
             control={form.control}
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>TÃªn cÃ´ng viá»‡c</FormLabel>
+                <FormLabel>Tên công việc</FormLabel>
                 <FormControl>
-                  <Input
-                    disabled={isFormDisabled}
-                    className="h-11 bg-muted/50 px-4 text-base md:text-sm"
-                    {...field}
-                  />
+                  <Input disabled={isFormDisabled} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -479,13 +490,9 @@ export function JobPostingEditForm({
             name="salary"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Má»©c lÆ°Æ¡ng</FormLabel>
+                <FormLabel>Mức lương</FormLabel>
                 <FormControl>
-                  <Input
-                    disabled={isFormDisabled}
-                    className="h-11 bg-muted/50 px-4 text-base md:text-sm"
-                    {...field}
-                  />
+                  <Input disabled={isFormDisabled} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -498,11 +505,11 @@ export function JobPostingEditForm({
               name="jobWorkType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>HÃ¬nh thá»©c lÃ m viá»‡c</FormLabel>
+                  <FormLabel>Hình thức làm việc</FormLabel>
                   <PostingSelect
                     disabled={isFormDisabled}
                     options={workTypeOptions}
-                    placeholder="Chá»n hÃ¬nh thá»©c"
+                    placeholder="Chọn hình thức"
                     value={field.value}
                     onChange={field.onChange}
                   />
@@ -516,17 +523,9 @@ export function JobPostingEditForm({
               name="expiredDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>NgÃ y háº¿t háº¡n</FormLabel>
+                  <FormLabel>Ngày hết hạn</FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <CalendarIcon className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        disabled={isFormDisabled}
-                        type="date"
-                        className="h-11 bg-background pl-11 text-base md:text-sm"
-                        {...field}
-                      />
-                    </div>
+                    <Input disabled={isFormDisabled} type="date" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -535,25 +534,22 @@ export function JobPostingEditForm({
           </div>
         </Section>
 
-        <Section title="PhÃ¢n loáº¡i">
+        <Section title="Phân loại">
           <div className="grid gap-5 md:grid-cols-2">
             <FormField
               control={form.control}
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Danh má»¥c</FormLabel>
+                  <FormLabel>Danh mục</FormLabel>
                   <PostingSelect
-                    disabled={isFormDisabled}
-                    options={jobCategories}
-                    placeholder="Chá»n danh má»¥c"
+                    disabled={isFormDisabled || isCategoriesLoading}
+                    options={categories}
+                    placeholder="Chọn danh mục"
                     value={field.value}
                     onChange={(value) => {
                       field.onChange(value)
-                      form.setValue("subCategory", "", {
-                        shouldDirty: true,
-                        shouldValidate: true,
-                      })
+                      form.setValue("subCategory", "")
                     }}
                   />
                   <FormMessage />
@@ -566,11 +562,17 @@ export function JobPostingEditForm({
               name="subCategory"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Danh má»¥c con</FormLabel>
+                  <FormLabel>Danh mục con</FormLabel>
                   <PostingSelect
-                    disabled={isFormDisabled || !selectedCategoryId}
+                    disabled={
+                      isFormDisabled || isCategoriesLoading || !selectedCategory
+                    }
                     options={subCategoryOptions}
-                    placeholder="Chá»n danh má»¥c trÆ°á»›c"
+                    placeholder={
+                      selectedCategoryId
+                        ? "Chọn danh mục con..."
+                        : "Vui lòng chọn danh mục chính"
+                    }
                     value={field.value}
                     onChange={field.onChange}
                   />
@@ -586,11 +588,15 @@ export function JobPostingEditForm({
               name="branch"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Chi nhÃ¡nh</FormLabel>
+                  <FormLabel>Chi nhánh</FormLabel>
                   <PostingSelect
-                    disabled={isFormDisabled}
+                    disabled={isFormDisabled || isBranchOptionsLoading}
                     options={branchOptions}
-                    placeholder="Chá»n chi nhÃ¡nh"
+                    placeholder={
+                      isBranchOptionsLoading
+                        ? "Đang tải dữ liệu..."
+                        : "Chọn chi nhánh"
+                    }
                     value={field.value}
                     onChange={field.onChange}
                   />
@@ -601,12 +607,18 @@ export function JobPostingEditForm({
 
             <FormField
               control={form.control}
-              name="experienceLevels"
+              name="experienceLevel"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Kinh nghiá»‡m lÃ m viá»‡c</FormLabel>
-                  <ExperienceMultiSelect
-                    disabled={isFormDisabled}
+                  <FormLabel>Cấp độ kinh nghiệm</FormLabel>
+                  <PostingSelect
+                    disabled={isFormDisabled || isExperienceLevelsPending}
+                    options={experienceLevelOptions}
+                    placeholder={
+                      isExperienceLevelsPending
+                        ? "Đang tải dữ liệu..."
+                        : "Chọn cấp độ kinh nghiệm"
+                    }
                     value={field.value}
                     onChange={field.onChange}
                   />
@@ -620,13 +632,9 @@ export function JobPostingEditForm({
               name="experienceYears"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Sá»‘ nÄƒm kinh nghiá»‡m</FormLabel>
+                  <FormLabel>Số năm kinh nghiệm</FormLabel>
                   <FormControl>
-                    <Input
-                      disabled={isFormDisabled}
-                      className="h-11 bg-muted/50 px-4 text-base md:text-sm"
-                      {...field}
-                    />
+                    <Input disabled={isFormDisabled} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -641,14 +649,10 @@ export function JobPostingEditForm({
               <FormItem>
                 <FormLabel>Tags</FormLabel>
                 <FormControl>
-                  <Input
-                    disabled={isFormDisabled}
-                    className="h-11 bg-background px-4 text-base md:text-sm"
-                    {...field}
-                  />
+                  <Input disabled={isFormDisabled} {...field} />
                 </FormControl>
                 <p className="text-sm text-muted-foreground">
-                  Nháº¥n Enter hoáº·c dáº¥u pháº©y Ä‘á»ƒ thÃªm tag.
+                  Nhấn Enter hoặc dấu phẩy để thêm tag.
                 </p>
                 <FormMessage />
               </FormItem>
@@ -656,7 +660,7 @@ export function JobPostingEditForm({
           />
         </Section>
 
-        <Section title="Ná»™i dung tuyá»ƒn dá»¥ng">
+        <Section title="Nội dung tuyển dụng">
           <FormField
             control={form.control}
             name="responsibilities"
@@ -664,7 +668,7 @@ export function JobPostingEditForm({
               <HtmlInput
                 disabled={isFormDisabled}
                 field={field}
-                label="TrÃ¡ch nhiá»‡m cÃ´ng viá»‡c"
+                label="Trách nhiệm công việc"
               />
             )}
           />
@@ -676,7 +680,7 @@ export function JobPostingEditForm({
               <HtmlInput
                 disabled={isFormDisabled}
                 field={field}
-                label="YÃªu cáº§u á»©ng viÃªn"
+                label="Yêu cầu ứng viên"
               />
             )}
           />
@@ -688,7 +692,7 @@ export function JobPostingEditForm({
               <HtmlInput
                 disabled={isFormDisabled}
                 field={field}
-                label="Quyá»n lá»£i"
+                label="Quyền lợi"
               />
             )}
           />
@@ -703,7 +707,7 @@ export function JobPostingEditForm({
             disabled={isSubmitting}
             onClick={onCancel}
           >
-            Há»§y
+            Hủy
           </Button>
           <Button
             type="submit"
@@ -711,7 +715,7 @@ export function JobPostingEditForm({
             className="min-w-36"
             disabled={isFormDisabled || Boolean(jobPostingDetailError)}
           >
-            {isSubmitting ? "Äang lÆ°u..." : "LÆ°u thay Ä‘á»•i"}
+            {isSubmitting ? "Đang lưu..." : submitLabel}
           </Button>
         </div>
       </form>

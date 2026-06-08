@@ -12,14 +12,19 @@ export interface JobPostDetail {
   name: string;
   salaryRange: string;
   jobWorkType: string;
-  experiedDate: string;
+  experiedDate?: string;
+  expiredDate?: string;
   category: string;
   subCategory: string;
   branch: string;
   experienceLevels: string[];
-  experienceReuirement: string;
+  level?: string;
+  experienceReuirement?: string;
+  experienceRequirement?: string;
   tags: string;
-  reponsibilities: string;
+  tag?: string;
+  reponsibilities?: string;
+  responsibilities?: string;
   requirements: string;
   benefits: string;
 }
@@ -30,6 +35,9 @@ export interface JobPostingOption {
   id: string;
   name: string;
 }
+
+export type ExperienceLevel = JobPostingOption;
+export type BranchOption = JobPostingOption;
 
 export interface JobPostingCategory extends JobPostingOption {
   subcategories: JobPostingOption[];
