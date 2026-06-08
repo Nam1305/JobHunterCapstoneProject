@@ -7,7 +7,7 @@ import {
   JobCardListSkeleton,
   JobsSearchSkeleton,
   SelectedJobDetailSkeleton,
-} from "@/components/skeleton/jobs-page-skeletons"
+} from "@/app/(user)/cong-viec/_components/jobs-page-skeletons"
 import { UserContainer } from "@/components/user/user-container"
 import {
   getJobBySlug,
