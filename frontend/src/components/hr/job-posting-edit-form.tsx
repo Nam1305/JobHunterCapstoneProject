@@ -48,7 +48,7 @@ import type {
   UpdateJobPostRequest,
 } from "@/types/job"
 
-const workTypes = ["ToÃ n thá»i gian", "BÃ¡n thá»i gian", "Remote", "Hybrid"]
+const workTypes = ["Toàn thời gian", "Bán thời gian", "Remote", "Hybrid"]
 const jobCategories: JobPostingCategory[] = [
   {
     id: "cat-1",
@@ -68,37 +68,37 @@ const jobCategories: JobPostingCategory[] = [
     ],
   },
 ]
-const branches = ["Há»“ ChÃ­ Minh", "HÃ  Ná»™i", "ÄÃ  Náºµng"]
+const branches = ["Hồ Chí Minh", "Hà Nội", "Đà Nẵng"]
 const experienceLevels = ["Intern", "Fresher", "Junior", "Middle"]
 const workTypeOptions = workTypes.map((name) => ({ id: name, name }))
 const branchOptions = branches.map((name) => ({ id: name, name }))
 const emptySubCategoryOptions: JobPostingOption[] = []
 
-const requiredMessage = "Vui lÃ²ng nháº­p thÃ´ng tin nÃ y"
+const requiredMessage = "Vui lòng nhập thông tin này"
 
 const formSchema = z.object({
-  title: z.string().trim().min(1, "Vui lÃ²ng nháº­p tÃªn cÃ´ng viá»‡c"),
-  salary: z.string().trim().min(1, "Vui lÃ²ng nháº­p má»©c lÆ°Æ¡ng"),
-  jobWorkType: z.string().trim().min(1, "Vui lÃ²ng chá»n hÃ¬nh thá»©c lÃ m viá»‡c"),
+  title: z.string().trim().min(1, "Vui lòng nhập tên công việc"),
+  salary: z.string().trim().min(1, "Vui lòng nhập mức lương"),
+  jobWorkType: z.string().trim().min(1, "Vui lòng chọn hình thức làm việc"),
   expiredDate: z
     .string()
     .trim()
-    .min(1, "Vui lÃ²ng chá»n ngÃ y háº¿t háº¡n")
+    .min(1, "Vui lòng chọn ngày hết hạn")
     .refine((value) => {
       const selectedDate = new Date(`${value}T00:00:00`)
       const today = new Date()
       today.setHours(0, 0, 0, 0)
 
       return selectedDate > today
-    }, "NgÃ y háº¿t háº¡n pháº£i lÃ  ngÃ y trong tÆ°Æ¡ng lai"),
-  category: z.string().trim().min(1, "Vui lÃ²ng chá»n danh má»¥c"),
-  subCategory: z.string().trim().min(1, "Vui lÃ²ng chá»n danh má»¥c con"),
-  branch: z.string().trim().min(1, "Vui lÃ²ng chá»n chi nhÃ¡nh"),
+    }, "Ngày hết hạn phải là ngày trong tương lai"),
+  category: z.string().trim().min(1, "Vui lòng chọn danh mục"),
+  subCategory: z.string().trim().min(1, "Vui lòng chọn danh mục con"),
+  branch: z.string().trim().min(1, "Vui lòng chọn chi nhánh"),
   experienceLevels: z
     .array(z.string())
-    .min(1, "Vui lÃ²ng chá»n Ã­t nháº¥t má»™t kinh nghiá»‡m"),
-  experienceYears: z.string().trim().min(1, "Vui lÃ²ng nháº­p sá»‘ nÄƒm kinh nghiá»‡m"),
-  tags: z.string().trim().min(1, "Vui lÃ²ng nháº­p Ã­t nháº¥t má»™t tag"),
+    .min(1, "Vui lòng chọn ít nhất một kinh nghiệm"),
+  experienceYears: z.string().trim().min(1, "Vui lòng nhập số năm kinh nghiệm"),
+  tags: z.string().trim().min(1, "Vui lòng nhập ít nhất một tag"),
   responsibilities: z
     .string()
     .refine((value) => value.trim().length > 0, requiredMessage),
@@ -273,7 +273,7 @@ function ExperienceMultiSelect({
           className="h-11 w-full justify-between rounded-xl bg-background px-4 text-left text-base font-normal md:text-sm"
         >
           <span className="truncate">
-            {value.length > 0 ? value.join(", ") : "Chá»n kinh nghiá»‡m"}
+            {value.length > 0 ? value.join(", ") : "Chọn kinh nghiệm"}
           </span>
           <ChevronDownIcon className="text-muted-foreground" />
         </Button>
@@ -371,11 +371,11 @@ export function JobPostingEditForm({
         form.reset(toFormValues(response.data))
       }
 
-      toast.success(response.message || "Cáº­p nháº­t tin tuyá»ƒn dá»¥ng thÃ nh cÃ´ng")
+      toast.success(response.message || "Cập nhật tin tuyển dụng thành công")
     },
     onError: (error) => {
       const message =
-        error.response?.data.message || "KhÃ´ng thá»ƒ cáº­p nháº­t tin tuyá»ƒn dá»¥ng"
+        error.response?.data.message || "Không thể cập nhật tin tuyển dụng"
 
       form.setError("root", { message })
       toast.error(message)
@@ -404,10 +404,10 @@ export function JobPostingEditForm({
   )
   const subCategoryOptions =
     selectedCategory?.subcategories ?? emptySubCategoryOptions
-  const pageTitle = isEditMode ? "Chá»‰nh sá»­a tin tuyá»ƒn dá»¥ng" : "Táº¡o tin tuyá»ƒn dá»¥ng"
+  const pageTitle = isEditMode ? "Chỉnh sửa tin tuyển dụng" : "Tạo tin tuyển dụng"
   const pageDescription = isEditMode
-    ? "Cáº­p nháº­t thÃ´ng tin bÃ i Ä‘Äƒng tuyá»ƒn dá»¥ng."
-    : "Nháº­p thÃ´ng tin Ä‘á»ƒ táº¡o bÃ i Ä‘Äƒng tuyá»ƒn dá»¥ng."
+    ? "Cập nhật thông tin bài đăng tuyển dụng."
+    : "Nhập thông tin để tạo bài đăng tuyển dụng."
 
   useEffect(() => {
     const currentSubCategory = form.getValues("subCategory")
@@ -442,7 +442,7 @@ export function JobPostingEditForm({
         {jobPostingDetailError ? (
           <Card className="rounded-xl shadow-none">
             <CardContent className="p-5 text-sm text-destructive">
-              KhÃ´ng thá»ƒ táº£i thÃ´ng tin tin tuyá»ƒn dá»¥ng. Vui lÃ²ng thá»­ láº¡i sau.
+              Không thể tải thông tin tin tuyển dụng. Vui lòng thử lại sau.
             </CardContent>
           </Card>
         ) : null}
@@ -455,13 +455,13 @@ export function JobPostingEditForm({
           </Card>
         ) : null}
 
-        <Section title="ThÃ´ng tin cÆ¡ báº£n">
+        <Section title="Thông tin cơ bản">
           <FormField
             control={form.control}
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>TÃªn cÃ´ng viá»‡c</FormLabel>
+                <FormLabel>Tên công việc</FormLabel>
                 <FormControl>
                   <Input
                     disabled={isFormDisabled}
@@ -479,7 +479,7 @@ export function JobPostingEditForm({
             name="salary"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Má»©c lÆ°Æ¡ng</FormLabel>
+                <FormLabel>Mức lương</FormLabel>
                 <FormControl>
                   <Input
                     disabled={isFormDisabled}
@@ -498,11 +498,11 @@ export function JobPostingEditForm({
               name="jobWorkType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>HÃ¬nh thá»©c lÃ m viá»‡c</FormLabel>
+                  <FormLabel>Hình thức làm việc</FormLabel>
                   <PostingSelect
                     disabled={isFormDisabled}
                     options={workTypeOptions}
-                    placeholder="Chá»n hÃ¬nh thá»©c"
+                    placeholder="Chọn hình thức"
                     value={field.value}
                     onChange={field.onChange}
                   />
@@ -516,7 +516,7 @@ export function JobPostingEditForm({
               name="expiredDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>NgÃ y háº¿t háº¡n</FormLabel>
+                  <FormLabel>Ngày hết hạn</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <CalendarIcon className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -535,18 +535,18 @@ export function JobPostingEditForm({
           </div>
         </Section>
 
-        <Section title="PhÃ¢n loáº¡i">
+        <Section title="Phân loại">
           <div className="grid gap-5 md:grid-cols-2">
             <FormField
               control={form.control}
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Danh má»¥c</FormLabel>
+                  <FormLabel>Danh mục</FormLabel>
                   <PostingSelect
                     disabled={isFormDisabled}
                     options={jobCategories}
-                    placeholder="Chá»n danh má»¥c"
+                    placeholder="Chọn danh mục"
                     value={field.value}
                     onChange={(value) => {
                       field.onChange(value)
@@ -566,11 +566,11 @@ export function JobPostingEditForm({
               name="subCategory"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Danh má»¥c con</FormLabel>
+                  <FormLabel>Danh mục con</FormLabel>
                   <PostingSelect
                     disabled={isFormDisabled || !selectedCategoryId}
                     options={subCategoryOptions}
-                    placeholder="Chá»n danh má»¥c trÆ°á»›c"
+                    placeholder="Chọn danh mục trước"
                     value={field.value}
                     onChange={field.onChange}
                   />
@@ -586,11 +586,11 @@ export function JobPostingEditForm({
               name="branch"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Chi nhÃ¡nh</FormLabel>
+                  <FormLabel>Chi nhánh</FormLabel>
                   <PostingSelect
                     disabled={isFormDisabled}
                     options={branchOptions}
-                    placeholder="Chá»n chi nhÃ¡nh"
+                    placeholder="Chọn chi nhánh"
                     value={field.value}
                     onChange={field.onChange}
                   />
@@ -604,7 +604,7 @@ export function JobPostingEditForm({
               name="experienceLevels"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Kinh nghiá»‡m lÃ m viá»‡c</FormLabel>
+                  <FormLabel>Kinh nghiệm làm việc</FormLabel>
                   <ExperienceMultiSelect
                     disabled={isFormDisabled}
                     value={field.value}
@@ -620,7 +620,7 @@ export function JobPostingEditForm({
               name="experienceYears"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Sá»‘ nÄƒm kinh nghiá»‡m</FormLabel>
+                  <FormLabel>Số năm kinh nghiệm</FormLabel>
                   <FormControl>
                     <Input
                       disabled={isFormDisabled}
@@ -648,7 +648,7 @@ export function JobPostingEditForm({
                   />
                 </FormControl>
                 <p className="text-sm text-muted-foreground">
-                  Nháº¥n Enter hoáº·c dáº¥u pháº©y Ä‘á»ƒ thÃªm tag.
+                  Nhấn Enter hoặc dấu phẩy để thêm tag.
                 </p>
                 <FormMessage />
               </FormItem>
@@ -656,7 +656,7 @@ export function JobPostingEditForm({
           />
         </Section>
 
-        <Section title="Ná»™i dung tuyá»ƒn dá»¥ng">
+        <Section title="Nội dung tuyển dụng">
           <FormField
             control={form.control}
             name="responsibilities"
@@ -664,7 +664,7 @@ export function JobPostingEditForm({
               <HtmlInput
                 disabled={isFormDisabled}
                 field={field}
-                label="TrÃ¡ch nhiá»‡m cÃ´ng viá»‡c"
+                label="Trách nhiệm công việc"
               />
             )}
           />
@@ -676,7 +676,7 @@ export function JobPostingEditForm({
               <HtmlInput
                 disabled={isFormDisabled}
                 field={field}
-                label="YÃªu cáº§u á»©ng viÃªn"
+                label="Yêu cầu ứng viên"
               />
             )}
           />
@@ -688,7 +688,7 @@ export function JobPostingEditForm({
               <HtmlInput
                 disabled={isFormDisabled}
                 field={field}
-                label="Quyá»n lá»£i"
+                label="Quyền lợi"
               />
             )}
           />
@@ -703,7 +703,7 @@ export function JobPostingEditForm({
             disabled={isSubmitting}
             onClick={onCancel}
           >
-            Há»§y
+            Hủy
           </Button>
           <Button
             type="submit"
@@ -711,7 +711,7 @@ export function JobPostingEditForm({
             className="min-w-36"
             disabled={isFormDisabled || Boolean(jobPostingDetailError)}
           >
-            {isSubmitting ? "Äang lÆ°u..." : "LÆ°u thay Ä‘á»•i"}
+            {isSubmitting ? "Đang lưu..." : "Lưu thay đổi"}
           </Button>
         </div>
       </form>
