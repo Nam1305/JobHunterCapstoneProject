@@ -8,6 +8,8 @@ public interface IHrCompanyRepository
 
     public Task<Company> GetByIdAsync(Guid companyId);
 
+    public Task<List<CompanyBranch>> GetBranchesByCompanyIdAsync(Guid companyId);
+
     public Task UpdateBrandingAsync(Guid companyId, string? overview, string? benefits);
 
     public Task UpdateLogoAsync(Guid companyId, string logoUrl);

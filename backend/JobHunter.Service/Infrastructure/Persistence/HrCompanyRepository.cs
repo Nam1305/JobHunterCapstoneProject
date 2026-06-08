@@ -1,5 +1,6 @@
 using System.Text.Json;
 using JobHunter.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace JobHunter.Service.Infrastructure.Persistence
 {
@@ -27,6 +28,15 @@ namespace JobHunter.Service.Infrastructure.Persistence
         public async Task<Company> GetByIdAsync(Guid companyId)
         {
             return await _context.Companies.FindAsync(companyId);
+        }
+
+        public Task<List<CompanyBranch>> GetBranchesByCompanyIdAsync(Guid companyId)
+        {
+            return _context.CompanyBranches
+                .AsNoTracking()
+                .Where(branch => branch.CompanyId == companyId)
+                .OrderBy(branch => branch.Name)
+                .ToListAsync();
         }
 
         public async Task DeleteTeamImagesAsync(Guid companyId, string imageUrl)
