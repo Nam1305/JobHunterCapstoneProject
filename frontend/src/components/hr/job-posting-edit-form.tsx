@@ -1,19 +1,20 @@
 ﻿"use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import type { AxiosError } from "axios"
-import { ChevronDownIcon } from "lucide-react"
-import { useEffect, useMemo, useState, type ReactNode } from "react"
+import { useQueryClient } from "@tanstack/react-query"
+import { useEffect, useMemo, type ReactNode } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
 
 import {
-  jobApi,
   useCategoriesQuery,
+  useCreateJobPosting,
+  useExperienceLevelsQuery,
   useJobPostingDetailQuery,
-} from "@/api/job.api"
+  useUpdateJobPosting,
+} from "@/api/hrjob.api"
+import { useGetBranchOption } from "@/api/hrbranch.api"
 import { HtmlInput as HtmlEditorInput } from "@/components/hr/html-input"
 import { Button } from "@/components/ui/button"
 import {
@@ -22,7 +23,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
   Form,
   FormControl,
@@ -33,18 +33,12 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import type { ResponseEntity } from "@/types/base"
 import type {
   JobPostDetail,
   JobPostingCategory as Category,
@@ -53,11 +47,10 @@ import type {
 } from "@/types/job"
 
 const workTypes = ["Toàn thời gian", "Bán thời gian", "Remote", "Hybrid"]
-const branches = ["Hồ Chí Minh", "Hà Nội", "Đà Nẵng"]
-const experienceLevels = ["Intern", "Fresher", "Junior", "Middle"]
 const workTypeOptions = workTypes.map((name) => ({ id: name, name }))
-const branchOptions = branches.map((name) => ({ id: name, name }))
+const emptyBranchOptions: JobPostingOption[] = []
 const emptyCategoryOptions: Category[] = []
+const emptyExperienceLevelOptions: JobPostingOption[] = []
 const emptySubCategoryOptions: JobPostingOption[] = []
 
 const requiredMessage = "Vui lòng nhập thông tin này"
@@ -80,9 +73,7 @@ const formSchema = z.object({
   category: z.string().trim().min(1, "Vui lòng chọn danh mục"),
   subCategory: z.string().trim().min(1, "Vui lòng chọn danh mục con"),
   branch: z.string().trim().min(1, "Vui lòng chọn chi nhánh"),
-  experienceLevels: z
-    .array(z.string())
-    .min(1, "Vui lòng chọn ít nhất một kinh nghiệm"),
+  experienceLevel: z.string().trim().min(1, "Vui lòng chọn cấp độ kinh nghiệm"),
   experienceYears: z.string().trim().min(1, "Vui lòng nhập số năm kinh nghiệm"),
   tags: z.string().trim().min(1, "Vui lòng nhập ít nhất một tag"),
   responsibilities: z
@@ -113,7 +104,7 @@ const defaultFormValues: FormValues = {
   category: "",
   subCategory: "",
   branch: "",
-  experienceLevels: [],
+  experienceLevel: "",
   experienceYears: "",
   tags: "",
   responsibilities: "",
@@ -146,7 +137,21 @@ function findSubCategoryValue(
     : subCategoryValue
 }
 
-function toFormValues(job: JobPostDetail, categories: Category[]): FormValues {
+function findExperienceLevelValue(
+  levels: JobPostingOption[],
+  levelValues: string[] | undefined,
+  levelName: string | undefined
+) {
+  const value = levelValues?.[0] ?? levelName?.split(",")[0]?.trim() ?? ""
+
+  return findOptionValue(levels, value)
+}
+
+function toFormValues(
+  job: JobPostDetail,
+  categories: Category[],
+  experienceLevels: JobPostingOption[]
+): FormValues {
   const category = findOptionValue(categories, job.category ?? "")
 
   return {
@@ -161,7 +166,11 @@ function toFormValues(job: JobPostDetail, categories: Category[]): FormValues {
       job.subCategory ?? ""
     ),
     branch: job.branch ?? "",
-    experienceLevels: job.experienceLevels ?? [],
+    experienceLevel: findExperienceLevelValue(
+      experienceLevels,
+      job.experienceLevels,
+      job.level
+    ),
     experienceYears: job.experienceReuirement ?? "",
     tags: job.tags ?? "",
     responsibilities: job.reponsibilities ?? "",
@@ -179,7 +188,7 @@ function toUpdatePayload(values: FormValues): UpdateJobPostRequest {
     category: values.category,
     subCategory: values.subCategory,
     branch: values.branch,
-    experienceLevels: values.experienceLevels,
+    experienceLevels: values.experienceLevel ? [values.experienceLevel] : [],
     experienceReuirement: values.experienceYears,
     tags: values.tags,
     reponsibilities: values.responsibilities,
@@ -218,78 +227,25 @@ function PostingSelect({
   placeholder: string
   value: string
 }) {
-  return (
-    <Select disabled={disabled} value={value} onValueChange={onChange}>
-      <FormControl>
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-      </FormControl>
-      <SelectContent>
-        {options.map((option) => (
-          <SelectItem key={option.id} value={option.id}>
-            {option.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  )
-}
-
-function ExperienceMultiSelect({
-  disabled,
-  onChange,
-  value,
-}: {
-  disabled?: boolean
-  onChange: (value: string[]) => void
-  value: string[]
-}) {
-  const [open, setOpen] = useState(false)
-
-  const toggleLevel = (level: string) => {
-    if (disabled) {
-      return
-    }
-
-    onChange(
-      value.includes(level)
-        ? value.filter((item) => item !== level)
-        : [...value, level]
-    )
-  }
+  const safeOptions = Array.isArray(options) ? options : []
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          disabled={disabled}
-          type="button"
-          variant="outline"
-          className="h-11 w-full justify-between rounded-xl bg-background px-4 text-left text-base font-normal md:text-sm"
-        >
-          <span className="truncate">
-            {value.length > 0 ? value.join(", ") : "Chọn kinh nghiệm"}
-          </span>
-          <ChevronDownIcon className="text-muted-foreground" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-44 gap-1 rounded-xl p-2">
-        {experienceLevels.map((level) => (
-          <label
-            key={level}
-            className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-accent"
-          >
-            <Checkbox
-              checked={value.includes(level)}
-              disabled={disabled}
-              onCheckedChange={() => toggleLevel(level)}
-            />
-            <span>{level}</span>
-          </label>
-        ))}
-      </PopoverContent>
-    </Popover>
+    <div className="[&_[data-slot=select-trigger]]:w-full">
+      <Select disabled={disabled} value={value} onValueChange={onChange}>
+        <FormControl>
+          <SelectTrigger>
+            <SelectValue placeholder={placeholder} />
+          </SelectTrigger>
+        </FormControl>
+        <SelectContent>
+          {safeOptions.map((option) => (
+            <SelectItem key={option.id} value={option.id}>
+              {option.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   )
 }
 
@@ -343,60 +299,112 @@ export function JobPostingEditForm({
   } = useJobPostingDetailQuery(isEditMode ? jobId ?? "" : "")
   const { data: categoriesData, isLoading: isCategoriesLoading } =
     useCategoriesQuery()
+  const { data: branchOptionsData, isLoading: isBranchOptionsLoading } =
+    useGetBranchOption()
+  const {
+    data: experienceLevelsResponse,
+    isPending: isExperienceLevelsPending,
+  } = useExperienceLevelsQuery()
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: defaultFormValues,
   })
 
-  const updateJobPostingMutation = useMutation<
-    ResponseEntity<JobPostDetail>,
-    AxiosError<ResponseEntity<unknown>>,
-    FormValues
-  >({
-    mutationFn: (values) => {
-      if (!jobId) {
-        throw new Error("Missing job posting id")
-      }
-
-      return jobApi.updateJobPosting(jobId, toUpdatePayload(values))
-    },
-    onSuccess: (response) => {
-      queryClient.invalidateQueries({ queryKey: ["jobPostings"] })
-      queryClient.invalidateQueries({ queryKey: ["jobPostingDetail", jobId] })
-
-      if (response.data) {
-        form.reset(toFormValues(response.data, categoriesData ?? []))
-      }
-
-      toast.success(response.message || "Cập nhật tin tuyển dụng thành công")
-    },
-    onError: (error) => {
-      const message =
-        error.response?.data.message || "Không thể cập nhật tin tuyển dụng"
-
-      form.setError("root", { message })
-      toast.error(message)
-    },
-  })
+  const createJobPostingMutation = useCreateJobPosting()
+  const updateJobPostingMutation = useUpdateJobPosting()
 
   useEffect(() => {
     if (isEditMode && jobPostingDetail?.data) {
-      form.reset(toFormValues(jobPostingDetail.data, categoriesData ?? []))
+      form.reset(
+        toFormValues(
+          jobPostingDetail.data,
+          categoriesData ?? [],
+          experienceLevelsResponse?.data ?? []
+        )
+      )
     }
-  }, [categoriesData, form, isEditMode, jobPostingDetail])
+  }, [
+    categoriesData,
+    experienceLevelsResponse,
+    form,
+    isEditMode,
+    jobPostingDetail,
+  ])
 
   const onSubmit = (values: FormValues) => {
     form.clearErrors("root")
+    const payload = toUpdatePayload(values)
 
     if (isEditMode) {
-      updateJobPostingMutation.mutate(values)
+      if (!jobId) {
+        form.setError("root", { message: "Missing job posting id" })
+        return
+      }
+
+      updateJobPostingMutation.mutate(
+        {
+          jobId,
+          payload,
+        },
+        {
+          onSuccess: (response) => {
+            queryClient.invalidateQueries({ queryKey: ["jobPostings"] })
+            queryClient.invalidateQueries({
+              queryKey: ["jobPostingDetail", jobId],
+            })
+
+            if (response.data) {
+              form.reset(
+                toFormValues(
+                  response.data,
+                  categoriesData ?? [],
+                  experienceLevelsResponse?.data ?? []
+                )
+              )
+            }
+
+            toast.success(
+              response.message || "Cập nhật tin tuyển dụng thành công"
+            )
+          },
+          onError: (error) => {
+            const message =
+              error.response?.data.message ||
+              "Không thể cập nhật tin tuyển dụng"
+
+            form.setError("root", { message })
+            toast.error(message)
+          },
+        }
+      )
+
+      return
     }
+
+    createJobPostingMutation.mutate(payload, {
+      onSuccess: (response) => {
+        queryClient.invalidateQueries({ queryKey: ["jobPostings"] })
+        form.reset(defaultFormValues)
+        toast.success(response.message || "Tạo tin tuyển dụng thành công")
+      },
+      onError: (error) => {
+        const message =
+          error.response?.data.message || "Không thể tạo tin tuyển dụng"
+
+        form.setError("root", { message })
+        toast.error(message)
+      },
+    })
   }
 
-  const isSubmitting = updateJobPostingMutation.isPending
+  const isSubmitting =
+    createJobPostingMutation.isPending || updateJobPostingMutation.isPending
   const isFormDisabled = isJobPostingDetailLoading || isSubmitting
   const categories = categoriesData ?? emptyCategoryOptions
+  const branchOptions = branchOptionsData ?? emptyBranchOptions
+  const experienceLevelOptions =
+    experienceLevelsResponse?.data ?? emptyExperienceLevelOptions
   const selectedCategoryId = form.watch("category")
   const selectedCategory = useMemo(
     () => categories.find((category) => category.id === selectedCategoryId),
@@ -408,6 +416,7 @@ export function JobPostingEditForm({
   const pageDescription = isEditMode
     ? "Cập nhật thông tin bài đăng tuyển dụng."
     : "Nhập thông tin để tạo bài đăng tuyển dụng."
+  const submitLabel = isEditMode ? "Lưu thay đổi" : "Tạo tin"
 
   useEffect(() => {
     const currentSubCategory = form.getValues("subCategory")
@@ -576,9 +585,13 @@ export function JobPostingEditForm({
                 <FormItem>
                   <FormLabel>Chi nhánh</FormLabel>
                   <PostingSelect
-                    disabled={isFormDisabled}
+                    disabled={isFormDisabled || isBranchOptionsLoading}
                     options={branchOptions}
-                    placeholder="Chọn chi nhánh"
+                    placeholder={
+                      isBranchOptionsLoading
+                        ? "Đang tải dữ liệu..."
+                        : "Chọn chi nhánh"
+                    }
                     value={field.value}
                     onChange={field.onChange}
                   />
@@ -589,12 +602,18 @@ export function JobPostingEditForm({
 
             <FormField
               control={form.control}
-              name="experienceLevels"
+              name="experienceLevel"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Kinh nghiệm làm việc</FormLabel>
-                  <ExperienceMultiSelect
-                    disabled={isFormDisabled}
+                  <FormLabel>Cấp độ kinh nghiệm</FormLabel>
+                  <PostingSelect
+                    disabled={isFormDisabled || isExperienceLevelsPending}
+                    options={experienceLevelOptions}
+                    placeholder={
+                      isExperienceLevelsPending
+                        ? "Đang tải dữ liệu..."
+                        : "Chọn cấp độ kinh nghiệm"
+                    }
                     value={field.value}
                     onChange={field.onChange}
                   />
@@ -691,7 +710,7 @@ export function JobPostingEditForm({
             className="min-w-36"
             disabled={isFormDisabled || Boolean(jobPostingDetailError)}
           >
-            {isSubmitting ? "Đang lưu..." : "Lưu thay đổi"}
+            {isSubmitting ? "Đang lưu..." : submitLabel}
           </Button>
         </div>
       </form>

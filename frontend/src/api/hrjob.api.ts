@@ -1,19 +1,27 @@
 import { PageResult, ResponseEntity } from "@/types/base";
 import api from "./api";
 import {
+  ExperienceLevel,
   JobPostDetail,
   JobPosting,
   JobPostingCategory,
   UpdateJobPostRequest,
 } from "@/types/job";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+
+type ApiError = AxiosError<ResponseEntity<string>>;
 
 export interface getJobPostingsParams {
   search?: string;
   status?: "Open" | "Closed";
   page?: number;
   limit?: number;
+}
+
+export interface UpdateJobPostingVariables {
+  jobId: string;
+  payload: UpdateJobPostRequest;
 }
 
 export const jobApi = {
@@ -39,8 +47,19 @@ export const jobApi = {
     );
     return res.data;
   },
+  async createJobPosting(
+    payload: UpdateJobPostRequest
+  ): Promise<ResponseEntity<string>> {
+    const res = await api.post<ResponseEntity<string>>(`hr/jobs`, payload);
+    return res.data;
+  },
   async getCategories() {
     const res = await api.get<JobPostingCategory[]>("categories");
+    return res.data;
+  },
+  async getExperienceLevels() {
+    const res =
+      await api.get<ResponseEntity<ExperienceLevel[]>>("experienceLevels");
     return res.data;
   },
 };
@@ -64,5 +83,36 @@ export function useCategoriesQuery() {
   return useQuery<JobPostingCategory[], AxiosError>({
     queryKey: ["categories"],
     queryFn: () => jobApi.getCategories(),
+    staleTime: Infinity,
+    gcTime: 24 * 60 * 60 * 1000,
+  });
+}
+
+export function useExperienceLevelsQuery() {
+  return useQuery<ResponseEntity<ExperienceLevel[]>, AxiosError>({
+    queryKey: ["experienceLevels"],
+    queryFn: () => jobApi.getExperienceLevels(),
+    staleTime: Infinity,
+    gcTime: 24 * 60 * 60 * 1000,
+  });
+}
+
+export function useCreateJobPosting() {
+  return useMutation<
+    ResponseEntity<string>,
+    ApiError,
+    UpdateJobPostRequest
+  >({
+    mutationFn: jobApi.createJobPosting,
+  });
+}
+
+export function useUpdateJobPosting() {
+  return useMutation<
+    ResponseEntity<JobPostDetail>,
+    ApiError,
+    UpdateJobPostingVariables
+  >({
+    mutationFn: ({ jobId, payload }) => jobApi.updateJobPosting(jobId, payload),
   });
 }

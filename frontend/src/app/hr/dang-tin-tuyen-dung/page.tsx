@@ -21,7 +21,7 @@ import {
   SearchIcon,
 } from "lucide-react"
 
-import { useJobPostingsQuery, type getJobPostingsParams } from "@/api/job.api"
+import { useJobPostingsQuery, type getJobPostingsParams } from "@/api/hrjob.api"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
