@@ -1,15 +1,15 @@
 "use client"
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ChangeEvent,
-  type FormEvent,
-} from "react"
-import { Loader2Icon, UploadIcon } from "lucide-react"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { useQueryClient } from "@tanstack/react-query"
+import { Loader2Icon, UploadIcon } from "lucide-react"
+import {
+  useRef,
+  type ChangeEvent,
+} from "react"
+import { useForm } from "react-hook-form"
 import { toast } from "sonner"
+import * as z from "zod"
 
 import {
   useGetCompanyGeneral,
@@ -19,6 +19,14 @@ import {
 } from "@/api/hrcompany.api"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -31,6 +39,24 @@ import {
 import { Separator } from "@/components/ui/separator"
 
 const COMPANY_GENERAL_QUERY_KEY = ["companyGeneral"]
+
+const companyGeneralFormSchema = z.object({
+  name: z.string(),
+  websiteUrl: z.string(),
+  teamSize: z.string(),
+  country: z.string(),
+  companyType: z.string(),
+})
+
+type CompanyGeneralFormValues = z.infer<typeof companyGeneralFormSchema>
+
+const defaultCompanyGeneralFormValues: CompanyGeneralFormValues = {
+  name: "",
+  websiteUrl: "",
+  teamSize: "",
+  country: "",
+  companyType: "",
+}
 
 const companySizes = [
   "1-100 nhan su",
@@ -142,54 +168,46 @@ export function CompanyGeneralInformationForm() {
   const updateCompanyLogo = useUpdateCompanyLogo()
   const updateCompanyCover = useUpdateCompanyCover()
   const companyGeneral = companyGeneralResponse?.data
-  const [name, setName] = useState("")
-  const [websiteUrl, setWebsiteUrl] = useState("")
-  const [teamSize, setTeamSize] = useState("")
-  const [country, setCountry] = useState("")
-  const [companyType, setCompanyType] = useState("")
   const isTextFormLoading =
     isCompanyGeneralLoading || updateCompanyGeneral.isPending
   const isUploadingLogo = updateCompanyLogo.isPending
   const isUploadingCover = updateCompanyCover.isPending
   const isMediaLoading =
     isCompanyGeneralLoading || isUploadingLogo || isUploadingCover
+  const companyGeneralFormValues: CompanyGeneralFormValues = {
+    name: companyGeneral?.name ?? "",
+    websiteUrl: companyGeneral?.websiteUrl ?? "",
+    teamSize: companyGeneral?.teamSize ?? "",
+    country: companyGeneral?.country ?? "",
+    companyType: companyGeneral?.companyType ?? "",
+  }
+  const form = useForm<CompanyGeneralFormValues>({
+    resolver: zodResolver(companyGeneralFormSchema),
+    defaultValues: defaultCompanyGeneralFormValues,
+    values: companyGeneralFormValues,
+  })
 
-  useEffect(() => {
-    setName(companyGeneral?.name ?? "")
-    setWebsiteUrl(companyGeneral?.websiteUrl ?? "")
-    setTeamSize(companyGeneral?.teamSize ?? "")
-    setCountry(companyGeneral?.country ?? "")
-    setCompanyType(companyGeneral?.companyType ?? "")
-  }, [companyGeneral])
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  async function handleSubmit(values: CompanyGeneralFormValues) {
+    form.clearErrors("root")
 
     try {
       await updateCompanyGeneral.mutateAsync({
-        companyData: {
-          name,
-          websiteUrl,
-          teamSize,
-          country,
-          companyType,
-        },
+        companyData: values,
       })
       toast.success("Cap nhat thong tin cong ty thanh cong")
       await queryClient.invalidateQueries({
         queryKey: COMPANY_GENERAL_QUERY_KEY,
       })
     } catch {
-      toast.error("Khong the cap nhat thong tin cong ty")
+      const message = "Khong the cap nhat thong tin cong ty"
+
+      form.setError("root", { message })
+      toast.error(message)
     }
   }
 
   function handleReset() {
-    setName(companyGeneral?.name ?? "")
-    setWebsiteUrl(companyGeneral?.websiteUrl ?? "")
-    setTeamSize(companyGeneral?.teamSize ?? "")
-    setCountry(companyGeneral?.country ?? "")
-    setCompanyType(companyGeneral?.companyType ?? "")
+    form.reset(companyGeneralFormValues)
   }
 
   async function handleLogoUpload(logoFile: File) {
@@ -217,150 +235,210 @@ export function CompanyGeneralInformationForm() {
   }
 
   return (
-    <form className="space-y-7" onSubmit={handleSubmit}>
-      <Card>
-        <CardContent className="space-y-6 p-4 md:p-6">
-          <fieldset
-            className="space-y-6 disabled:cursor-not-allowed disabled:opacity-70"
-            disabled={isTextFormLoading}
-          >
-            <div className="space-y-3">
-              <Label htmlFor="company-name" className="text-base font-semibold">
-                Ten cong ty
-              </Label>
-              <Input
-                id="company-name"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                placeholder="VD: Acme Corporation"
-                className="h-12 rounded-2xl bg-muted/60 px-4 text-base md:text-base"
+    <Form {...form}>
+      <form className="space-y-7" onSubmit={form.handleSubmit(handleSubmit)}>
+        <Card>
+          <CardContent className="space-y-6 p-4 md:p-6">
+            <fieldset
+              className="space-y-6 disabled:cursor-not-allowed disabled:opacity-70"
+              disabled={isTextFormLoading}
+            >
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel
+                      htmlFor="company-name"
+                      className="text-base font-semibold"
+                    >
+                      Ten cong ty
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        id="company-name"
+                        placeholder="VD: Acme Corporation"
+                        className="h-12 rounded-2xl bg-muted/60 px-4 text-base md:text-base"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-3">
-                <Label
-                  htmlFor="company-website"
-                  className="text-base font-semibold"
-                >
-                  Website
-                </Label>
-                <Input
-                  id="company-website"
-                  type="url"
-                  value={websiteUrl}
-                  onChange={(event) => setWebsiteUrl(event.target.value)}
-                  placeholder="https://example.com"
-                  className="h-12 rounded-2xl bg-muted/60 px-4 text-base md:text-base"
+              <div className="grid gap-6 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="websiteUrl"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel
+                        htmlFor="company-website"
+                        className="text-base font-semibold"
+                      >
+                        Website
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          id="company-website"
+                          type="url"
+                          placeholder="https://example.com"
+                          className="h-12 rounded-2xl bg-muted/60 px-4 text-base md:text-base"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="teamSize"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel className="text-base font-semibold">
+                        Quy mo
+                      </FormLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={isTextFormLoading}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="h-12 w-full rounded-2xl bg-muted/60 px-4 text-base md:text-base">
+                            <SelectValue placeholder="Chon quy mo" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {companySizes.map((size) => (
+                            <SelectItem key={size} value={size}>
+                              {size}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
 
-              <div className="space-y-3">
-                <Label className="text-base font-semibold">Quy mo</Label>
-                <Select
-                  value={teamSize}
-                  onValueChange={setTeamSize}
-                  disabled={isTextFormLoading}
-                >
-                  <SelectTrigger className="h-12 w-full rounded-2xl bg-muted/60 px-4 text-base md:text-base">
-                    <SelectValue placeholder="Chon quy mo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {companySizes.map((size) => (
-                      <SelectItem key={size} value={size}>
-                        {size}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+              <div className="grid gap-6 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="country"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel className="text-base font-semibold">
+                        Quoc gia
+                      </FormLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={isTextFormLoading}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="h-12 w-full rounded-2xl bg-muted/60 px-4 text-base md:text-base">
+                            <SelectValue placeholder="Chon quoc gia" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {countries.map((item) => (
+                            <SelectItem key={item} value={item}>
+                              {item}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-3">
-                <Label className="text-base font-semibold">Quoc gia</Label>
-                <Select
-                  value={country}
-                  onValueChange={setCountry}
-                  disabled={isTextFormLoading}
-                >
-                  <SelectTrigger className="h-12 w-full rounded-2xl bg-muted/60 px-4 text-base md:text-base">
-                    <SelectValue placeholder="Chon quoc gia" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {countries.map((item) => (
-                      <SelectItem key={item} value={item}>
-                        {item}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormField
+                  control={form.control}
+                  name="companyType"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel className="text-base font-semibold">
+                        Nganh nghe
+                      </FormLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={isTextFormLoading}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="h-12 w-full rounded-2xl bg-muted/60 px-4 text-base md:text-base">
+                            <SelectValue placeholder="Chon nganh nghe" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {companyTypes.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {type}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
-              <div className="space-y-3">
-                <Label className="text-base font-semibold">Nganh nghe</Label>
-                <Select
-                  value={companyType}
-                  onValueChange={setCompanyType}
-                  disabled={isTextFormLoading}
-                >
-                  <SelectTrigger className="h-12 w-full rounded-2xl bg-muted/60 px-4 text-base md:text-base">
-                    <SelectValue placeholder="Chon nganh nghe" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {companyTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </fieldset>
-
-          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              disabled={isTextFormLoading}
-              onClick={handleReset}
-            >
-              Huy
-            </Button>
-            <Button type="submit" size="lg" disabled={isTextFormLoading}>
-              {isTextFormLoading ? (
-                <Loader2Icon className="animate-spin" />
+              {form.formState.errors.root?.message ? (
+                <p className="text-sm text-destructive">
+                  {form.formState.errors.root.message}
+                </p>
               ) : null}
-              Luu thay doi
-            </Button>
-          </div>
+            </fieldset>
 
-          <Separator />
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                disabled={isTextFormLoading}
+                onClick={handleReset}
+              >
+                Huy
+              </Button>
+              <Button type="submit" size="lg" disabled={isTextFormLoading}>
+                {isTextFormLoading ? (
+                  <Loader2Icon className="animate-spin" />
+                ) : null}
+                Luu thay doi
+              </Button>
+            </div>
 
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-            <ImageUploadField
-              title="Logo cong ty"
-              hint="Khuyen nghi: 400x400px, PNG/JPG"
-              imageSrc={companyGeneral?.logoUrl ?? fallbackImages.logo}
-              imageAlt="Logo cong ty"
-              disabled={isMediaLoading}
-              isUploading={isUploadingLogo}
-              onFileChange={handleLogoUpload}
-            />
-            <ImageUploadField
-              title="Anh bia"
-              hint="Khuyen nghi: 1200x400px, PNG/JPG"
-              imageSrc={companyGeneral?.coverUrl ?? fallbackImages.cover}
-              imageAlt="Anh bia cong ty"
-              disabled={isMediaLoading}
-              isUploading={isUploadingCover}
-              onFileChange={handleCoverUpload}
-            />
-          </div>
-        </CardContent>
-      </Card>
-    </form>
+            <Separator />
+
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+              <ImageUploadField
+                title="Logo cong ty"
+                hint="Khuyen nghi: 400x400px, PNG/JPG"
+                imageSrc={companyGeneral?.logoUrl ?? fallbackImages.logo}
+                imageAlt="Logo cong ty"
+                disabled={isMediaLoading}
+                isUploading={isUploadingLogo}
+                onFileChange={handleLogoUpload}
+              />
+              <ImageUploadField
+                title="Anh bia"
+                hint="Khuyen nghi: 1200x400px, PNG/JPG"
+                imageSrc={companyGeneral?.coverUrl ?? fallbackImages.cover}
+                imageAlt="Anh bia cong ty"
+                disabled={isMediaLoading}
+                isUploading={isUploadingCover}
+                onFileChange={handleCoverUpload}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </form>
+    </Form>
   )
 }

@@ -33,21 +33,21 @@ type Branch = {
 const branches: Branch[] = [
   {
     id: "head-office",
-    name: "Trá»¥ sá»Ÿ chÃ­nh",
-    address: "123 Nguyá»…n Huá»‡, HoÃ n Kiáº¿m",
-    city: "HÃ  Ná»™i",
+    name: "Trụ sở chính",
+    address: "123 Nguyễn Huệ, Hoàn Kiếm",
+    city: "Hà Nội",
   },
   {
     id: "hcm-branch",
-    name: "Chi nhÃ¡nh HCM",
-    address: "456 LÃª Lá»£i, Q.1",
-    city: "TP. Há»“ ChÃ­ Minh",
+    name: "Chi nhánh HCM",
+    address: "456 Lê Lợi, Q.1",
+    city: "TP. Hồ Chí Minh",
   },
   {
     id: "danang-branch",
-    name: "Chi nhÃ¡nh ÄÃ  Náºµng",
-    address: "789 Tráº§n PhÃº, Háº£i ChÃ¢u",
-    city: "ÄÃ  Náºµng",
+    name: "Chi nhánh Đà Nẵng",
+    address: "789 Trần Phú, Hải Châu",
+    city: "Đà Nẵng",
   },
 ]
 
@@ -56,45 +56,45 @@ function BranchDialogForm({ branch }: { branch: Branch | null }) {
     <form className="space-y-6">
       <div className="space-y-3">
         <Label htmlFor="branch-name">
-          TÃªn chi nhÃ¡nh
+          Tên chi nhánh
         </Label>
         <Input
           id="branch-name"
           defaultValue={branch?.name ?? ""}
-          placeholder="VD: Chi nhÃ¡nh HÃ  Ná»™i"
+          placeholder="VD: Chi nhánh Hà Nội"
         />
       </div>
 
       <div className="space-y-3">
         <Label htmlFor="branch-address">
-          Äá»‹a chá»‰
+          Địa chỉ
         </Label>
         <Input
           id="branch-address"
           defaultValue={branch?.address ?? ""}
-          placeholder="Sá»‘ nhÃ , tÃªn Ä‘Æ°á»ng, phÆ°á»ng/quáº­n"
+          placeholder="Số nhà, tên đường, phường/quận"
         />
       </div>
 
       <div className="space-y-3">
         <Label htmlFor="branch-city">
-          ThÃ nh phá»‘
+          Thành phố
         </Label>
         <Input
           id="branch-city"
           defaultValue={branch?.city ?? ""}
-          placeholder="VD: HÃ  Ná»™i"
+          placeholder="VD: Hà Nội"
         />
       </div>
 
       <DialogFooter>
         <DialogClose asChild>
           <Button type="button" variant="outline" size="lg">
-            Há»§y
+            Hủy
           </Button>
         </DialogClose>
         <Button type="submit" size="lg">
-          LÆ°u
+          Lưu
         </Button>
       </DialogFooter>
     </form>
@@ -120,7 +120,7 @@ export function CompanyBranch() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <h2 className="text-xl font-semibold tracking-normal">
-            Danh Sách chi nhánh
+            Danh sách chi nhánh
           </h2>
           <p className="text-sm font-medium text-muted-foreground">
             {branches.length} chi nhánh

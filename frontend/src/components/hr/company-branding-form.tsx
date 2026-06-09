@@ -1,15 +1,18 @@
 "use client"
 
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useQueryClient } from "@tanstack/react-query"
+import { ImagePlusIcon, XIcon } from "lucide-react"
+import Image from "next/image"
 import {
   useEffect,
   useRef,
   useState,
   type ChangeEvent,
-  type FormEvent,
 } from "react"
-import { ImagePlusIcon, Loader2Icon, XIcon } from "lucide-react"
-import { useQueryClient } from "@tanstack/react-query"
+import { useForm } from "react-hook-form"
 import { toast } from "sonner"
+import * as z from "zod"
 
 import {
   useAddTeamImages,
@@ -17,13 +20,33 @@ import {
   useGetBranding,
   useUpdateBranding,
 } from "@/api/hrcompany.api"
+import { HtmlInput } from "@/components/hr/html-input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { HtmlInput } from "@/components/hr/html-input"
 
 const COMPANY_BRANDING_QUERY_KEY = ["companyBranding"]
+
+const brandingFormSchema = z.object({
+  overview: z.string(),
+  benefits: z.string(),
+})
+
+type BrandingFormValues = z.infer<typeof brandingFormSchema>
+
+const defaultBrandingFormValues: BrandingFormValues = {
+  overview: "",
+  benefits: "",
+}
 
 type UploadedTeamPhoto = {
   id: string
@@ -32,23 +55,36 @@ type UploadedTeamPhoto = {
 }
 
 function BrandingHtmlInput({
+  disabled,
   id,
   label,
-  value,
+  onBlur,
   onChange,
+  value,
 }: {
+  disabled?: boolean
   id: string
   label: string
-  value: string
+  onBlur: () => void
   onChange: (value: string) => void
+  value: string
 }) {
   return (
-    <div className="space-y-3">
-      <Label htmlFor={id} className="text-base font-semibold">
+    <FormItem className="space-y-3">
+      <FormLabel htmlFor={id} className="text-base font-semibold">
         {label}
-      </Label>
-      <HtmlInput id={id} name={id} value={value} onValueChange={onChange} />
-    </div>
+      </FormLabel>
+      <HtmlInput
+        id={id}
+        disabled={disabled}
+        name={id}
+        value={value}
+        onBlur={onBlur}
+        onValueChange={onChange}
+        textareaWrapper={(editor) => <FormControl>{editor}</FormControl>}
+      />
+      <FormMessage />
+    </FormItem>
   )
 }
 
@@ -62,14 +98,9 @@ function TeamPhotoUrlList({
   const deleteTeamImage = useDeleteTeamImage()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const uploadedPhotosRef = useRef<UploadedTeamPhoto[]>([])
-  const [teamPhotoUrls, setTeamPhotoUrls] = useState(initialTeamPhotoUrls)
   const [uploadedPhotos, setUploadedPhotos] = useState<UploadedTeamPhoto[]>([])
   const [deletingImageUrl, setDeletingImageUrl] = useState<string | null>(null)
   const isMutatingImages = addTeamImages.isPending || deleteTeamImage.isPending
-
-  useEffect(() => {
-    setTeamPhotoUrls(initialTeamPhotoUrls)
-  }, [initialTeamPhotoUrls])
 
   useEffect(() => {
     uploadedPhotosRef.current = uploadedPhotos
@@ -121,14 +152,8 @@ function TeamPhotoUrlList({
     }
   }
 
-  async function handleRemoveExistingPhoto(
-    imageUrl: string,
-    indexToRemove: number
-  ) {
+  async function handleRemoveExistingPhoto(imageUrl: string) {
     setDeletingImageUrl(imageUrl)
-    setTeamPhotoUrls((currentUrls) =>
-      currentUrls.filter((_, index) => index !== indexToRemove)
-    )
 
     try {
       await deleteTeamImage.mutateAsync({ imageUrl })
@@ -138,7 +163,6 @@ function TeamPhotoUrlList({
       })
     } catch {
       toast.error("Không thể xóa ảnh đội ngũ")
-      setTeamPhotoUrls(initialTeamPhotoUrls)
     } finally {
       setDeletingImageUrl(null)
     }
@@ -169,14 +193,17 @@ function TeamPhotoUrlList({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {teamPhotoUrls.map((url, index) => (
+        {initialTeamPhotoUrls.map((url, index) => (
           <div
             key={`${url}-${index}`}
             className="group relative overflow-hidden rounded-lg border bg-muted"
           >
-            <img
+            <Image
               src={url}
               alt={`Ảnh đội ngũ ${index + 1}`}
+              width={640}
+              height={360}
+              unoptimized
               className="aspect-video h-full w-full object-cover"
             />
             <input type="hidden" name="teamPhotoUrls" value={url} />
@@ -187,7 +214,7 @@ function TeamPhotoUrlList({
               aria-label={`Xóa ảnh đội ngũ ${index + 1}`}
               className="absolute right-2 top-2 bg-background/90 text-foreground shadow-sm hover:bg-background"
               disabled={isMutatingImages || deletingImageUrl === url}
-              onClick={() => handleRemoveExistingPhoto(url, index)}
+              onClick={() => handleRemoveExistingPhoto(url)}
             >
               <XIcon />
             </Button>
@@ -199,9 +226,12 @@ function TeamPhotoUrlList({
             key={photo.id}
             className="group relative overflow-hidden rounded-lg border bg-muted"
           >
-            <img
+            <Image
               src={photo.previewUrl}
               alt={`Ảnh đội ngũ đã tải lên ${index + 1}`}
+              width={640}
+              height={360}
+              unoptimized
               className="aspect-video h-full w-full object-cover"
             />
             <Button
@@ -248,84 +278,113 @@ export function CompanyBrandingForm() {
     useGetBranding()
   const updateBranding = useUpdateBranding()
   const branding = brandingResponse?.data
-  const [overview, setOverview] = useState("")
-  const [benefits, setBenefits] = useState("")
   const isFormLoading = isBrandingLoading || updateBranding.isPending
+  const brandingFormValues: BrandingFormValues = {
+    overview: branding?.overview ?? "",
+    benefits: branding?.benefits ?? "",
+  }
+  const form = useForm<BrandingFormValues>({
+    resolver: zodResolver(brandingFormSchema),
+    defaultValues: defaultBrandingFormValues,
+    values: brandingFormValues,
+  })
 
-  useEffect(() => {
-    setOverview(branding?.overview ?? "")
-    setBenefits(branding?.benefits ?? "")
-  }, [branding])
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  async function handleSubmit(values: BrandingFormValues) {
+    form.clearErrors("root")
 
     try {
       await updateBranding.mutateAsync({
-        brandingData: {
-          overview,
-          benefits,
-        },
+        brandingData: values,
       })
       toast.success("Cập nhật thương hiệu công ty thành công")
       await queryClient.invalidateQueries({
         queryKey: COMPANY_BRANDING_QUERY_KEY,
       })
     } catch {
-      toast.error("Không thể cập nhật thương hiệu công ty")
+      const message = "Không thể cập nhật thương hiệu công ty"
+
+      form.setError("root", { message })
+      toast.error(message)
     }
   }
 
   function handleReset() {
-    setOverview(branding?.overview ?? "")
-    setBenefits(branding?.benefits ?? "")
+    form.reset(brandingFormValues)
   }
 
   return (
-    <form className="space-y-7" onSubmit={handleSubmit}>
-      <Card>
-        <CardContent className="space-y-6 p-4 md:p-6">
-          <fieldset
-            className="space-y-6 disabled:cursor-not-allowed disabled:opacity-70"
-            disabled={isFormLoading}
-          >
-      <BrandingHtmlInput
-        id="company-overview"
-        label="Tổng quan công ty (Overview)"
-        value={overview}
-        onChange={setOverview}
-      />
+    <Form {...form}>
+      <form className="space-y-7" onSubmit={form.handleSubmit(handleSubmit)}>
+        <Card>
+          <CardContent className="space-y-6 p-4 md:p-6">
+            <fieldset
+              className="space-y-6 disabled:cursor-not-allowed disabled:opacity-70"
+              disabled={isFormLoading}
+            >
+              <FormField
+                control={form.control}
+                name="overview"
+                render={({ field }) => (
+                  <BrandingHtmlInput
+                    id="company-overview"
+                    disabled={isFormLoading}
+                    label="Tổng quan công ty (Overview)"
+                    value={field.value}
+                    onBlur={field.onBlur}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
 
-      <BrandingHtmlInput
-        id="company-benefits"
-        label="Phúc lợi (Benefits)"
-        value={benefits}
-        onChange={setBenefits}
-      />
+              <FormField
+                control={form.control}
+                name="benefits"
+                render={({ field }) => (
+                  <BrandingHtmlInput
+                    id="company-benefits"
+                    disabled={isFormLoading}
+                    label="Phúc lợi (Benefits)"
+                    value={field.value}
+                    onBlur={field.onBlur}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
 
-      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <Button
-          type="button"
-          variant="outline"
-          size="lg"
-          disabled={updateBranding.isPending}
-          onClick={handleReset}
-        >
-          Hủy
-        </Button>
-        <Button type="submit" size="lg" disabled={updateBranding.isPending}>
-          Lưu thay đổi
-        </Button>
-      </div>
+              {form.formState.errors.root?.message ? (
+                <p className="text-sm text-destructive">
+                  {form.formState.errors.root.message}
+                </p>
+              ) : null}
 
-      
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  disabled={updateBranding.isPending}
+                  onClick={handleReset}
+                >
+                  Hủy
+                </Button>
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={updateBranding.isPending}
+                >
+                  Lưu thay đổi
+                </Button>
+              </div>
 
-          <Separator />
+              <Separator />
 
-          <TeamPhotoUrlList initialTeamPhotoUrls={branding?.teamPhotoUrls ?? []} />
-          </fieldset>
-        </CardContent>
-      </Card>
-    </form>
+              <TeamPhotoUrlList
+                initialTeamPhotoUrls={branding?.teamPhotoUrls ?? []}
+              />
+            </fieldset>
+          </CardContent>
+        </Card>
+      </form>
+    </Form>
   )
 }

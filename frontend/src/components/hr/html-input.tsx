@@ -1,6 +1,12 @@
 "use client"
 
-import { type ComponentProps, type ReactNode } from "react"
+import {
+  useEffect,
+  useRef,
+  type ComponentProps,
+  type FormEvent,
+  type ReactNode,
+} from "react"
 import {
   BoldIcon,
   ItalicIcon,
@@ -9,10 +15,12 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
 
-const htmlInputTextareaClassName =
-  "min-h-48 rounded-none border-0 bg-background px-4 py-3 font-mono text-sm shadow-none focus-visible:ring-0"
+const htmlInputEditorClassName =
+  "min-h-48 bg-background px-4 py-3 text-sm outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
 
 type HtmlInputProps = Omit<ComponentProps<typeof Textarea>, "onChange"> & {
   onChange?: ComponentProps<typeof Textarea>["onChange"]
@@ -21,10 +29,14 @@ type HtmlInputProps = Omit<ComponentProps<typeof Textarea>, "onChange"> & {
 }
 
 function EditorToolbarButton({
+  disabled,
   label,
+  onClick,
   children,
 }: {
+  disabled?: boolean
   label: string
+  onClick: () => void
   children: ReactNode
 }) {
   return (
@@ -33,6 +45,8 @@ function EditorToolbarButton({
       variant="ghost"
       size="icon-sm"
       aria-label={label}
+      disabled={disabled}
+      onClick={onClick}
     >
       {children}
     </Button>
@@ -41,40 +55,117 @@ function EditorToolbarButton({
 
 export function HtmlInput({
   className,
+  defaultValue,
+  disabled,
+  name,
   onChange,
+  onBlur,
   onValueChange,
+  placeholder,
   textareaWrapper,
+  value,
   ...props
 }: HtmlInputProps) {
-  const textarea = (
-    <Textarea
-      className={className ?? htmlInputTextareaClassName}
-      spellCheck={false}
-      onChange={(event) => {
-        onChange?.(event)
-        onValueChange?.(event.target.value)
-      }}
-      {...props}
+  const editorRef = useRef<HTMLDivElement>(null)
+  const htmlValue = String(value ?? defaultValue ?? "")
+  const lastHtmlRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    const editor = editorRef.current
+
+    if (!editor || htmlValue === lastHtmlRef.current) {
+      return
+    }
+
+    editor.innerHTML = htmlValue
+    lastHtmlRef.current = htmlValue
+  }, [htmlValue])
+
+  const emitValue = () => {
+    const nextValue = editorRef.current?.innerHTML ?? ""
+
+    lastHtmlRef.current = nextValue
+    onValueChange?.(nextValue)
+  }
+
+  const handleInput = (event: FormEvent<HTMLDivElement>) => {
+    emitValue()
+    onChange?.(event as unknown as Parameters<NonNullable<typeof onChange>>[0])
+  }
+
+  const handleBlur = (
+    event: Parameters<NonNullable<ComponentProps<"div">["onBlur"]>>[0]
+  ) => {
+    onBlur?.(event as unknown as Parameters<NonNullable<typeof onBlur>>[0])
+  }
+
+  const exec = (command: string) => {
+    if (disabled) {
+      return
+    }
+
+    document.execCommand(command, false)
+    editorRef.current?.focus()
+    emitValue()
+  }
+
+  const editor = (
+    <div
+      ref={editorRef}
+      contentEditable={!disabled}
+      suppressContentEditableWarning
+      aria-disabled={disabled}
+      className={cn(htmlInputEditorClassName, className)}
+      data-placeholder={placeholder}
+      onBlur={handleBlur}
+      onInput={handleInput}
     />
   )
 
   return (
     <div className="overflow-hidden rounded-xl border bg-background">
       <div className="flex h-11 items-center gap-1 border-b bg-muted/50 px-3">
-        <EditorToolbarButton label="Bold">
+        <EditorToolbarButton
+          disabled={disabled}
+          label="Bold"
+          onClick={() => exec("bold")}
+        >
           <BoldIcon />
         </EditorToolbarButton>
-        <EditorToolbarButton label="Italic">
+        <EditorToolbarButton
+          disabled={disabled}
+          label="Italic"
+          onClick={() => exec("italic")}
+        >
           <ItalicIcon />
         </EditorToolbarButton>
-        <EditorToolbarButton label="Bullet list">
+        <Separator orientation="vertical" className="mx-1 h-4" />
+        <EditorToolbarButton
+          disabled={disabled}
+          label="Bullet list"
+          onClick={() => exec("insertUnorderedList")}
+        >
           <ListIcon />
         </EditorToolbarButton>
-        <EditorToolbarButton label="Numbered list">
+        <EditorToolbarButton
+          disabled={disabled}
+          label="Numbered list"
+          onClick={() => exec("insertOrderedList")}
+        >
           <ListOrderedIcon />
         </EditorToolbarButton>
       </div>
-      {textareaWrapper ? textareaWrapper(textarea) : textarea}
+      {textareaWrapper ? textareaWrapper(editor) : editor}
+      <Textarea
+        aria-hidden="true"
+        className="hidden"
+        disabled={disabled}
+        name={name}
+        readOnly
+        tabIndex={-1}
+        value={htmlValue}
+        {...props}
+      />
     </div>
   )
 }
