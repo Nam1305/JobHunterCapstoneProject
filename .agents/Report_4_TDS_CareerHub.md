@@ -44,135 +44,152 @@
 
 # Part 1 — System Architecture
 
-> **Guidance — Part 1**
-> Answers: What does the system look like structurally, and why was this architecture chosen?
-> Complete this part before any coding begins.
-> Decisions made here (architecture style, tech stack, deployment) are expensive to reverse.
+Part 1 defines the structural foundation for CareerHub: the architecture style, runtime components, source-code boundaries, technology stack, and deployment approach.
 
 ## 1.1 Architecture Overview & Decision Rationale
 
-> **Guidance — 1.1**
-> Describe the chosen architecture style and explain WHY it was chosen.
-> Do not just name the style — justify it against NFR targets, team size, timeline, constraints.
-> Reference the NFR IDs from the SRS that drove key architecture decisions.
+Architecture Style: Layered Monolith with separated frontend and backend applications
 
-Architecture Style: [Monolith / Microservices / Serverless / Event-Driven / Hybrid]
+CareerHub uses a layered monolith backend with a separate Next.js frontend. The backend is an ASP.NET Core REST API split into `JobHunter.WebAPI`, `JobHunter.Service`, and `JobHunter.Domain`; the frontend communicates with it through JSON REST APIs.
 
-[2–4 paragraphs describing the high-level structure and rationale.]
+This architecture is chosen because the project has a small team, limited timeline, and closely related recruitment workflows. It keeps development and deployment simple while preserving clear boundaries between presentation, business logic, data access, and domain model.
+
+JWT authentication, role-based authorization, PostgreSQL, and EF Core support the main security and data integrity needs. Future integrations such as AI CV screening, file storage, and chat can be added behind service interfaces without changing the core architecture.
+
 
 | Decision | Choice | Rationale | NFR / Constraint Driving It |
 | --- | --- | --- | --- |
-| Architecture style | [e.g. Layered Monolith] | [Reason] | [e.g. team size 4, 6-month timeline] |
-| Primary language | [e.g. Java 21] | [Reason] | [e.g. team expertise] |
-| Database type | [e.g. PostgreSQL] | [Reason] | [e.g. NFR-C01 — 5-yr retention, ACID] |
-| Auth approach | [e.g. Session / JWT] | [Reason] | [e.g. NFR-SEC01, user type] |
-| [Add decisions] |  |  |  |
-
-> **ARCH — Architecture-specific additions**
-> Microservices: Add service decomposition rationale — DDD bounded contexts, team ownership, scaling.
-> Serverless: Describe the function grouping strategy and the event/trigger model.
-> Event-Driven: Describe the domain event model and whether event sourcing or CQRS is applied.
+| Architecture style | Layered Monolith | Simpler development, testing, deployment, and debugging for a small team while preserving clear layer boundaries. | NFR-MNT-01 Maintainability; project timeline constraint |
+| Backend platform | ASP.NET Core Web API on .NET 10 | Matches existing repository implementation; supports REST controllers, middleware, DI, JWT auth, OpenAPI, and EF Core. | Team technology choice; NFR-MNT-01 Maintainability |
+| Frontend platform | Next.js 16 with React 19 and TypeScript | Provides a modern web UI, route-based structure, reusable components, and strong typing. | NFR-USAB-01 Usability; NFR-MNT-01 Maintainability |
+| Database type | PostgreSQL | Relational model with ACID transactions for users, jobs, companies, refresh tokens, and future recruitment records. | NFR-DATA-01 Data integrity; NFR-REL-01 Reliability |
+| ORM / persistence | Entity Framework Core with Npgsql | Reduces data-access boilerplate, supports migrations, and keeps repository implementations consistent. | NFR-MNT-01 Maintainability; NFR-DATA-01 Data integrity |
+| Auth approach | JWT access token with refresh token stored by backend | Supports REST API authentication, role-based access, and future frontend/mobile clients. | NFR-SEC-01 Authentication and authorization |
+| File storage | S3-compatible object storage | Supports company logos, CV files, and future uploaded media outside the relational database. | NFR-SCAL-01 Storage scalability |
+| API documentation | Swagger/OpenAPI | Provides discoverable API contracts for frontend and backend collaboration. | Development constraint; NFR-MNT-01 Maintainability |
 
 ## 1.2 System / Component Diagram
 
-> **Guidance — 1.2**
-> Runtime view — shows what components exist when the system is running and how they communicate.
-> Different from Package Diagram (which shows source code structure).
-> Minimum content: all runtime components, communication paths with protocol labels,
-> deployment boundaries (same process / different server / cloud service).
-
-> **Diagram Placeholder — System Component Diagram**
-> INSERT HERE: Component Diagram showing runtime components and communication.
-> Tool: draw.io | File: [ProjectName]_ComponentDiagram.drawio
-> Export PNG and embed at full content width.
+> **Diagram required — skipped as requested**
+> Component diagram should be created in draw.io as `CareerHub_ComponentDiagram.drawio`, exported to PNG, and embedded here.
+> Required content: Browser / Next.js frontend, ASP.NET Core Web API, PostgreSQL database, S3-compatible storage, Google OAuth service, and communication protocols.
 
 | Component | Type | Responsibility | Technology |
 | --- | --- | --- | --- |
-| [e.g. Web Frontend] | [UI / Service / DB / Queue / Cache / External] | [What it does] | [Tech] |
-| [e.g. Application Server] |  |  |  |
-| [e.g. Primary Database] |  |  |  |
-| [Add rows] |  |  |  |
-
-> **ARCH — Architecture-specific additions**
-> Microservices: Add API Gateway box. Show service-to-service communication (sync vs async).
-> Serverless: Show function groups, event triggers, and cloud managed services (S3, SQS, etc.).
-> Event-Driven: Show message broker as central component. Label topics/queues on arrows.
+| Web Browser | Client | Runs the CareerHub web UI and stores authentication cookies/tokens according to frontend behavior. | Modern browser |
+| Frontend Web App | UI | Provides Candidate, HR, and Admin screens; calls backend REST APIs; manages client state and server state. | Next.js 16, React 19, TypeScript, Axios, TanStack Query, Redux Toolkit |
+| Backend API | Service | Exposes REST endpoints for authentication, users, jobs, companies, and future recruitment workflows. | ASP.NET Core Web API, .NET 10 |
+| Authentication Module | Service | Validates login/register requests, Google login, JWT access tokens, refresh tokens, and user roles. | ASP.NET Core Authentication JwtBearer, BCrypt.Net |
+| Application Use Cases | Service | Implements business workflows and coordinates repositories, DTOs, and external services. | C# use case classes in `JobHunter.Service` |
+| Persistence Layer | Service | Provides repository abstractions and EF Core repository implementations. | Entity Framework Core 10, Npgsql |
+| Primary Database | DB | Stores users, refresh tokens, companies, branches, jobs, job categories, job subcategories, and job levels. | PostgreSQL |
+| Object Storage | External | Stores uploaded assets such as company logos, CV files, and future recruitment documents. | S3-compatible storage using AWSSDK.S3 |
+| Google OAuth Service | External | Verifies Google login identity information for supported authentication flow. | Google OAuth client integration via HTTP |
+| Swagger / OpenAPI UI | Developer Tool | Documents and tests backend REST APIs during development and review. | Swashbuckle.AspNetCore, Microsoft.AspNetCore.OpenApi |
 
 ## 1.3 Package / Module Diagram
 
-> **Guidance — 1.3**
-> Source code structure view — shows how code is organised into packages, modules, or layers.
-> This is the diagram developers reference most frequently during implementation.
-> Rules: dependencies flow in ONE direction (no circular); each package has a single responsibility;
-> the diagram must match the actual folder/package structure in the repository.
+> **Diagram required — skipped as requested**
+> Package/module diagram should be created in draw.io as `CareerHub_PackageDiagram.drawio` and embedded here.
+> Required dependency direction: `JobHunter.WebAPI` -> `JobHunter.Service` -> `JobHunter.Domain`; frontend calls backend only through HTTP APIs.
 
-> **REQUIRED for Monolith**
-> Without package boundaries, monolith code degrades into a 'big ball of mud' over time.
-> This diagram is the primary architectural guard — define it before Sprint 1.
+Backend source-code dependency rule:
 
-> **Diagram Placeholder — Package / Module Diagram**
-> INSERT HERE: Package Diagram showing source code structure and allowed dependency directions.
-> Tool: draw.io | File: [ProjectName]_PackageDiagram.drawio
+```text
+Allowed:
+JobHunter.WebAPI -> JobHunter.Service -> JobHunter.Domain
+
+Not allowed:
+JobHunter.Domain -> JobHunter.Service
+JobHunter.Domain -> JobHunter.WebAPI
+JobHunter.Service -> JobHunter.WebAPI
+Circular dependencies between layers
+```
 
 | Package / Module | Layer | Responsibility | Allowed Dependencies |
 | --- | --- | --- | --- |
-| `[com.project.controller]` | Presentation | Handle HTTP requests; delegate to service | Service layer only |
-| `[com.project.service]` | Business Logic | Implement use cases; enforce BRs | Repository, Domain model |
-| `[com.project.repository]` | Data Access | DB queries via ORM/JDBC | Domain model only |
-| `[com.project.domain]` | Domain Model | Entity classes, value objects, enums | None (no dependencies) |
-| `[com.project.config]` | Configuration | Spring config, security config, beans | Any layer (cross-cutting) |
-| `[com.project.integration]` | Ext. Integration | Clients for external APIs | Called by Service layer only |
-| [Add packages] |  |  |  |
-
-> **ARCH — Architecture-specific variations**
-> Monolith: Use Java packages / .NET namespaces. Enforce boundaries via ArchUnit tests.
-> Microservices: This diagram shows the internal structure of ONE service. Repeat per service.
-> Serverless: Show function groups and shared layers (Lambda Layers / shared libraries).
-> Event-Driven: Show consumer / producer packages separately. Include event schema package.
+| `frontend/src/app` | Frontend Routing | Defines Next.js app routes and layouts for Candidate, HR, and Admin areas. | Frontend components, providers, API modules |
+| `frontend/src/components` | Frontend UI | Contains reusable UI, dashboard, auth, user, and HR components. | Frontend hooks, store, types, utilities |
+| `frontend/src/api` | Frontend API Client | Centralizes HTTP client setup and API functions for auth and user operations. | Axios, frontend types |
+| `frontend/src/store` | Frontend State | Manages client-side auth and modal state. | Redux Toolkit |
+| `frontend/src/providers` | Frontend Composition | Provides Redux store, React Query, and theme context to the app. | Store, QueryClient, theme provider |
+| `frontend/src/types` | Frontend Types | Defines TypeScript data contracts for auth, user, job, company, and base responses. | None except TypeScript |
+| `JobHunter.WebAPI/Controllers` | Presentation | Handles HTTP requests, validates routing concerns, calls use case interfaces, and returns HTTP responses. | `JobHunter.Service` interfaces and DTOs only |
+| `JobHunter.WebAPI/Middlewares` | Presentation / Cross-cutting | Handles HTTP pipeline behavior such as global exception handling. | ASP.NET Core middleware APIs; service DTOs if needed |
+| `JobHunter.WebAPI/Program.cs` | Application Startup | Registers controllers, CORS, JWT auth, EF Core, DI, Swagger, middleware, and route mapping. | `JobHunter.Service`, ASP.NET Core |
+| `JobHunter.Service/Interface/UseCase` | Application Contract | Defines use case interfaces consumed by controllers. | DTOs, domain types when needed |
+| `JobHunter.Service/UseCase` | Business Logic | Implements application workflows for auth, users, jobs, and companies. | Repositories, services, DTOs, domain entities |
+| `JobHunter.Service/Interface/Persistence` | Persistence Contract | Defines repository interfaces for data access. | Domain entities, DTOs when needed |
+| `JobHunter.Service/Infrastructure/Persistence` | Data Access | Contains EF Core `JobhunterContext`, migrations, and repository implementations. | EF Core, Npgsql, domain entities |
+| `JobHunter.Service/Interface/Service` | External Service Contract | Defines external integration contracts such as Google auth and file storage. | DTOs or simple request/response models |
+| `JobHunter.Service/Service` | External Integration | Implements Google auth verification and S3-compatible file storage. | HTTP client, AWSSDK.S3, DTOs |
+| `JobHunter.Service/DTOs` | Application Contract | Contains request/response DTOs and shared response wrappers. | Simple types and domain-safe projections |
+| `JobHunter.Service/Config` | Configuration / DI | Registers repositories, use cases, JWT auth, CORS, S3 client, and application services. | ASP.NET Core DI, configuration, service implementations |
+| `JobHunter.Service/Utils` | Shared Application Helpers | Provides focused helpers for password hashing, claims, token cookies, and slug generation. | Framework or package APIs required by each helper |
+| `JobHunter.Domain/Entities` | Domain Model | Defines persisted domain entities such as `User`, `RefreshToken`, `Company`, `CompanyBranch`, `Job`, `JobCategory`, `JobSubcategory`, and `JobLevel`. | None |
+| `JobHunter.Domain/Enums` | Domain Model | Defines domain enum values such as user roles and job work types. | None |
 
 ## 1.4 Technology Stack
 
-> **REQUIRED**
-> List every technology choice with version and justification.
-> Vague entries like 'standard libraries' are not acceptable.
-> Include: language, framework, database, cache, queue, test tools, build tools, deployment.
-
 | Layer | Technology | Version | Justification |
 | --- | --- | --- | --- |
-| Language | [e.g. Java] | [e.g. 21 LTS] | [e.g. Team expertise; LTS stability] |
-| Web Framework | [e.g. Spring Boot] | [e.g. 3.2.x] |  |
-| ORM / Data Access | [e.g. Spring Data JPA] | [e.g. 3.x] |  |
-| Primary Database | [e.g. PostgreSQL] | [e.g. 16] | [e.g. ACID; NFR-C01 retention] |
-| Cache | [e.g. Redis / None] |  |  |
-| Message Queue | [e.g. RabbitMQ / None] |  |  |
-| Frontend | [e.g. Thymeleaf / React] |  |  |
-| Authentication | [e.g. Spring Security — Session / JWT] |  |  |
-| Build Tool | [e.g. Maven / Gradle] |  |  |
-| Test Framework | [e.g. JUnit 5 + Mockito] |  |  |
-| Migration Tool | [e.g. Flyway / Liquibase] |  |  |
-| Containerisation | [e.g. Docker] |  |  |
-| CI/CD | [e.g. GitHub Actions] |  |  |
-| Monitoring | [e.g. Prometheus + Grafana] |  |  |
-| Logging | [e.g. SLF4J + Logback / ELK] |  |  |
+| Backend Language / Runtime | C# / .NET | .NET 10 (`net10.0`) | Existing backend targets .NET 10; provides modern C# support, DI, middleware, and web API hosting. |
+| Backend Web Framework | ASP.NET Core Web API | 10.0.8 packages | Controller-based REST API with middleware pipeline, authentication, authorization, CORS, and OpenAPI support. |
+| API Documentation | Swashbuckle.AspNetCore; Microsoft.AspNetCore.OpenApi | 10.1.7; 10.0.8 | Provides Swagger UI and OpenAPI contracts for development and API review. |
+| ORM / Data Access | Entity Framework Core | 10.0.8 | Supports DbContext, repository implementation, LINQ queries, and schema migrations. |
+| PostgreSQL Provider | Npgsql.EntityFrameworkCore.PostgreSQL | 10.0.1 | Connects EF Core to PostgreSQL. |
+| Primary Database | PostgreSQL | Version to be fixed by deployment environment | Relational data store for users, companies, jobs, job categories, job levels, and refresh tokens. |
+| Authentication | Microsoft.AspNetCore.Authentication.JwtBearer | 10.0.8 | Validates JWT access tokens, supports role claims, and reads access tokens from cookies when present. |
+| Password Hashing | BCrypt.Net-Next | 4.2.0 | Stores passwords using a salted adaptive hashing algorithm instead of plain text or fast hashes. |
+| External Identity | Google OAuth client flow | Google client integration via backend HTTP client and frontend Google OAuth package | Supports Google login verification for user authentication. |
+| File / Object Storage | AWSSDK.S3 with S3-compatible endpoint | 4.0.23.4 | Stores uploaded files and media outside the relational database. |
+| Frontend Framework | Next.js | 16.2.6 | Provides route-based React application structure and production build tooling. |
+| Frontend Language | TypeScript | 6.0.3 | Improves maintainability with compile-time type checking. |
+| Frontend UI Runtime | React / React DOM | 19.2.6 | Component-based UI for Candidate, HR, and Admin experiences. |
+| Frontend Styling | Tailwind CSS | 4.3.0 | Utility-first styling aligned with the existing shadcn UI setup. |
+| Frontend Component System | shadcn, Radix UI, Base UI, Lucide React | shadcn 4.7.0; radix-ui 1.4.3; @base-ui/react 1.5.0; lucide-react 1.16.0 | Provides accessible UI primitives, reusable components, and consistent icons. |
+| Frontend HTTP Client | Axios | 1.16.1 | Centralized JSON HTTP calls from frontend to backend REST APIs. |
+| Server State Management | TanStack React Query | 5.100.11 | Handles remote data fetching, caching, and request status in the frontend. |
+| Client State Management | Redux Toolkit | 2.12.0 | Manages local application state such as authentication and modals. |
+| Forms / Validation | React Hook Form, Zod, @hookform/resolvers | 7.76.0; 4.4.3; 5.2.2 | Provides typed form validation and consistent form handling. |
+| Tables / Dashboard Charts | TanStack Table, Recharts | 8.21.3; 3.8.0 | Supports admin/HR data tables and dashboard visualization. |
+| Backend Build Tool | .NET SDK / MSBuild | .NET 10 SDK | Builds the multi-project backend solution. |
+| Frontend Build Tool | Next.js build pipeline | 16.2.6 | Builds the production frontend app. |
+| Backend Migration Tool | EF Core Migrations | 10.0.8 | Version-controls database schema changes under `Infrastructure/Persistence/Migrations`. |
+| Frontend Linting / Formatting | ESLint, eslint-config-next, Prettier, prettier-plugin-tailwindcss | 9.39.4; 16.2.6; 3.8.3; 0.8.0 | Maintains frontend code quality and formatting consistency. |
+| Backend Test Framework | Not currently present in repository; planned xUnit + Moq recommended | TBD | Test project should be added before production release for use case, repository, and controller coverage. |
+| Cache | None currently implemented | N/A | Current scale does not require distributed caching; can add Redis later for high-traffic reads or distributed sessions. |
+| Message Queue | None currently implemented | N/A | Current workflows are synchronous REST; future AI CV screening or notifications may introduce a queue. |
+| Containerisation | Not currently present in repository; Docker recommended | TBD | Dockerfile and docker-compose are not yet defined; recommended for repeatable local and staging deployments. |
+| CI/CD | Not currently present in repository; GitHub Actions recommended | TBD | Automated build, lint, typecheck, and test pipeline should be added before release. |
+| Monitoring | Not currently implemented; ASP.NET Core logging baseline | TBD | Production should add application health checks, structured logs, and uptime/error monitoring. |
+| Logging | ASP.NET Core built-in logging | .NET 10 | Existing backend uses ASP.NET Core logging configuration; production can add structured sinks later. |
 
 ## 1.5 Deployment Architecture
 
-> **Guidance — 1.5**
-> Describe where and how the system runs in each environment.
-> Show: servers/containers, load balancer, CDN, external services, network boundaries.
-> Include environment matrix (dev / staging / prod) with differences noted.
+> **Diagram required — skipped as requested**
+> Deployment diagram should be created in draw.io as `CareerHub_DeploymentDiagram.drawio` and embedded here.
+> Required content: client browser, frontend hosting, backend API hosting, PostgreSQL instance, S3-compatible object storage, Google OAuth, environment boundaries, and HTTPS/REST labels.
 
-> **Diagram Placeholder — Deployment Architecture**
-> INSERT HERE: Deployment diagram showing infrastructure, containers, and environments.
-> Tool: draw.io | File: [ProjectName]_DeploymentDiagram.drawio
+Development runs the Next.js frontend and ASP.NET Core backend locally as separate processes. The backend connects to local PostgreSQL and applies EF Core migrations on startup outside the testing environment.
+
+Staging mirrors production with deployed frontend/backend services, a dedicated PostgreSQL database, staging object storage, and Google OAuth test credentials.
+
+Production exposes the frontend and backend through HTTPS. PostgreSQL remains private to the backend, object storage uses production credentials, and all secrets must be stored outside committed configuration files.
 
 | Aspect | Development | Staging | Production |
 | --- | --- | --- | --- |
-| Infrastructure | [Local Docker Compose] | [Cloud provider] | [Cloud provider] |
-| Database | [Local / Shared dev DB] | [Dedicated instance] | [Managed service + replica] |
-| Scaling | Single instance | Single instance | [Auto-scaling / manual] |
-| External APIs | [Sandbox / mock] | [Sandbox] | [Live] |
-| Monitoring | Minimal | Full | Full + alerting |
+| Infrastructure | Local developer machine; Next.js dev server and ASP.NET Core API process | Cloud or VPS environment matching production shape | Cloud or VPS production environment |
+| Frontend Hosting | `next dev --turbopack` locally | Deployed Next.js build, recommended Vercel or Node host | Deployed Next.js build, recommended Vercel or Node host with HTTPS/CDN |
+| Backend Hosting | `dotnet run` for `JobHunter.WebAPI` | ASP.NET Core hosted as a service/container/process | ASP.NET Core hosted as a service/container/process behind HTTPS reverse proxy or platform ingress |
+| Database | Local PostgreSQL database named `jobhunter` | Dedicated staging PostgreSQL database | Dedicated production PostgreSQL database with backups |
+| Schema Migration | EF Core migrations applied automatically on API startup except testing | EF Core migrations applied during deployment/startup after backup | EF Core migrations applied through controlled deployment process |
+| Object Storage | S3-compatible dev endpoint/bucket | Separate staging bucket and credentials | Production S3-compatible bucket with restricted access policies |
+| Authentication | JWT with local/staging secrets; Google OAuth test client | JWT with staging secret; Google OAuth staging client | JWT with production secret; Google OAuth production client |
+| Network Access | Frontend and backend may run on localhost; CORS allows localhost | HTTPS frontend calls HTTPS API; database private to backend | HTTPS-only public access; database and storage credentials private to backend |
+| Scaling | Single frontend process and single backend process | Single instance unless load testing requires more | Start with single backend instance; scale horizontally when traffic requires it |
+| External APIs | Google OAuth and S3-compatible storage using development credentials | Google OAuth and S3-compatible storage using staging credentials | Google OAuth and S3-compatible storage using production credentials |
+| Monitoring | Console logs and Swagger/manual testing | Application logs, API smoke tests, basic uptime checks | Structured logs, health checks, error tracking, uptime monitoring, and alerting |
 
 # Part 2 — Interface Specification
 
