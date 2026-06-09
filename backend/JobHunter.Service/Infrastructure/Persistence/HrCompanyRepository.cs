@@ -34,9 +34,52 @@ namespace JobHunter.Service.Infrastructure.Persistence
         {
             return _context.CompanyBranches
                 .AsNoTracking()
-                .Where(branch => branch.CompanyId == companyId)
+                .Where(branch => branch.CompanyId == companyId && !branch.IsDelete)
                 .OrderBy(branch => branch.Name)
                 .ToListAsync();
+        }
+
+        public async Task<CompanyBranch> AddCompanyBranchAsync(Guid companyId, string name, string address, string city)
+        {
+            var company = await _context.Companies.FindAsync(companyId);
+            if (company == null)
+            {
+                throw new Exception("Company not found");
+            }
+
+            var branch = new CompanyBranch
+            {
+                Id = Guid.NewGuid(),
+                CompanyId = companyId,
+                Name = name,
+                Address = address,
+                City = city,
+                CitySlug = string.IsNullOrWhiteSpace(city) ? null : JobHunter.Service.Utils.SlugGenerator.GenerateSlug(city)
+            };
+
+            _context.CompanyBranches.Add(branch);
+            await _context.SaveChangesAsync();
+
+            return branch;
+        }
+
+        public async Task<CompanyBranch> UpdateCompanyBranchAsync(Guid companyId, Guid branchId, string name, string address, string city)
+        {
+            var branch = await _context.CompanyBranches
+                .FirstOrDefaultAsync(b => b.Id == branchId && b.CompanyId == companyId && !b.IsDelete);
+
+            if (branch == null)
+            {
+                throw new Exception("Branch not found");
+            }
+
+            branch.Name = name;
+            branch.Address = address;
+            branch.City = city;
+            branch.CitySlug = string.IsNullOrWhiteSpace(city) ? null : JobHunter.Service.Utils.SlugGenerator.GenerateSlug(city);
+
+            await _context.SaveChangesAsync();
+            return branch;
         }
 
         public async Task DeleteTeamImagesAsync(Guid companyId, string imageUrl)
@@ -114,5 +157,17 @@ namespace JobHunter.Service.Infrastructure.Persistence
 
             await _context.SaveChangesAsync();
         }
-    }
+        public async Task DeleteBranchAsync(Guid companyId, Guid branchId)
+        {
+            var branch = await _context.CompanyBranches
+                .FirstOrDefaultAsync(b => b.Id == branchId && b.CompanyId == companyId && !b.IsDelete);
+
+            if (branch == null)
+            {
+                throw new Exception("Branch not found");
+            }
+
+            branch.IsDelete = true;
+            await _context.SaveChangesAsync();
+        }    }
 }

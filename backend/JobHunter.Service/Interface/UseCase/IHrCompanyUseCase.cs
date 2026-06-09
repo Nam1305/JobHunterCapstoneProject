@@ -20,4 +20,12 @@ public interface IHrCompanyUseCase
     public Task<GeneralResponseDto> GetGeneralInfoAsync(Guid userId);
 
     public Task<List<BranchDto>> GetBranchesByUserIdAsync(Guid userId);
-}
+
+    public Task<List<BranchDetailsDto>> GetCompanyBranchesByUserIdAsync(Guid userId);
+
+    public Task<BranchDetailsDto> CreateBranchAsync(Guid userId, CreateBranchRequestDto request);
+
+    public Task<BranchDetailsDto> UpdateBranchAsync(Guid userId, Guid branchId, CreateBranchRequestDto request);
+
+    public Task DeleteBranchAsync(Guid userId, Guid branchId);
+} 

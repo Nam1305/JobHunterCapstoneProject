@@ -89,13 +89,46 @@ namespace JobHunter.WebAPI.Controllers
             return new ResponseBase<GeneralResponseDto>(generalInfo);
         }
 
-        [HttpGet("brach/getbyUId")]
+        [HttpGet("branch/getbyUid")]
         public async Task<ActionResult<ResponseBase<List<BranchDto>>>> GetBranchesByUserId()
         {
             var userId = User.GetUserId();
             var branches = await _hrCompanyUseCase.GetBranchesByUserIdAsync(userId);
 
             return new ResponseBase<List<BranchDto>>(branches);
+        }
+
+        [HttpGet("branches")]
+        public async Task<ActionResult<ResponseBase<List<BranchDetailsDto>>>> GetBranches()
+        {
+            var userId = User.GetUserId();
+            var branches = await _hrCompanyUseCase.GetCompanyBranchesByUserIdAsync(userId);
+
+            return new ResponseBase<List<BranchDetailsDto>>(branches);
+        }
+
+        [HttpPost("branch")]
+        public async Task<ActionResult<ResponseBase<BranchDetailsDto>>> CreateBranch([FromBody] CreateBranchRequestDto request)
+        {
+            var userId = User.GetUserId();
+            var createdBranch = await _hrCompanyUseCase.CreateBranchAsync(userId, request);
+            return new ResponseBase<BranchDetailsDto>(createdBranch);
+        }
+
+        [HttpPut("branch/{id}")]
+        public async Task<ActionResult<ResponseBase<BranchDetailsDto>>> UpdateBranch(Guid id, [FromBody] CreateBranchRequestDto request)
+        {
+            var userId = User.GetUserId();
+            var updatedBranch = await _hrCompanyUseCase.UpdateBranchAsync(userId, id, request);
+            return new ResponseBase<BranchDetailsDto>(updatedBranch);
+        }
+
+        [HttpDelete("branch/{id}")]
+        public async Task<ActionResult<ResponseBase<string>>> DeleteBranch(Guid id)
+        {
+            var userId = User.GetUserId();
+            await _hrCompanyUseCase.DeleteBranchAsync(userId, id);
+            return new ResponseBase<string>("Xóa chi nhánh thành công");
         }
     }
 }

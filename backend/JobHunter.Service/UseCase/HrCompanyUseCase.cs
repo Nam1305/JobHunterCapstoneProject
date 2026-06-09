@@ -183,6 +183,130 @@ public class HrCompanyUseCase : IHrCompanyUseCase
         }).ToList();
     }
 
+    public async Task<List<BranchDetailsDto>> GetCompanyBranchesByUserIdAsync(Guid userId)
+    {
+        var user = await _userRepository.GetUserById(userId);
+        if (user == null)
+        {
+            throw new KeyNotFoundException("User not found");
+        }
+
+        if (!user.CompanyId.HasValue)
+        {
+            throw new InvalidOperationException("User is not assigned to a company");
+        }
+
+        var company = await _hrCompanyRepository.GetByIdAsync(user.CompanyId.Value);
+        if (company == null)
+        {
+            throw new KeyNotFoundException("Company not found");
+        }
+
+        var branches = await _hrCompanyRepository.GetBranchesByCompanyIdAsync(company.Id);
+
+        return branches.Select(branch => new BranchDetailsDto
+        {
+            Id = branch.Id,
+            Name = branch.Name ?? string.Empty,
+            Address = branch.Address ?? string.Empty,
+            City = branch.City ?? string.Empty
+        }).ToList();
+    }
+
+    public async Task<BranchDetailsDto> CreateBranchAsync(Guid userId, CreateBranchRequestDto request)
+    {
+        var user = await _userRepository.GetUserById(userId);
+        if (user == null)
+        {
+            throw new KeyNotFoundException("User not found");
+        }
+
+        if (!user.CompanyId.HasValue)
+        {
+            throw new InvalidOperationException("User is not assigned to a company");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            throw new ArgumentException("Branch name is required.", nameof(request.Name));
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Address))
+        {
+            throw new ArgumentException("Branch address is required.", nameof(request.Address));
+        }
+
+        if (string.IsNullOrWhiteSpace(request.City))
+        {
+            throw new ArgumentException("Branch city is required.", nameof(request.City));
+        }
+
+        var branch = await _hrCompanyRepository.AddCompanyBranchAsync(user.CompanyId.Value, request.Name.Trim(), request.Address.Trim(), request.City.Trim());
+
+        return new BranchDetailsDto
+        {
+            Id = branch.Id,
+            Name = branch.Name ?? string.Empty,
+            Address = branch.Address ?? string.Empty,
+            City = branch.City ?? string.Empty
+        };
+    }
+
+    public async Task<BranchDetailsDto> UpdateBranchAsync(Guid userId, Guid branchId, CreateBranchRequestDto request)
+    {
+        var user = await _userRepository.GetUserById(userId);
+        if (user == null)
+        {
+            throw new KeyNotFoundException("User not found");
+        }
+
+        if (!user.CompanyId.HasValue)
+        {
+            throw new InvalidOperationException("User is not assigned to a company");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            throw new ArgumentException("Branch name is required.", nameof(request.Name));
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Address))
+        {
+            throw new ArgumentException("Branch address is required.", nameof(request.Address));
+        }
+
+        if (string.IsNullOrWhiteSpace(request.City))
+        {
+            throw new ArgumentException("Branch city is required.", nameof(request.City));
+        }
+
+        var branch = await _hrCompanyRepository.UpdateCompanyBranchAsync(user.CompanyId.Value, branchId, request.Name.Trim(), request.Address.Trim(), request.City.Trim());
+
+        return new BranchDetailsDto
+        {
+            Id = branch.Id,
+            Name = branch.Name ?? string.Empty,
+            Address = branch.Address ?? string.Empty,
+            City = branch.City ?? string.Empty
+        };
+    }
+
+    public async Task DeleteBranchAsync(Guid userId, Guid branchId)
+    {
+        var user = await _userRepository.GetUserById(userId);
+        if (user == null)
+        {
+            throw new KeyNotFoundException("User not found");
+        }
+
+        if (!user.CompanyId.HasValue)
+        {
+            throw new InvalidOperationException("User is not assigned to a company");
+        }
+
+        await _hrCompanyRepository.DeleteBranchAsync(user.CompanyId.Value, branchId);
+    }
+
     public async Task<BrandingResponseDto> UpdateBrandingAsync(Guid userId, EditBrandingDto request)
     {
         var user = await _userRepository.GetUserById(userId);
