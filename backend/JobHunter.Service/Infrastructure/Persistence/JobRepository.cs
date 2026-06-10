@@ -34,6 +34,7 @@ public class JobRepository : IJobRepository
             {
                 Id = j.Id,
                 Title = j.Title,
+                Slug = j.Slug,
                 ApplicationCount = j.Applications.Count()
             })
             .ToListAsync();
@@ -58,5 +59,13 @@ public class JobRepository : IJobRepository
     public Task<bool> IsJobOwnedByCompany(Guid jobId, Guid companyId)
     {
         return _context.Jobs.AnyAsync(j => j.Id == jobId && j.CompanyId == companyId);
+    }
+
+    public Task<Guid?> GetJobIdBySlug(string slug)
+    {
+        return _context.Jobs
+            .Where(j => j.Slug == slug)
+            .Select(j => (Guid?)j.Id)
+            .FirstOrDefaultAsync();
     }
 }

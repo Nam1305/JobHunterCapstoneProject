@@ -26,7 +26,7 @@ Lưu trữ thông tin khi người dùng ứng tuyển vào một công việc c
 | `resume_id` | uuid | FK | Liên kết với bảng `resumes(id)`. |
 | `job_id` | uuid | Not Null, FK | Liên kết với bảng `jobs(id)`. |
 | `cover_letter` | text | | Thư giới thiệu của ứng viên. |
-| `status` | enum | | Trạng thái đơn (e.g., Pending, Reviewed, Rejected, Accepted). |
+| `status` | enum | | Trạng thái đơn (e.g, Reviewed, Rejected, Accepted). |
 | `match_score` | decimal | | Điểm phù hợp giữa hồ sơ và công việc (tính bằng AI). |
 | `ai_suggestion` | text | | Gợi ý/Nhận xét từ AI về đơn ứng tuyển. |
 | `applied_at` | timestamptz | | Thời điểm ứng tuyển. |

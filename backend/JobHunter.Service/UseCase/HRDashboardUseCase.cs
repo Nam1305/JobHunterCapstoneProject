@@ -1,3 +1,4 @@
+using JobHunter.Domain.Enums;
 using JobHunter.Service.DTOs;
 using JobHunter.Service.DTOs.HR;
 using JobHunter.Service.Interface.Persistence;
@@ -42,7 +43,7 @@ public class HRDashboardUseCase : IHRDashboardUseCase
         };
     }
 
-    public async Task<PageResult<CandidateDto>> GetCandidates(Guid userId, Guid jobId, string? status, int page, int pageSize)
+    public async Task<PageResult<CandidateDto>> GetCandidates(Guid userId, string jobSlug, string? status, int page, int pageSize)
     {
         var user = await _userRepository.GetUserById(userId);
         if (user == null)
@@ -50,12 +51,16 @@ public class HRDashboardUseCase : IHRDashboardUseCase
         if (user.CompanyId == null)
             throw new UnauthorizedAccessException("Tài khoản HR chưa được liên kết với công ty");
 
-        var isOwned = await _jobRepository.IsJobOwnedByCompany(jobId, user.CompanyId.Value);
+        var jobId = await _jobRepository.GetJobIdBySlug(jobSlug);
+        if (jobId == null)
+            throw new KeyNotFoundException("Không tìm thấy công việc");
+
+        var isOwned = await _jobRepository.IsJobOwnedByCompany(jobId.Value, user.CompanyId.Value);
         if (!isOwned)
             throw new KeyNotFoundException("Không tìm thấy công việc");
 
-        var items = await _applicationRepository.GetCandidatesByJob(jobId, status, page, pageSize);
-        var total = await _applicationRepository.CountCandidatesByJob(jobId, status);
+        var items = await _applicationRepository.GetCandidatesByJob(jobId.Value, status, page, pageSize);
+        var total = await _applicationRepository.CountCandidatesByJob(jobId.Value, status);
 
         return new PageResult<CandidateDto>
         {
@@ -64,5 +69,46 @@ public class HRDashboardUseCase : IHRDashboardUseCase
             PageSize = pageSize,
             TotalCount = total
         };
+    }
+
+    public async Task<ApplicationDetailDto> GetApplicationDetail(Guid userId, Guid applicationId)
+    {
+        var user = await _userRepository.GetUserById(userId);
+        if (user == null)
+            throw new KeyNotFoundException("Không tìm thấy người dùng");
+        if (user.CompanyId == null)
+            throw new UnauthorizedAccessException("Tài khoản HR chưa được liên kết với công ty");
+
+        var application = await _applicationRepository.GetApplicationDetail(applicationId);
+        if (application == null)
+            throw new KeyNotFoundException("Không tìm thấy đơn ứng tuyển");
+
+        var isOwned = await _jobRepository.IsJobOwnedByCompany(application.JobId, user.CompanyId.Value);
+        if (!isOwned)
+            throw new KeyNotFoundException("Không tìm thấy đơn ứng tuyển");
+
+        return application;
+    }
+
+    public async Task UpdateApplicationStatus(Guid userId, Guid applicationId, string status)
+    {
+        if (!Enum.TryParse<ApplicationStatus>(status, ignoreCase: true, out var parsedStatus))
+            throw new ArgumentException("Trạng thái không hợp lệ");
+
+        var user = await _userRepository.GetUserById(userId);
+        if (user == null)
+            throw new KeyNotFoundException("Không tìm thấy người dùng");
+        if (user.CompanyId == null)
+            throw new UnauthorizedAccessException("Tài khoản HR chưa được liên kết với công ty");
+
+        var jobId = await _applicationRepository.GetJobIdByApplication(applicationId);
+        if (jobId == null)
+            throw new KeyNotFoundException("Không tìm thấy đơn ứng tuyển");
+
+        var isOwned = await _jobRepository.IsJobOwnedByCompany(jobId.Value, user.CompanyId.Value);
+        if (!isOwned)
+            throw new KeyNotFoundException("Không tìm thấy đơn ứng tuyển");
+
+        await _applicationRepository.UpdateApplicationStatus(applicationId, parsedStatus);
     }
 }

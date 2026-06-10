@@ -10,6 +10,9 @@ public class JobItemDto
     [JsonPropertyName("title")]
     public string? Title { get; set; }
 
+    [JsonPropertyName("slug")]
+    public string? Slug { get; set; }
+
     [JsonPropertyName("applicationCount")]
     public int ApplicationCount { get; set; }
 }
