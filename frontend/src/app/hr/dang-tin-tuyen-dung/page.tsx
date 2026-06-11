@@ -152,21 +152,30 @@ const columns: ColumnDef<JobPosting>[] = [
 
 export default function JobPostingPage() {
   const [search, setSearch] = React.useState("")
+  const [debouncedSearch, setDebouncedSearch] = React.useState("")
   const [status, setStatus] = React.useState<JobPostingStatusFilter>("all")
   const [pagination, setPagination] = React.useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   })
 
+  React.useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(search)
+    }, 1000)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [search])
+
   const queryParams = React.useMemo<getJobPostingsParams>(
     () => ({
-      search: search.trim() || undefined,
+      search: debouncedSearch.trim() || undefined,
       status:
         status === "all" ? undefined : status === "open" ? "Open" : "Closed",
       page: pagination.pageIndex + 1,
       limit: pagination.pageSize,
     }),
-    [pagination.pageIndex, pagination.pageSize, search, status]
+    [debouncedSearch, pagination.pageIndex, pagination.pageSize, status]
   )
 
   const { data, error, isFetching, isLoading } =
@@ -194,7 +203,7 @@ export default function JobPostingPage() {
 
   React.useEffect(() => {
     setPagination((current) => ({ ...current, pageIndex: 0 }))
-  }, [search, status])
+  }, [debouncedSearch, status])
 
   return (
     <div className="flex w-full flex-1 flex-col gap-6 p-4 md:p-6">
