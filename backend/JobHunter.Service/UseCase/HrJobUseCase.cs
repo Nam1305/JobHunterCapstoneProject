@@ -312,7 +312,7 @@ public class HrJobUseCase : IHrJobUseCase
             throw new ArgumentException("Job name is required");
         }
 
-        if (string.IsNullOrWhiteSpace(request.JobWorkType))
+        if (!request.JobWorkType.HasValue)
         {
             throw new ArgumentException("Job work type is required");
         }

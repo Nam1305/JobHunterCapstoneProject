@@ -23,7 +23,7 @@ public partial class Job : BaseEntity
 
     public string? Benefits { get; set; }
 
-    public string? WorkType { get; set; }
+    public JobWorkType? WorkType { get; set; }
 
     public DateTimeOffset? ExpiredAt { get; set; }
 

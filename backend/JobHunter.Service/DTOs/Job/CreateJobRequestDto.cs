@@ -8,7 +8,7 @@ public class CreateJobRequestDto
 
     public string? SalaryRange { get; set; }
 
-    public string? JobWorkType { get; set; }
+    public JobWorkType? JobWorkType { get; set; }
 
     public string? ExperiedDate { get; set; }
 
