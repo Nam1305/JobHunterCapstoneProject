@@ -29,11 +29,16 @@ export const branchApi = {
 }
 
 
-export function useGetBranchOption(){
+export function useGetBranchOption({
+    refetchOnMount,
+}: {
+    refetchOnMount?: boolean | "always";
+} = {}){
     return useQuery<BranchOption[], AxiosError>({
         queryKey: ["branches"],
         queryFn:  branchApi.getBranchOption,
-        staleTime: 5 * 60 * 1000
+        staleTime: 5 * 60 * 1000,
+        refetchOnMount
     });
 }
 

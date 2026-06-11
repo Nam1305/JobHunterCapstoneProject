@@ -471,16 +471,29 @@ export function JobPostingEditForm({
 }: JobPostingEditFormProps) {
   const queryClient = useQueryClient()
   const isEditMode = mode === "edit"
-  const { data: categoriesData, isLoading: isCategoriesLoading } =
-    useCategoriesQuery()
-  const { data: branchOptionsData, isLoading: isBranchOptionsLoading } =
-    useGetBranchOption()
+  const optionRefetchOnMount = isEditMode ? "always" : undefined
+  const {
+    data: categoriesData,
+    isFetching: isCategoriesFetching,
+    isLoading: isCategoriesLoading,
+  } = useCategoriesQuery({ refetchOnMount: optionRefetchOnMount })
+  const {
+    data: branchOptionsData,
+    isFetching: isBranchOptionsFetching,
+    isLoading: isBranchOptionsLoading,
+  } = useGetBranchOption({ refetchOnMount: optionRefetchOnMount })
   const {
     data: experienceLevelsResponse,
+    isFetching: isExperienceLevelsFetching,
     isPending: isExperienceLevelsPending,
-  } = useExperienceLevelsQuery()
+  } = useExperienceLevelsQuery({ refetchOnMount: optionRefetchOnMount })
   const areOptionsReady =
-    !isCategoriesLoading && !isBranchOptionsLoading && !isExperienceLevelsPending
+    !isCategoriesLoading &&
+    !isCategoriesFetching &&
+    !isBranchOptionsLoading &&
+    !isBranchOptionsFetching &&
+    !isExperienceLevelsPending &&
+    !isExperienceLevelsFetching
   const canLoadJobPostingDetail =
     isEditMode &&
     Boolean(jobId) &&
@@ -560,17 +573,19 @@ export function JobPostingEditForm({
               queryKey: ["jobPostingDetail", jobId],
             })
 
-            if (response.data) {
-              form.reset(
-                toFormValues(
-                  response.data,
-                  categoriesData ?? [],
-                  branchOptionsData ?? [],
-                  experienceLevelsResponse?.data ?? []
-                )
-              )
-              initializedJobIdRef.current = jobId
-            }
+            // if (response.data) {
+            //   form.reset(
+            //     toFormValues(
+            //       response.data,
+            //       categoriesData ?? [],
+            //       branchOptionsData ?? [],
+            //       experienceLevelsResponse?.data ?? []
+            //     )
+            //   )
+            //   initializedJobIdRef.current = jobId
+            // }
+
+            initializedJobIdRef.current = null;
 
             toast.success(
               response.message || "Cập nhật tin tuyển dụng thành công"
