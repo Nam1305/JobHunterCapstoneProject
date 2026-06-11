@@ -271,6 +271,35 @@ public class HrJobUseCase : IHrJobUseCase
         return MapJobDetail(job);
     }
 
+    public async Task<JobDetailDto> CloseJob(Guid userId, Guid uid)
+    {
+        var user = await _userRepository.GetUserById(userId);
+        if (user == null)
+        {
+            throw new KeyNotFoundException("User not found");
+        }
+
+        if (!user.CompanyId.HasValue)
+        {
+            throw new InvalidOperationException("User is not assigned to a company");
+        }
+
+        var job = await _jobRepository.GetJobByIdForUpdate(uid);
+        if (job == null || job.CompanyId != user.CompanyId.Value)
+        {
+            throw new KeyNotFoundException("Job not found");
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        job.ExpiredAt = now.AddMinutes(-1);
+        job.UpdatedAt = now;
+        job.UpdatedBy = userId.ToString();
+
+        await _jobRepository.SaveChanges();
+
+        return MapJobDetail(job);
+    }
+
     private static void ValidateCreateJobRequest(CreateJobRequestDto? request)
     {
         if (request == null)

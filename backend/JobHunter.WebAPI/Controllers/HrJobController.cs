@@ -75,6 +75,16 @@ public class HrJobController : ControllerBase
         return new ResponseBase<JobDetailDto>(job);
     }
 
+    [HttpPatch("{uid:guid}/close")]
+    [Authorize(Roles = "HR")]
+    public async Task<ActionResult<ResponseBase<JobDetailDto>>> CloseJob(Guid uid)
+    {
+        var userId = User.GetUserId();
+        var job = await _jobUseCase.CloseJob(userId, uid);
+
+        return new ResponseBase<JobDetailDto>(job);
+    }
+
     [HttpGet("{uid:guid}")]
     [Authorize(Roles = "HR")]
     public async Task<ActionResult<ResponseBase<JobDetailDto>>> GetJobDetail(Guid uid)

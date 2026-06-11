@@ -16,6 +16,8 @@ public interface IHrJobUseCase
 
     Task<JobDetailDto> UpdateJob(Guid userId, Guid uid, CreateJobRequestDto request);
 
+    Task<JobDetailDto> CloseJob(Guid userId, Guid uid);
+
     Task<List<CategoryDto>> GetCategories();
 
     Task<List<ExperienceLevelDto>> GetExperienceLevels();
