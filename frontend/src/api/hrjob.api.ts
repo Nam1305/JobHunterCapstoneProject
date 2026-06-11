@@ -71,11 +71,11 @@ export function useJobPostingsQuery(params: getJobPostingsParams) {
   });
 }
 
-export function useJobPostingDetailQuery(jobId: string) {
+export function useJobPostingDetailQuery(jobId: string, enabled = true) {
   return useQuery<ResponseEntity<JobPostDetail>, AxiosError>({
     queryKey: ["jobPostingDetail", jobId],
     queryFn: () => jobApi.getJobPostingDetail(jobId),
-    enabled: Boolean(jobId),
+    enabled: enabled && Boolean(jobId),
   });
 }
 

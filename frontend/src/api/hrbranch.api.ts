@@ -7,7 +7,7 @@ import { CompanyBranchReponseDto, CompanyBranchRequestDto } from "@/types/compan
 
 export const branchApi = {
     async getBranchOption(): Promise<BranchOption[]>{
-        const res = await api.get<ResponseEntity<BranchOption[]>>("hr/company/brach/getbyUId");
+        const res = await api.get<ResponseEntity<BranchOption[]>>("hr/company/branch/getbyUId");
         return res.data.data ?? [];
     },
     async getBranches(): Promise<ResponseEntity<CompanyBranchRequestDto[]>>{

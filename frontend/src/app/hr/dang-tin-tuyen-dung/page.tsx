@@ -132,12 +132,6 @@ const columns: ColumnDef<JobPosting>[] = [
       <div className="flex justify-end gap-1">
         <Button variant="ghost" size="icon" className="size-8" asChild>
           <Link href={`/hr/dang-tin-tuyen-dung/${row.original.id}/chinh-sua`}>
-            <EyeIcon />
-            <span className="sr-only">Xem {row.original.title}</span>
-          </Link>
-        </Button>
-        <Button variant="ghost" size="icon" className="size-8" asChild>
-          <Link href={`/hr/dang-tin-tuyen-dung/${row.original.id}/chinh-sua`}>
             <PencilIcon />
             <span className="sr-only">Sửa {row.original.title}</span>
           </Link>

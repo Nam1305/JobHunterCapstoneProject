@@ -2,7 +2,15 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useQueryClient } from "@tanstack/react-query"
-import { useEffect, useMemo, type ReactNode } from "react"
+import { XIcon } from "lucide-react"
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
@@ -23,6 +31,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Form,
   FormControl,
@@ -32,6 +41,11 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import {
   Select,
   SelectContent,
@@ -73,9 +87,11 @@ const formSchema = z.object({
   category: z.string().trim().min(1, "Vui lòng chọn danh mục"),
   subCategory: z.string().trim().min(1, "Vui lòng chọn danh mục con"),
   branch: z.string().trim().min(1, "Vui lòng chọn chi nhánh"),
-  experienceLevel: z.string().trim().min(1, "Vui lòng chọn cấp độ kinh nghiệm"),
+  experienceLevels: z
+    .array(z.string())
+    .min(1, "Vui lòng chọn cấp độ kinh nghiệm"),
   experienceYears: z.string().trim().min(1, "Vui lòng nhập số năm kinh nghiệm"),
-  tags: z.string().trim().min(1, "Vui lòng nhập ít nhất một tag"),
+  tags: z.array(z.string()).min(1, "Vui lòng nhập ít nhất một tag"),
   responsibilities: z
     .string()
     .refine((value) => value.trim().length > 0, requiredMessage),
@@ -104,9 +120,9 @@ const defaultFormValues: FormValues = {
   category: "",
   subCategory: "",
   branch: "",
-  experienceLevel: "",
+  experienceLevels: [],
   experienceYears: "",
-  tags: "",
+  tags: [],
   responsibilities: "",
   requirements: "",
   benefits: "",
@@ -137,14 +153,22 @@ function findSubCategoryValue(
     : subCategoryValue
 }
 
-function findExperienceLevelValue(
+function findExperienceLevelValues(
   levels: JobPostingOption[],
-  levelValues: string[] | undefined,
-  levelName: string | undefined
+  levelValues: string[] | undefined
 ) {
-  const value = levelValues?.[0] ?? levelName?.split(",")[0]?.trim() ?? ""
+  return levelValues?.map((value) => findOptionValue(levels, value)) ?? []
+}
 
-  return findOptionValue(levels, value)
+function normalizeTags(tags: JobPostDetail["tags"] | string | undefined) {
+  if (Array.isArray(tags)) {
+    return tags.map((tag) => tag.trim()).filter(Boolean)
+  }
+
+  return (tags ?? "")
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean)
 }
 
 function toFormValues(
@@ -167,15 +191,13 @@ function toFormValues(
       job.subCategory ?? ""
     ),
     branch: findOptionValue(branches, job.branch ?? ""),
-    experienceLevel: findExperienceLevelValue(
+    experienceLevels: findExperienceLevelValues(
       experienceLevels,
-      job.experienceLevels,
-      job.level
+      job.experienceLevels
     ),
-    experienceYears:
-      job.experienceReuirement ?? job.experienceRequirement ?? "",
-    tags: job.tags ?? job.tag ?? "",
-    responsibilities: job.reponsibilities ?? job.responsibilities ?? "",
+    experienceYears: job.experienceRequirement ?? "",
+    tags: normalizeTags(job.tags),
+    responsibilities: job.responsibilities ?? "",
     requirements: job.requirements ?? "",
     benefits: job.benefits ?? "",
   }
@@ -190,10 +212,10 @@ function toUpdatePayload(values: FormValues): UpdateJobPostRequest {
     category: values.category,
     subCategory: values.subCategory,
     branch: values.branch,
-    experienceLevels: values.experienceLevel ? [values.experienceLevel] : [],
-    experienceReuirement: values.experienceYears,
+    experienceLevels: values.experienceLevels,
+    experienceRequirement: values.experienceYears,
     tags: values.tags,
-    reponsibilities: values.responsibilities,
+    responsibilities: values.responsibilities,
     requirements: values.requirements,
     benefits: values.benefits,
   }
@@ -251,6 +273,161 @@ function PostingSelect({
   )
 }
 
+function PostingMultiSelect({
+  disabled,
+  onChange,
+  options,
+  placeholder,
+  value,
+}: {
+  disabled?: boolean
+  onChange: (value: string[]) => void
+  options: JobPostingOption[]
+  placeholder: string
+  value: string[]
+}) {
+  const safeOptions = Array.isArray(options) ? options : []
+  const selectedOptions = safeOptions.filter((option) =>
+    value.includes(option.id)
+  )
+  const displayValue =
+    selectedOptions.length === 0
+      ? placeholder
+      : selectedOptions.length <= 2
+        ? selectedOptions.map((option) => option.name).join(", ")
+        : `${selectedOptions.length} cấp độ đã chọn`
+
+  function handleToggle(optionId: string, checked: boolean) {
+    onChange(
+      checked
+        ? [...value, optionId]
+        : value.filter((currentValue) => currentValue !== optionId)
+    )
+  }
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <FormControl>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full justify-start font-normal"
+            disabled={disabled}
+          >
+            <span
+              className={
+                selectedOptions.length === 0 ? "text-muted-foreground" : ""
+              }
+            >
+              {displayValue}
+            </span>
+          </Button>
+        </FormControl>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-(--radix-popover-trigger-width) gap-2">
+        {safeOptions.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Không có dữ liệu</p>
+        ) : (
+          safeOptions.map((option) => {
+            const checked = value.includes(option.id)
+
+            return (
+              <label
+                key={option.id}
+                className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-muted"
+              >
+                <Checkbox
+                  checked={checked}
+                  onCheckedChange={(nextChecked) =>
+                    handleToggle(option.id, nextChecked === true)
+                  }
+                />
+                <span>{option.name}</span>
+              </label>
+            )
+          })
+        )}
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+function TagsInput({
+  disabled,
+  onChange,
+  placeholder,
+  value,
+}: {
+  disabled?: boolean
+  onChange: (value: string[]) => void
+  placeholder: string
+  value: string[]
+}) {
+  const [draftTag, setDraftTag] = useState("")
+
+  function addTag() {
+    const nextTag = draftTag.trim()
+
+    if (!nextTag) {
+      return
+    }
+
+    if (!value.includes(nextTag)) {
+      onChange([...value, nextTag])
+    }
+
+    setDraftTag("")
+  }
+
+  function removeTag(tag: string) {
+    onChange(value.filter((currentTag) => currentTag !== tag))
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== "Enter" && event.key !== "Tab") {
+      return
+    }
+
+    if (!draftTag.trim()) {
+      return
+    }
+
+    event.preventDefault()
+    addTag()
+  }
+
+  return (
+    <div className="flex min-h-10 w-full flex-wrap items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
+      {value.map((tag) => (
+        <span
+          key={tag}
+          className="inline-flex max-w-full items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-sm font-medium text-foreground"
+        >
+          <span className="max-w-48 truncate">{tag}</span>
+          <button
+            type="button"
+            className="rounded-full text-muted-foreground hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+            disabled={disabled}
+            aria-label={`Xóa tag ${tag}`}
+            onClick={() => removeTag(tag)}
+          >
+            <XIcon className="size-3.5" />
+          </button>
+        </span>
+      ))}
+      <input
+        disabled={disabled}
+        value={draftTag}
+        placeholder={value.length === 0 ? placeholder : ""}
+        className="min-w-32 flex-1 bg-transparent outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
+        onChange={(event) => setDraftTag(event.target.value)}
+        onKeyDown={handleKeyDown}
+      />
+    </div>
+  )
+}
+
 function HtmlInput({
   disabled,
   field,
@@ -294,11 +471,6 @@ export function JobPostingEditForm({
 }: JobPostingEditFormProps) {
   const queryClient = useQueryClient()
   const isEditMode = mode === "edit"
-  const {
-    data: jobPostingDetail,
-    error: jobPostingDetailError,
-    isLoading: isJobPostingDetailLoading,
-  } = useJobPostingDetailQuery(isEditMode ? jobId ?? "" : "")
   const { data: categoriesData, isLoading: isCategoriesLoading } =
     useCategoriesQuery()
   const { data: branchOptionsData, isLoading: isBranchOptionsLoading } =
@@ -307,32 +479,62 @@ export function JobPostingEditForm({
     data: experienceLevelsResponse,
     isPending: isExperienceLevelsPending,
   } = useExperienceLevelsQuery()
+  const areOptionsReady =
+    !isCategoriesLoading && !isBranchOptionsLoading && !isExperienceLevelsPending
+  const canLoadJobPostingDetail =
+    isEditMode &&
+    Boolean(jobId) &&
+    areOptionsReady
+  const {
+    data: jobPostingDetail,
+    error: jobPostingDetailError,
+    isLoading: isJobPostingDetailLoading,
+  } = useJobPostingDetailQuery(jobId ?? "", canLoadJobPostingDetail)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: defaultFormValues,
   })
+  const initializedJobIdRef = useRef<string | null>(null)
 
   const createJobPostingMutation = useCreateJobPosting()
   const updateJobPostingMutation = useUpdateJobPosting()
 
   useEffect(() => {
-    if (isEditMode && jobPostingDetail?.data) {
-      form.reset(
-        toFormValues(
-          jobPostingDetail.data,
-          categoriesData ?? [],
-          branchOptionsData ?? [],
-          experienceLevelsResponse?.data ?? []
-        )
-      )
+    if (!isEditMode) {
+      initializedJobIdRef.current = null
+      return
     }
+
+    if (
+      !jobId ||
+      !jobPostingDetail?.data ||
+      !areOptionsReady
+    ) {
+      return
+    }
+
+    if (initializedJobIdRef.current === jobId) {
+      return
+    }
+
+    form.reset(
+      toFormValues(
+        jobPostingDetail.data,
+        categoriesData ?? [],
+        branchOptionsData ?? [],
+        experienceLevelsResponse?.data ?? []
+      )
+    )
+    initializedJobIdRef.current = jobId
   }, [
-    categoriesData,
     branchOptionsData,
+    categoriesData,
     experienceLevelsResponse,
     form,
+    areOptionsReady,
     isEditMode,
+    jobId,
     jobPostingDetail,
   ])
 
@@ -367,6 +569,7 @@ export function JobPostingEditForm({
                   experienceLevelsResponse?.data ?? []
                 )
               )
+              initializedJobIdRef.current = jobId
             }
 
             toast.success(
@@ -607,11 +810,11 @@ export function JobPostingEditForm({
 
             <FormField
               control={form.control}
-              name="experienceLevel"
+              name="experienceLevels"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Cấp độ kinh nghiệm</FormLabel>
-                  <PostingSelect
+                  <PostingMultiSelect
                     disabled={isFormDisabled || isExperienceLevelsPending}
                     options={experienceLevelOptions}
                     placeholder={
@@ -649,10 +852,15 @@ export function JobPostingEditForm({
               <FormItem>
                 <FormLabel>Tags</FormLabel>
                 <FormControl>
-                  <Input disabled={isFormDisabled} {...field} />
+                  <TagsInput
+                    disabled={isFormDisabled}
+                    placeholder="Nhập tag rồi nhấn Enter hoặc Tab"
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
                 </FormControl>
                 <p className="text-sm text-muted-foreground">
-                  Nhấn Enter hoặc dấu phẩy để thêm tag.
+                  Nhấn Enter hoặc Tab để thêm tag.
                 </p>
                 <FormMessage />
               </FormItem>

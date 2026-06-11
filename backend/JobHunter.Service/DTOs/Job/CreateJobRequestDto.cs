@@ -8,9 +8,9 @@ public class CreateJobRequestDto
 
     public string? SalaryRange { get; set; }
 
-    public JobWorkType? JobWorkType { get; set; }
+    public string? JobWorkType { get; set; }
 
-    public DateOnly? ExperiedDate { get; set; }
+    public string? ExperiedDate { get; set; }
 
     public Guid Category { get; set; }
 
@@ -22,7 +22,7 @@ public class CreateJobRequestDto
 
     public string? ExperienceRequirement { get; set; }
 
-    public string? Tags { get; set; }
+    public List<string> Tags { get; set; } = new List<string>();
 
     public string? Responsibilities { get; set; }
 
