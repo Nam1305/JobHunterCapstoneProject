@@ -1,5 +1,7 @@
 using JobHunter.Domain;
 using JobHunter.Service.DTOs;
+using JobHunter.Service.DTOs.Category;
+using JobHunter.Service.DTOs.ExperienceLevel;
 using JobHunter.Service.DTOs.Job;
 
 namespace JobHunter.Service.Interface.UseCase;
@@ -13,4 +15,8 @@ public interface IHrJobUseCase
     Task<JobDetailDto> CreateJob(Guid userId, CreateJobRequestDto request);
 
     Task<JobDetailDto> UpdateJob(Guid userId, Guid uid, CreateJobRequestDto request);
+
+    Task<List<CategoryDto>> GetCategories();
+
+    Task<List<ExperienceLevelDto>> GetExperienceLevels();
 }

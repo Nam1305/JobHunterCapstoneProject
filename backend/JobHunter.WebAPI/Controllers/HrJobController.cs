@@ -1,5 +1,7 @@
 using JobHunter.Domain;
 using JobHunter.Service.DTOs;
+using JobHunter.Service.DTOs.Category;
+using JobHunter.Service.DTOs.ExperienceLevel;
 using JobHunter.Service.DTOs.Job;
 using JobHunter.Service.Interface.UseCase;
 using JobHunter.Service.Utils;
@@ -31,6 +33,22 @@ public class HrJobController : ControllerBase
         var jobs = await _jobUseCase.GetJobs(userId, search, status, page, pageSize);
 
         return new ResponseBase<PageResult<JobPostingDto>>(jobs);
+    }
+
+    [HttpGet("/api/categories")]
+    public async Task<ActionResult<List<CategoryDto>>> GetCategories()
+    {
+        var categories = await _jobUseCase.GetCategories();
+
+        return categories;
+    }
+
+    [HttpGet("/api/experienceLevels")]
+    public async Task<ActionResult<ResponseBase<List<ExperienceLevelDto>>>> GetExperienceLevels()
+    {
+        var levels = await _jobUseCase.GetExperienceLevels();
+
+        return new ResponseBase<List<ExperienceLevelDto>>(levels);
     }
 
     [HttpPost]

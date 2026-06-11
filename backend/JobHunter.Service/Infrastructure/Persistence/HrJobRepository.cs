@@ -45,6 +45,15 @@ public class HrJobRepository : IHrJobRepository
             .FirstOrDefaultAsync(job => job.Id == id);
     }
 
+    public Task<List<JobCategory>> GetCategoriesWithSubcategories()
+    {
+        return _context.JobCategories
+            .AsNoTracking()
+            .Include(category => category.JobSubcategories)
+            .OrderBy(category => category.Name)
+            .ToListAsync();
+    }
+
     public Task<JobSubcategory?> GetSubcategoryById(Guid id)
     {
         return _context.JobSubcategories
@@ -57,6 +66,14 @@ public class HrJobRepository : IHrJobRepository
         return _context.CompanyBranches
             .AsNoTracking()
             .FirstOrDefaultAsync(branch => branch.CompanyId == companyId && branch.Id == branchId);
+    }
+
+    public Task<List<JobLevel>> GetExperienceLevels()
+    {
+        return _context.JobLevels
+            .AsNoTracking()
+            .OrderBy(level => level.Title)
+            .ToListAsync();
     }
 
     public Task<List<JobLevel>> GetJobLevelsByIds(List<Guid> ids)

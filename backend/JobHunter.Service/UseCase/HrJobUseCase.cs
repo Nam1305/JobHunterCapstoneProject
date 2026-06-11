@@ -1,6 +1,8 @@
 using JobHunter.Domain;
 using JobHunter.Domain.Entities;
 using JobHunter.Service.DTOs;
+using JobHunter.Service.DTOs.Category;
+using JobHunter.Service.DTOs.ExperienceLevel;
 using JobHunter.Service.DTOs.Job;
 using JobHunter.Service.Interface.Persistence;
 using JobHunter.Service.Interface.UseCase;
@@ -81,6 +83,44 @@ public class HrJobUseCase : IHrJobUseCase
         }
 
         return MapJobDetail(job);
+    }
+
+    public async Task<List<CategoryDto>> GetCategories()
+    {
+        var categories = await _jobRepository.GetCategoriesWithSubcategories();
+        if (categories.Count == 0)
+        {
+            throw new KeyNotFoundException("Categories not found");
+        }
+
+        return categories.Select(category => new CategoryDto
+        {
+            Id = category.Id.ToString(),
+            Name = category.Name ?? string.Empty,
+            Subcategories = category.JobSubcategories
+                .OrderBy(subcategory => subcategory.Name)
+                .Select(subcategory => new SubcategoryDto
+                {
+                    Id = subcategory.Id.ToString(),
+                    Name = subcategory.Name ?? string.Empty
+                })
+                .ToList()
+        }).ToList();
+    }
+
+    public async Task<List<ExperienceLevelDto>> GetExperienceLevels()
+    {
+        var levels = await _jobRepository.GetExperienceLevels();
+        if (levels.Count == 0)
+        {
+            throw new KeyNotFoundException("Experience levels not found");
+        }
+
+        return levels.Select(level => new ExperienceLevelDto
+        {
+            Id = level.Id,
+            Name = level.Title ?? string.Empty
+        }).ToList();
     }
 
     public async Task<JobDetailDto> CreateJob(Guid userId, CreateJobRequestDto request)

@@ -13,9 +13,13 @@ public interface IHrJobRepository
 
     Task<Job?> GetJobByIdForUpdate(Guid id);
 
+    Task<List<JobCategory>> GetCategoriesWithSubcategories();
+
     Task<JobSubcategory?> GetSubcategoryById(Guid id);
 
     Task<CompanyBranch?> GetBranchById(Guid companyId, Guid branchId);
+
+    Task<List<JobLevel>> GetExperienceLevels();
 
     Task<List<JobLevel>> GetJobLevelsByIds(List<Guid> ids);
 
