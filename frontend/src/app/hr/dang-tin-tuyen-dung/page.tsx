@@ -173,7 +173,7 @@ export default function JobPostingPage() {
       status:
         status === "all" ? undefined : status === "open" ? "Open" : "Closed",
       page: pagination.pageIndex + 1,
-      limit: pagination.pageSize,
+      pageSize: pagination.pageSize,
     }),
     [debouncedSearch, pagination.pageIndex, pagination.pageSize, status]
   )
@@ -261,9 +261,9 @@ export default function JobPostingPage() {
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
                   </TableHead>
                 ))}
               </TableRow>

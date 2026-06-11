@@ -16,7 +16,7 @@ export interface getJobPostingsParams {
   search?: string;
   status?: "Open" | "Closed";
   page?: number;
-  limit?: number;
+  pageSize?: number;
 }
 
 export interface UpdateJobPostingVariables {
