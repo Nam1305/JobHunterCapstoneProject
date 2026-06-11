@@ -1,9 +1,17 @@
+import Link from "next/link"
+
 import { CompanyBrandingForm } from "@/components/hr/company-branding-form"
 import { CompanyBranch } from "@/components/hr/company-branch"
 import { CompanyGeneralInformationForm } from "@/components/hr/company-general-form"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-export function CompanyInformationForm() {
+export type CompanyInformationTab = "general" | "branding" | "branches"
+
+export function CompanyInformationForm({
+  currentTab = "general",
+}: {
+  currentTab?: CompanyInformationTab
+}) {
   return (
     <div className="flex flex-1 flex-col">
       <div className="@container/main flex flex-1 flex-col gap-2">
@@ -17,14 +25,24 @@ export function CompanyInformationForm() {
             </p>
           </div>
 
-          <Tabs defaultValue="general" className="w-full">
+          <Tabs defaultValue={currentTab} className="w-full">
             <TabsList
               variant="default"
               className="w-full max-w-max rounded-full bg-muted p-1"
             >
-              <TabsTrigger value="general">Thông tin chung</TabsTrigger>
-              <TabsTrigger value="branding">Branding</TabsTrigger>
-              <TabsTrigger value="branches">Quản lý chi nhánh</TabsTrigger>
+              <TabsTrigger value="general" asChild>
+                <Link href="/hr/thong-tin-cong-ty/thong-tin-chung">
+                  Thông tin chung
+                </Link>
+              </TabsTrigger>
+              <TabsTrigger value="branding" asChild>
+                <Link href="/hr/thong-tin-cong-ty/branding">Branding</Link>
+              </TabsTrigger>
+              <TabsTrigger value="branches" asChild>
+                <Link href="/hr/thong-tin-cong-ty/chi-nhanh">
+                  Quản lý chi nhánh
+                </Link>
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="general" className="mt-6">

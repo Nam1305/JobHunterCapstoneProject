@@ -59,21 +59,21 @@ const defaultCompanyGeneralFormValues: CompanyGeneralFormValues = {
 }
 
 const companySizes = [
-  "1-100 nhan su",
-  "100 - 1000 nhan su",
-  "1000 - 5000 nhan su",
-  "5000+ nhan su",
+  "1-100 nhân sự",
+  "100 - 1000 nhân sự",
+  "1000 - 5000 nhân sự",
+  "5000+ nhân sự",
 ]
 
 const companyTypes = [
-  "Cong nghe thong tin",
-  "Tai chinh - ngan hang",
-  "Giao duc",
-  "Y te",
-  "San xuat",
+  "Công nghệ thông tin",
+  "Tài chính - ngân hàng",
+  "Giáo dục",
+  "Y tế",
+  "Sản xuất",
 ]
 
-const countries = ["Viet Nam", "Singapore", "Thai Lan", "Nhat Ban", "Hoa Ky"]
+const countries = ["Việt Nam", "Singapore", "Thái Lan", "Nhật Bản", "Hoa Kỳ"]
 
 const fallbackImages = {
   logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=800&q=80",
@@ -88,6 +88,7 @@ function ImageUploadField({
   imageAlt,
   className,
   disabled,
+  isLoading,
   isUploading,
   onFileChange,
 }: {
@@ -97,11 +98,12 @@ function ImageUploadField({
   imageAlt: string
   className?: string
   disabled?: boolean
+  isLoading?: boolean
   isUploading?: boolean
   onFileChange: (file: File) => void
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const isDisabled = disabled || isUploading
+  const isDisabled = disabled || isLoading || isUploading
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     const selectedFile = event.target.files?.[0]
@@ -132,20 +134,28 @@ function ImageUploadField({
           .join(" ")}
         onClick={() => fileInputRef.current?.click()}
       >
-        <span
-          aria-label={imageAlt}
-          role="img"
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${imageSrc})` }}
-        />
-        <span className="absolute inset-0 bg-background/10 transition-colors group-hover:bg-background/25" />
+        {isLoading ? (
+          <span className="absolute inset-0 flex items-center justify-center bg-muted/60">
+            <Loader2Icon className="size-6 animate-spin" />
+          </span>
+        ) : (
+          <>
+            <span
+              aria-label={imageAlt}
+              role="img"
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: `url(${imageSrc})` }}
+            />
+            <span className="absolute inset-0 bg-background/10 transition-colors group-hover:bg-background/25" />
+          </>
+        )}
         <span className="relative m-auto flex items-center gap-2 rounded-full border bg-background/90 px-4 py-2 shadow-sm">
-          {isUploading ? (
+          {isLoading || isUploading ? (
             <Loader2Icon className="size-4 animate-spin" />
           ) : (
             <UploadIcon className="size-4" />
           )}
-          Thay anh
+          {isLoading ? "Dang tai" : "Thay anh"}
         </span>
       </button>
       <input
@@ -423,6 +433,7 @@ export function CompanyGeneralInformationForm() {
                 imageSrc={companyGeneral?.logoUrl ?? fallbackImages.logo}
                 imageAlt="Logo cong ty"
                 disabled={isMediaLoading}
+                isLoading={isCompanyGeneralLoading}
                 isUploading={isUploadingLogo}
                 onFileChange={handleLogoUpload}
               />
@@ -432,6 +443,7 @@ export function CompanyGeneralInformationForm() {
                 imageSrc={companyGeneral?.coverUrl ?? fallbackImages.cover}
                 imageAlt="Anh bia cong ty"
                 disabled={isMediaLoading}
+                isLoading={isCompanyGeneralLoading}
                 isUploading={isUploadingCover}
                 onFileChange={handleCoverUpload}
               />
