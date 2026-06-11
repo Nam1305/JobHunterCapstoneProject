@@ -60,7 +60,7 @@ import type {
   UpdateJobPostRequest,
 } from "@/types/job"
 
-const workTypes = ["Toàn thời gian", "Bán thời gian", "Remote", "Hybrid"]
+const workTypes = ["Onsite", "Remote", " Hybrid", "Oversea"]
 const workTypeOptions = workTypes.map((name) => ({ id: name, name }))
 const emptyBranchOptions: JobPostingOption[] = []
 const emptyCategoryOptions: Category[] = []
@@ -229,11 +229,11 @@ function Section({
   title: string
 }) {
   return (
-    <Card className="gap-4 rounded-xl py-5 shadow-none">
-      <CardHeader className="px-5">
+    <Card className="gap-5 rounded-xl py-6 shadow-none">
+      <CardHeader className="px-5 pb-0 md:px-6">
         <CardTitle className="text-base font-semibold">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-5 px-5">{children}</CardContent>
+      <CardContent className="space-y-6 px-5 md:px-6">{children}</CardContent>
     </Card>
   )
 }
@@ -254,7 +254,7 @@ function PostingSelect({
   const safeOptions = Array.isArray(options) ? options : []
 
   return (
-    <div className="[&_[data-slot=select-trigger]]:w-full">
+    <div className="[&_[data-slot=select-trigger]]:h-11 [&_[data-slot=select-trigger]]:w-full [&_[data-slot=select-trigger]]:rounded-xl [&_[data-slot=select-trigger]]:px-3.5">
       <Select disabled={disabled} value={value} onValueChange={onChange}>
         <FormControl>
           <SelectTrigger>
@@ -312,7 +312,7 @@ function PostingMultiSelect({
           <Button
             type="button"
             variant="outline"
-            className="w-full justify-start font-normal"
+            className="h-11 w-full justify-start rounded-xl px-3.5 font-normal"
             disabled={disabled}
           >
             <span
@@ -325,7 +325,10 @@ function PostingMultiSelect({
           </Button>
         </FormControl>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-(--radix-popover-trigger-width) gap-2">
+      <PopoverContent
+        align="start"
+        className="w-(--radix-popover-trigger-width) gap-2 rounded-xl p-2"
+      >
         {safeOptions.length === 0 ? (
           <p className="text-sm text-muted-foreground">Không có dữ liệu</p>
         ) : (
@@ -335,7 +338,7 @@ function PostingMultiSelect({
             return (
               <label
                 key={option.id}
-                className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-muted"
+                className="flex cursor-pointer items-center gap-3 rounded-lg px-2.5 py-2 text-sm hover:bg-muted"
               >
                 <Checkbox
                   checked={checked}
@@ -398,11 +401,11 @@ function TagsInput({
   }
 
   return (
-    <div className="flex min-h-10 w-full flex-wrap items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
+    <div className="flex min-h-11 w-full flex-wrap items-center gap-2 rounded-xl border border-input bg-background px-3.5 py-2 text-sm shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
       {value.map((tag) => (
         <span
           key={tag}
-          className="inline-flex max-w-full items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-sm font-medium text-foreground"
+          className="inline-flex max-w-full items-center gap-1 rounded-full bg-muted px-3 py-1.5 text-sm font-medium text-foreground"
         >
           <span className="max-w-48 truncate">{tag}</span>
           <button
@@ -420,7 +423,7 @@ function TagsInput({
         disabled={disabled}
         value={draftTag}
         placeholder={value.length === 0 ? placeholder : ""}
-        className="min-w-32 flex-1 bg-transparent outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
+        className="min-w-36 flex-1 bg-transparent py-1 outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
         onChange={(event) => setDraftTag(event.target.value)}
         onKeyDown={handleKeyDown}
       />
@@ -443,7 +446,7 @@ function HtmlInput({
   label: string
 }) {
   return (
-    <FormItem>
+    <FormItem className="space-y-2.5">
       <FormLabel>{label}</FormLabel>
       <HtmlEditorInput
         disabled={disabled}
@@ -645,10 +648,10 @@ export function JobPostingEditForm({
     <Form {...form}>
       <form
         data-mode={mode}
-        className="flex w-full flex-1 flex-col gap-6 p-4 md:p-6"
+        className="flex w-full flex-1 flex-col gap-6 p-4 md:gap-7 md:p-6"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           <h1 className="text-2xl font-semibold tracking-normal">
             {pageTitle}
           </h1>
@@ -678,10 +681,14 @@ export function JobPostingEditForm({
             control={form.control}
             name="title"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="space-y-2.5">
                 <FormLabel>Tên công việc</FormLabel>
                 <FormControl>
-                  <Input disabled={isFormDisabled} {...field} />
+                  <Input
+                    disabled={isFormDisabled}
+                    className="h-11 rounded-xl px-3.5"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -692,22 +699,26 @@ export function JobPostingEditForm({
             control={form.control}
             name="salary"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="space-y-2.5">
                 <FormLabel>Mức lương</FormLabel>
                 <FormControl>
-                  <Input disabled={isFormDisabled} {...field} />
+                  <Input
+                    disabled={isFormDisabled}
+                    className="h-11 rounded-xl px-3.5"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-5 md:grid-cols-2 md:gap-6">
             <FormField
               control={form.control}
               name="jobWorkType"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="space-y-2.5">
                   <FormLabel>Hình thức làm việc</FormLabel>
                   <PostingSelect
                     disabled={isFormDisabled}
@@ -725,10 +736,15 @@ export function JobPostingEditForm({
               control={form.control}
               name="expiredDate"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="space-y-2.5">
                   <FormLabel>Ngày hết hạn</FormLabel>
                   <FormControl>
-                    <Input disabled={isFormDisabled} type="date" {...field} />
+                    <Input
+                      disabled={isFormDisabled}
+                      type="date"
+                      className="h-11 rounded-xl px-3.5"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -738,12 +754,12 @@ export function JobPostingEditForm({
         </Section>
 
         <Section title="Phân loại">
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-5 md:grid-cols-2 md:gap-6">
             <FormField
               control={form.control}
               name="category"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="space-y-2.5">
                   <FormLabel>Danh mục</FormLabel>
                   <PostingSelect
                     disabled={isFormDisabled || isCategoriesLoading}
@@ -764,7 +780,7 @@ export function JobPostingEditForm({
               control={form.control}
               name="subCategory"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="space-y-2.5">
                   <FormLabel>Danh mục con</FormLabel>
                   <PostingSelect
                     key={`${selectedCategoryId}-${subCategoryOptions.length}`}
@@ -789,12 +805,12 @@ export function JobPostingEditForm({
             />
           </div>
 
-          <div className="grid gap-5 md:grid-cols-[1fr_1fr_1fr]">
+          <div className="grid gap-5 md:grid-cols-[1fr_1fr_1fr] md:gap-6">
             <FormField
               control={form.control}
               name="branch"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="space-y-2.5">
                   <FormLabel>Chi nhánh</FormLabel>
                   <PostingSelect
                     disabled={isFormDisabled || isBranchOptionsLoading}
@@ -816,7 +832,7 @@ export function JobPostingEditForm({
               control={form.control}
               name="experienceLevels"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="space-y-2.5">
                   <FormLabel>Cấp độ kinh nghiệm</FormLabel>
                   <PostingMultiSelect
                     disabled={isFormDisabled || isExperienceLevelsPending}
@@ -838,10 +854,14 @@ export function JobPostingEditForm({
               control={form.control}
               name="experienceYears"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="space-y-2.5">
                   <FormLabel>Số năm kinh nghiệm</FormLabel>
                   <FormControl>
-                    <Input disabled={isFormDisabled} {...field} />
+                    <Input
+                      disabled={isFormDisabled}
+                      className="h-11 rounded-xl px-3.5"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -853,7 +873,7 @@ export function JobPostingEditForm({
             control={form.control}
             name="tags"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="space-y-2.5">
                 <FormLabel>Tags</FormLabel>
                 <FormControl>
                   <TagsInput
@@ -910,7 +930,7 @@ export function JobPostingEditForm({
           />
         </Section>
 
-        <div className="flex justify-end gap-3">
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Button
             type="button"
             variant="outline"
