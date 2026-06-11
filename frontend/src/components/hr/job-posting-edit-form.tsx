@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useQueryClient } from "@tanstack/react-query"
-import { XIcon } from "lucide-react"
+import { CalendarIcon, ChevronDownIcon, XIcon } from "lucide-react"
 import {
   useEffect,
   useMemo,
@@ -24,14 +24,22 @@ import {
 } from "@/api/hrjob.api"
 import { useGetBranchOption } from "@/api/hrbranch.api"
 import { HtmlInput as HtmlEditorInput } from "@/components/hr/html-input"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Form,
   FormControl,
@@ -132,6 +140,36 @@ function toDateInputValue(value: string) {
   return value ? value.slice(0, 10) : ""
 }
 
+function toDateValue(value: string) {
+  if (!value) {
+    return undefined
+  }
+
+  const [year, month, day] = value.split("-").map(Number)
+
+  if (!year || !month || !day) {
+    return undefined
+  }
+
+  return new Date(year, month - 1, day)
+}
+
+function toDateFieldValue(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+
+  return `${year}-${month}-${day}`
+}
+
+function formatDateDisplay(value: string) {
+  const date = toDateValue(value)
+
+  return date
+    ? new Intl.DateTimeFormat("vi-VN").format(date)
+    : "Chọn ngày hết hạn"
+}
+
 function findOptionValue(options: JobPostingOption[], value: string) {
   return (
     options.find((option) => option.id === value || option.name === value)
@@ -229,7 +267,7 @@ function Section({
   title: string
 }) {
   return (
-    <Card className="gap-5 rounded-xl py-6 shadow-none">
+    <Card className="gap-5 py-6">
       <CardHeader className="px-5 pb-0 md:px-6">
         <CardTitle className="text-base font-semibold">{title}</CardTitle>
       </CardHeader>
@@ -254,22 +292,20 @@ function PostingSelect({
   const safeOptions = Array.isArray(options) ? options : []
 
   return (
-    <div className="[&_[data-slot=select-trigger]]:h-11 [&_[data-slot=select-trigger]]:w-full [&_[data-slot=select-trigger]]:rounded-xl [&_[data-slot=select-trigger]]:px-3.5">
-      <Select disabled={disabled} value={value} onValueChange={onChange}>
-        <FormControl>
-          <SelectTrigger>
-            <SelectValue placeholder={placeholder} />
-          </SelectTrigger>
-        </FormControl>
-        <SelectContent>
-          {safeOptions.map((option) => (
-            <SelectItem key={option.id} value={option.id}>
-              {option.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    <Select disabled={disabled} value={value} onValueChange={onChange}>
+      <FormControl>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+      </FormControl>
+      <SelectContent>
+        {safeOptions.map((option) => (
+          <SelectItem key={option.id} value={option.id}>
+            {option.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   )
 }
 
@@ -306,51 +342,109 @@ function PostingMultiSelect({
   }
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
         <FormControl>
-          <Button
+          <button
             type="button"
-            variant="outline"
-            className="h-11 w-full justify-start rounded-xl px-3.5 font-normal"
+            className="flex h-9 w-full items-center justify-between gap-1.5 rounded-4xl border border-input bg-input/30 px-3 py-2 text-sm whitespace-nowrap transition-colors outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
             disabled={disabled}
           >
             <span
-              className={
+              className={`min-w-0 flex-1 truncate text-left ${
                 selectedOptions.length === 0 ? "text-muted-foreground" : ""
-              }
+              }`}
             >
               {displayValue}
             </span>
-          </Button>
+            <ChevronDownIcon className="pointer-events-none size-4 shrink-0 text-muted-foreground" />
+          </button>
         </FormControl>
-      </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        className="w-(--radix-popover-trigger-width) gap-2 rounded-xl p-2"
-      >
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
         {safeOptions.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Không có dữ liệu</p>
+          <DropdownMenuLabel>Không có dữ liệu</DropdownMenuLabel>
         ) : (
           safeOptions.map((option) => {
             const checked = value.includes(option.id)
 
             return (
-              <label
+              <DropdownMenuCheckboxItem
                 key={option.id}
-                className="flex cursor-pointer items-center gap-3 rounded-lg px-2.5 py-2 text-sm hover:bg-muted"
+                checked={checked}
+                onCheckedChange={(nextChecked) =>
+                  handleToggle(option.id, nextChecked === true)
+                }
+                onSelect={(event) => event.preventDefault()}
               >
-                <Checkbox
-                  checked={checked}
-                  onCheckedChange={(nextChecked) =>
-                    handleToggle(option.id, nextChecked === true)
-                  }
-                />
-                <span>{option.name}</span>
-              </label>
+                <span className="min-w-0 flex-1 truncate">{option.name}</span>
+              </DropdownMenuCheckboxItem>
             )
           })
         )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+function ExpiredDatePicker({
+  disabled,
+  onChange,
+  value,
+}: {
+  disabled?: boolean
+  onChange: (value: string) => void
+  value: string
+}) {
+  const [open, setOpen] = useState(false)
+  const selectedDate = toDateValue(value)
+
+  function isPastOrToday(date: Date) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    return date <= today
+  }
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <FormControl>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full justify-between text-left font-normal"
+            disabled={disabled}
+          >
+            <span
+              className={`min-w-0 flex-1 truncate ${
+                value ? "" : "text-muted-foreground"
+              }`}
+            >
+              {formatDateDisplay(value)}
+            </span>
+            <CalendarIcon
+              data-icon="inline-end"
+              className="text-muted-foreground"
+            />
+          </Button>
+        </FormControl>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={selectedDate}
+          defaultMonth={selectedDate}
+          disabled={isPastOrToday}
+          onSelect={(date) => {
+            if (!date) {
+              return
+            }
+
+            onChange(toDateFieldValue(date))
+            setOpen(false)
+          }}
+        />
       </PopoverContent>
     </Popover>
   )
@@ -401,29 +495,26 @@ function TagsInput({
   }
 
   return (
-    <div className="flex min-h-11 w-full flex-wrap items-center gap-2 rounded-xl border border-input bg-background px-3.5 py-2 text-sm shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
+    <div className="flex min-h-9 w-full flex-wrap items-center gap-1.5 rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm transition-colors outline-none focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50 has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50">
       {value.map((tag) => (
-        <span
-          key={tag}
-          className="inline-flex max-w-full items-center gap-1 rounded-full bg-muted px-3 py-1.5 text-sm font-medium text-foreground"
-        >
+        <Badge key={tag} variant="secondary" className="max-w-full">
           <span className="max-w-48 truncate">{tag}</span>
           <button
             type="button"
-            className="rounded-full text-muted-foreground hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+            className="text-muted-foreground hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
             disabled={disabled}
             aria-label={`Xóa tag ${tag}`}
             onClick={() => removeTag(tag)}
           >
             <XIcon className="size-3.5" />
           </button>
-        </span>
+        </Badge>
       ))}
       <input
         disabled={disabled}
         value={draftTag}
         placeholder={value.length === 0 ? placeholder : ""}
-        className="min-w-36 flex-1 bg-transparent py-1 outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
+        className="min-w-36 flex-1 bg-transparent outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
         onChange={(event) => setDraftTag(event.target.value)}
         onKeyDown={handleKeyDown}
       />
@@ -661,7 +752,7 @@ export function JobPostingEditForm({
         </div>
 
         {jobPostingDetailError ? (
-          <Card className="rounded-xl shadow-none">
+          <Card>
             <CardContent className="p-5 text-sm text-destructive">
               Không thể tải thông tin tin tuyển dụng. Vui lòng thử lại sau.
             </CardContent>
@@ -669,7 +760,7 @@ export function JobPostingEditForm({
         ) : null}
 
         {form.formState.errors.root?.message ? (
-          <Card className="rounded-xl shadow-none">
+          <Card>
             <CardContent className="p-5 text-sm text-destructive">
               {form.formState.errors.root.message}
             </CardContent>
@@ -681,14 +772,10 @@ export function JobPostingEditForm({
             control={form.control}
             name="title"
             render={({ field }) => (
-              <FormItem className="space-y-2.5">
+              <FormItem>
                 <FormLabel>Tên công việc</FormLabel>
                 <FormControl>
-                  <Input
-                    disabled={isFormDisabled}
-                    className="h-11 rounded-xl px-3.5"
-                    {...field}
-                  />
+                  <Input disabled={isFormDisabled} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -699,14 +786,10 @@ export function JobPostingEditForm({
             control={form.control}
             name="salary"
             render={({ field }) => (
-              <FormItem className="space-y-2.5">
+              <FormItem>
                 <FormLabel>Mức lương</FormLabel>
                 <FormControl>
-                  <Input
-                    disabled={isFormDisabled}
-                    className="h-11 rounded-xl px-3.5"
-                    {...field}
-                  />
+                  <Input disabled={isFormDisabled} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -718,7 +801,7 @@ export function JobPostingEditForm({
               control={form.control}
               name="jobWorkType"
               render={({ field }) => (
-                <FormItem className="space-y-2.5">
+                <FormItem>
                   <FormLabel>Hình thức làm việc</FormLabel>
                   <PostingSelect
                     disabled={isFormDisabled}
@@ -736,16 +819,13 @@ export function JobPostingEditForm({
               control={form.control}
               name="expiredDate"
               render={({ field }) => (
-                <FormItem className="space-y-2.5">
+                <FormItem>
                   <FormLabel>Ngày hết hạn</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isFormDisabled}
-                      type="date"
-                      className="h-11 rounded-xl px-3.5"
-                      {...field}
-                    />
-                  </FormControl>
+                  <ExpiredDatePicker
+                    disabled={isFormDisabled}
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -759,7 +839,7 @@ export function JobPostingEditForm({
               control={form.control}
               name="category"
               render={({ field }) => (
-                <FormItem className="space-y-2.5">
+                <FormItem>
                   <FormLabel>Danh mục</FormLabel>
                   <PostingSelect
                     disabled={isFormDisabled || isCategoriesLoading}
@@ -780,7 +860,7 @@ export function JobPostingEditForm({
               control={form.control}
               name="subCategory"
               render={({ field }) => (
-                <FormItem className="space-y-2.5">
+                <FormItem>
                   <FormLabel>Danh mục con</FormLabel>
                   <PostingSelect
                     key={`${selectedCategoryId}-${subCategoryOptions.length}`}
@@ -810,7 +890,7 @@ export function JobPostingEditForm({
               control={form.control}
               name="branch"
               render={({ field }) => (
-                <FormItem className="space-y-2.5">
+                <FormItem>
                   <FormLabel>Chi nhánh</FormLabel>
                   <PostingSelect
                     disabled={isFormDisabled || isBranchOptionsLoading}
@@ -832,7 +912,7 @@ export function JobPostingEditForm({
               control={form.control}
               name="experienceLevels"
               render={({ field }) => (
-                <FormItem className="space-y-2.5">
+                <FormItem>
                   <FormLabel>Cấp độ kinh nghiệm</FormLabel>
                   <PostingMultiSelect
                     disabled={isFormDisabled || isExperienceLevelsPending}
@@ -854,14 +934,10 @@ export function JobPostingEditForm({
               control={form.control}
               name="experienceYears"
               render={({ field }) => (
-                <FormItem className="space-y-2.5">
+                <FormItem>
                   <FormLabel>Số năm kinh nghiệm</FormLabel>
                   <FormControl>
-                    <Input
-                      disabled={isFormDisabled}
-                      className="h-11 rounded-xl px-3.5"
-                      {...field}
-                    />
+                    <Input disabled={isFormDisabled} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -873,7 +949,7 @@ export function JobPostingEditForm({
             control={form.control}
             name="tags"
             render={({ field }) => (
-              <FormItem className="space-y-2.5">
+              <FormItem>
                 <FormLabel>Tags</FormLabel>
                 <FormControl>
                   <TagsInput

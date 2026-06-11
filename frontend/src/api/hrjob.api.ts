@@ -68,6 +68,7 @@ export function useJobPostingsQuery(params: getJobPostingsParams) {
   return useQuery<ResponseEntity<PageResult<JobPosting>>, AxiosError>({
     queryKey: ["jobPostings", params],
     queryFn: () => jobApi.getJobPostings(params),
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
@@ -76,6 +77,7 @@ export function useJobPostingDetailQuery(jobId: string, enabled = true) {
     queryKey: ["jobPostingDetail", jobId],
     queryFn: () => jobApi.getJobPostingDetail(jobId),
     enabled: enabled && Boolean(jobId),
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
