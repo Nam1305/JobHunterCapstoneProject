@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
   type ChangeEvent,
+  type ReactNode,
 } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
@@ -22,7 +23,12 @@ import {
 } from "@/api/hrcompany.api"
 import { HtmlInput } from "@/components/hr/html-input"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import {
   Form,
   FormControl,
@@ -32,7 +38,6 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
 
 const COMPANY_BRANDING_QUERY_KEY = ["companyBranding"]
 
@@ -54,6 +59,23 @@ type UploadedTeamPhoto = {
   previewUrl: string
 }
 
+function Section({
+  children,
+  title,
+}: {
+  children: ReactNode
+  title: string
+}) {
+  return (
+    <Card className="gap-5 py-6">
+      <CardHeader className="px-5 pb-0 md:px-6">
+        <CardTitle className="text-base font-semibold">{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6 px-5 md:px-6">{children}</CardContent>
+    </Card>
+  )
+}
+
 function BrandingHtmlInput({
   disabled,
   id,
@@ -70,8 +92,8 @@ function BrandingHtmlInput({
   value: string
 }) {
   return (
-    <FormItem className="space-y-3">
-      <FormLabel htmlFor={id} className="text-base font-semibold">
+    <FormItem className="space-y-2.5">
+      <FormLabel htmlFor={id}>
         {label}
       </FormLabel>
       <HtmlInput
@@ -183,8 +205,8 @@ function TeamPhotoUrlList({
 
   return (
     <div className="space-y-4">
-      <div className="space-y-1">
-        <Label className="text-base font-semibold">
+      <div className="space-y-1.5">
+        <Label>
           Ảnh đội ngũ (Team Photos)
         </Label>
         <p className="text-sm text-muted-foreground">
@@ -314,9 +336,11 @@ export function CompanyBrandingForm() {
 
   return (
     <Form {...form}>
-      <form className="space-y-7" onSubmit={form.handleSubmit(handleSubmit)}>
-        <Card>
-          <CardContent className="space-y-6 p-4 md:p-6">
+      <form
+        className="flex w-full flex-1 flex-col gap-6 p-4 md:gap-7 md:p-6"
+        onSubmit={form.handleSubmit(handleSubmit)}
+      >
+        <Section title="Nội dung thương hiệu">
             <fieldset
               className="space-y-6 disabled:cursor-not-allowed disabled:opacity-70"
               disabled={isFormLoading}
@@ -362,6 +386,7 @@ export function CompanyBrandingForm() {
                   type="button"
                   variant="outline"
                   size="lg"
+                  className="min-w-24"
                   disabled={updateBranding.isPending}
                   onClick={handleReset}
                 >
@@ -370,20 +395,19 @@ export function CompanyBrandingForm() {
                 <Button
                   type="submit"
                   size="lg"
+                  className="min-w-36"
                   disabled={updateBranding.isPending}
                 >
                   Lưu thay đổi
                 </Button>
               </div>
 
-              <Separator />
-
-              <TeamPhotoUrlList
-                initialTeamPhotoUrls={branding?.teamPhotoUrls ?? []}
-              />
             </fieldset>
-          </CardContent>
-        </Card>
+        </Section>
+
+        <Section title="Hình ảnh đội ngũ">
+          <TeamPhotoUrlList initialTeamPhotoUrls={branding?.teamPhotoUrls ?? []} />
+        </Section>
       </form>
     </Form>
   )
