@@ -18,12 +18,8 @@ export interface JobPostDetail {
   subCategory: string;
   branch: string;
   experienceLevels: string[];
-  level?: string;
-  experienceReuirement?: string;
   experienceRequirement?: string;
-  tags: string;
-  tag?: string;
-  reponsibilities?: string;
+  tags: string[];
   responsibilities?: string;
   requirements: string;
   benefits: string;

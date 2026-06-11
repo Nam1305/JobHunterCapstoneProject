@@ -7,6 +7,7 @@ using JobHunter.Service.DTOs.Job;
 using JobHunter.Service.Interface.Persistence;
 using JobHunter.Service.Interface.UseCase;
 using JobHunter.Service.Utils;
+using System.Globalization;
 using System.Text.Json;
 
 namespace JobHunter.Service.UseCase;
@@ -157,11 +158,9 @@ public class HrJobUseCase : IHrJobUseCase
             throw new ArgumentException("One or more experience levels are invalid");
         }
 
-        var expiredDate = request.ExperiedDate ?? throw new ArgumentException("Expired date is required");
+        var expiredDate = ParseExpiredDate(request.ExperiedDate);
         var now = DateTimeOffset.UtcNow;
-        var tags = request.Tags?
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .ToList() ?? new List<string>();
+        var tags = NormalizeTags(request.Tags);
 
         var job = new Job
         {
@@ -172,7 +171,7 @@ public class HrJobUseCase : IHrJobUseCase
             Title = request.Name,
             SalaryRange = request.SalaryRange,
             WorkType = request.JobWorkType,
-            ExpiredAt = expiredDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
+            ExpiredAt = expiredDate,
             ExperienceRequirement = request.ExperienceRequirement,
             Tags = JsonDocument.Parse(JsonSerializer.Serialize(tags)),
             Responsibilities = request.Responsibilities,
@@ -236,11 +235,9 @@ public class HrJobUseCase : IHrJobUseCase
             throw new ArgumentException("One or more experience levels are invalid");
         }
 
-        var expiredDate = request.ExperiedDate ?? throw new ArgumentException("Expired date is required");
+        var expiredDate = ParseExpiredDate(request.ExperiedDate);
         var now = DateTimeOffset.UtcNow;
-        var tags = request.Tags?
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .ToList() ?? new List<string>();
+        var tags = NormalizeTags(request.Tags);
         var shouldUpdateSlug = !string.Equals(job.Title, request.Name, StringComparison.Ordinal);
 
         job.BranchId = branch.Id;
@@ -248,7 +245,7 @@ public class HrJobUseCase : IHrJobUseCase
         job.Title = request.Name;
         job.SalaryRange = request.SalaryRange;
         job.WorkType = request.JobWorkType;
-        job.ExpiredAt = expiredDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        job.ExpiredAt = expiredDate;
         job.ExperienceRequirement = request.ExperienceRequirement;
         job.Tags = JsonDocument.Parse(JsonSerializer.Serialize(tags));
         job.Responsibilities = request.Responsibilities;
@@ -286,12 +283,12 @@ public class HrJobUseCase : IHrJobUseCase
             throw new ArgumentException("Job name is required");
         }
 
-        if (!request.JobWorkType.HasValue)
+        if (string.IsNullOrWhiteSpace(request.JobWorkType))
         {
             throw new ArgumentException("Job work type is required");
         }
 
-        if (!request.ExperiedDate.HasValue)
+        if (string.IsNullOrWhiteSpace(request.ExperiedDate))
         {
             throw new ArgumentException("Expired date is required");
         }
@@ -322,6 +319,77 @@ public class HrJobUseCase : IHrJobUseCase
         }
     }
 
+    private static List<string> NormalizeTags(IEnumerable<string>? tags)
+    {
+        return tags?
+            .Select(tag => tag.Trim())
+            .Where(tag => !string.IsNullOrWhiteSpace(tag))
+            .ToList() ?? new List<string>();
+    }
+
+    private static List<string> ReadTags(JsonDocument? tags)
+    {
+        if (tags == null || tags.RootElement.ValueKind != JsonValueKind.Array)
+        {
+            return new List<string>();
+        }
+
+        return tags.RootElement
+            .EnumerateArray()
+            .Where(tag => tag.ValueKind == JsonValueKind.String)
+            .Select(tag => tag.GetString()?.Trim())
+            .Where(tag => !string.IsNullOrWhiteSpace(tag))
+            .Select(tag => tag!)
+            .ToList();
+    }
+
+    private static DateTimeOffset ParseExpiredDate(string? expiredDate)
+    {
+        if (string.IsNullOrWhiteSpace(expiredDate))
+        {
+            throw new ArgumentException("Expired date is required");
+        }
+
+        var trimmedDate = expiredDate.Trim();
+        if (DateOnly.TryParseExact(trimmedDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateOnly))
+        {
+            return new DateTimeOffset(dateOnly.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        }
+
+        var normalizedDate = NormalizeTimezoneOffset(trimmedDate);
+        if (DateTimeOffset.TryParse(
+                normalizedDate,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal,
+                out var dateTimeOffset))
+        {
+            return dateTimeOffset.ToUniversalTime();
+        }
+
+        throw new ArgumentException("Expired date is invalid");
+    }
+
+    private static string NormalizeTimezoneOffset(string date)
+    {
+        if (date.Length < 5)
+        {
+            return date;
+        }
+
+        var offsetStart = date.Length - 5;
+        var sign = date[offsetStart];
+        if ((sign != '+' && sign != '-')
+            || !char.IsDigit(date[offsetStart + 1])
+            || !char.IsDigit(date[offsetStart + 2])
+            || !char.IsDigit(date[offsetStart + 3])
+            || !char.IsDigit(date[offsetStart + 4]))
+        {
+            return date;
+        }
+
+        return $"{date[..(offsetStart + 3)]}:{date[(offsetStart + 3)..]}";
+    }
+
     private static JobDetailDto MapJobDetail(Job job)
     {
         return new JobDetailDto
@@ -329,14 +397,14 @@ public class HrJobUseCase : IHrJobUseCase
             Id = job.Id,
             Name = job.Title,
             SalaryRange = job.SalaryRange,
-            JobWorkType = job.WorkType?.ToString(),
-            ExpiredDate = job.ExpiredAt,
-            Category = job.Subcategory?.CategoryId,
-            SubCategory = job.SubcategoryId,
-            Branch = job.CompanyId,
+            JobWorkType = job.WorkType,
+            ExperiedDate = job.ExpiredAt?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            Category = job.Subcategory?.CategoryId ?? Guid.Empty,
+            SubCategory = job.SubcategoryId ?? Guid.Empty,
+            Branch = job.BranchId ?? Guid.Empty,
+            ExperienceLevels = job.JobLevels.Select(level => level.Id).ToList(),
             ExperienceRequirement = job.ExperienceRequirement,
-            Level = string.Join(", ", job.JobLevels.Select(level => level.Title).Where(title => !string.IsNullOrWhiteSpace(title))),
-            Tag = job.Tags?.RootElement.ToString(),
+            Tags = ReadTags(job.Tags),
             Requirements = job.Requirements,
             Responsibilities = job.Responsibilities,
             Benefits = job.Benefits

@@ -71,29 +71,39 @@ export function useJobPostingsQuery(params: getJobPostingsParams) {
   });
 }
 
-export function useJobPostingDetailQuery(jobId: string) {
+export function useJobPostingDetailQuery(jobId: string, enabled = true) {
   return useQuery<ResponseEntity<JobPostDetail>, AxiosError>({
     queryKey: ["jobPostingDetail", jobId],
     queryFn: () => jobApi.getJobPostingDetail(jobId),
-    enabled: Boolean(jobId),
+    enabled: enabled && Boolean(jobId),
   });
 }
 
-export function useCategoriesQuery() {
+export function useCategoriesQuery({
+  refetchOnMount,
+}: {
+  refetchOnMount?: boolean | "always";
+} = {}) {
   return useQuery<JobPostingCategory[], AxiosError>({
     queryKey: ["categories"],
     queryFn: () => jobApi.getCategories(),
     staleTime: Infinity,
     gcTime: 24 * 60 * 60 * 1000,
+    refetchOnMount,
   });
 }
 
-export function useExperienceLevelsQuery() {
+export function useExperienceLevelsQuery({
+  refetchOnMount,
+}: {
+  refetchOnMount?: boolean | "always";
+} = {}) {
   return useQuery<ResponseEntity<ExperienceLevel[]>, AxiosError>({
     queryKey: ["experienceLevels"],
     queryFn: () => jobApi.getExperienceLevels(),
     staleTime: Infinity,
     gcTime: 24 * 60 * 60 * 1000,
+    refetchOnMount,
   });
 }
 

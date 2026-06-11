@@ -1,19 +1,47 @@
 ﻿"use client"
 
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useQueryClient } from "@tanstack/react-query"
+import { Loader2Icon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 import { useState } from "react"
-import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
+import { useForm } from "react-hook-form"
+import { toast } from "sonner"
+import * as z from "zod"
 
+import {
+  useCreateBranch,
+  useDeleteBranch,
+  useGetBranches,
+  useUpdateBranch,
+} from "@/api/hrbranch.api"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
   Table,
   TableBody,
@@ -22,95 +50,248 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { CompanyBranchRequestDto } from "@/types/company"
 
-type Branch = {
-  id: string
-  name: string
-  address: string
-  city: string
+const COMPANY_BRANCHES_QUERY_KEY = ["companyBranches"]
+
+const branchFormSchema = z.object({
+  name: z.string().trim().min(1, "Vui lòng nhập tên chi nhánh"),
+  address: z.string().trim().min(1, "Vui lòng nhập địa chỉ"),
+  city: z.string().trim().min(1, "Vui lòng nhập thành phố"),
+})
+
+type BranchFormValues = z.infer<typeof branchFormSchema>
+
+const defaultBranchFormValues: BranchFormValues = {
+  name: "",
+  address: "",
+  city: "",
 }
 
-const branches: Branch[] = [
-  {
-    id: "head-office",
-    name: "Trá»¥ sá»Ÿ chÃ­nh",
-    address: "123 Nguyá»…n Huá»‡, HoÃ n Kiáº¿m",
-    city: "HÃ  Ná»™i",
-  },
-  {
-    id: "hcm-branch",
-    name: "Chi nhÃ¡nh HCM",
-    address: "456 LÃª Lá»£i, Q.1",
-    city: "TP. Há»“ ChÃ­ Minh",
-  },
-  {
-    id: "danang-branch",
-    name: "Chi nhÃ¡nh ÄÃ  Náºµng",
-    address: "789 Tráº§n PhÃº, Háº£i ChÃ¢u",
-    city: "ÄÃ  Náºµng",
-  },
-]
+function BranchDialogForm({
+  branch,
+  onOpenChange,
+}: {
+  branch: CompanyBranchRequestDto | null
+  onOpenChange: (open: boolean) => void
+}) {
+  const queryClient = useQueryClient()
+  const createBranch = useCreateBranch()
+  const updateBranch = useUpdateBranch()
+  const isSubmitting = createBranch.isPending || updateBranch.isPending
+  const branchFormValues: BranchFormValues = {
+    name: branch?.name ?? "",
+    address: branch?.address ?? "",
+    city: branch?.city ?? "",
+  }
+  const form = useForm<BranchFormValues>({
+    resolver: zodResolver(branchFormSchema),
+    defaultValues: defaultBranchFormValues,
+    values: branchFormValues,
+  })
 
-function BranchDialogForm({ branch }: { branch: Branch | null }) {
+  async function handleSubmit(values: BranchFormValues) {
+    form.clearErrors("root")
+
+    try {
+      if (branch) {
+        await updateBranch.mutateAsync({
+          id: branch.id,
+          branchData: values,
+        })
+        toast.success("Cập nhật chi nhánh thành công")
+      } else {
+        await createBranch.mutateAsync({
+          branchData: values,
+        })
+        toast.success("Thêm chi nhánh thành công")
+      }
+
+      await queryClient.invalidateQueries({
+        queryKey: COMPANY_BRANCHES_QUERY_KEY,
+      })
+      onOpenChange(false)
+    } catch {
+      const message = branch
+        ? "Không thể cập nhật chi nhánh"
+        : "Không thể thêm chi nhánh"
+
+      form.setError("root", { message })
+      toast.error(message)
+    }
+  }
+
+  function handleCancel() {
+    form.reset(branchFormValues)
+    onOpenChange(false)
+  }
+
   return (
-    <form className="space-y-6">
-      <div className="space-y-3">
-        <Label htmlFor="branch-name">
-          TÃªn chi nhÃ¡nh
-        </Label>
-        <Input
-          id="branch-name"
-          defaultValue={branch?.name ?? ""}
-          placeholder="VD: Chi nhÃ¡nh HÃ  Ná»™i"
-        />
-      </div>
+    <Form {...form}>
+      <form className="space-y-6" onSubmit={form.handleSubmit(handleSubmit)}>
+        <fieldset
+          className="space-y-6 disabled:cursor-not-allowed disabled:opacity-70"
+          disabled={isSubmitting}
+        >
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem className="space-y-3">
+                <FormLabel htmlFor="branch-name">Tên chi nhánh</FormLabel>
+                <FormControl>
+                  <Input
+                    id="branch-name"
+                    placeholder="VD: Chi nhánh Hà Nội"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-      <div className="space-y-3">
-        <Label htmlFor="branch-address">
-          Äá»‹a chá»‰
-        </Label>
-        <Input
-          id="branch-address"
-          defaultValue={branch?.address ?? ""}
-          placeholder="Sá»‘ nhÃ , tÃªn Ä‘Æ°á»ng, phÆ°á»ng/quáº­n"
-        />
-      </div>
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem className="space-y-3">
+                <FormLabel htmlFor="branch-address">Địa chỉ</FormLabel>
+                <FormControl>
+                  <Input
+                    id="branch-address"
+                    placeholder="Số nhà, tên đường, phường/quận"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-      <div className="space-y-3">
-        <Label htmlFor="branch-city">
-          ThÃ nh phá»‘
-        </Label>
-        <Input
-          id="branch-city"
-          defaultValue={branch?.city ?? ""}
-          placeholder="VD: HÃ  Ná»™i"
-        />
-      </div>
+          <FormField
+            control={form.control}
+            name="city"
+            render={({ field }) => (
+              <FormItem className="space-y-3">
+                <FormLabel htmlFor="branch-city">Thành phố</FormLabel>
+                <FormControl>
+                  <Input id="branch-city" placeholder="VD: Hà Nội" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-      <DialogFooter>
-        <DialogClose asChild>
-          <Button type="button" variant="outline" size="lg">
-            Há»§y
+          {form.formState.errors.root?.message ? (
+            <p className="text-sm text-destructive">
+              {form.formState.errors.root.message}
+            </p>
+          ) : null}
+        </fieldset>
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            disabled={isSubmitting}
+            onClick={handleCancel}
+          >
+            Hủy
           </Button>
-        </DialogClose>
-        <Button type="submit" size="lg">
-          LÆ°u
+          <Button type="submit" size="lg" disabled={isSubmitting}>
+            {isSubmitting ? <Loader2Icon className="animate-spin" /> : null}
+            Lưu
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
+  )
+}
+
+function DeleteBranchButton({ branch }: { branch: CompanyBranchRequestDto }) {
+  const queryClient = useQueryClient()
+  const deleteBranch = useDeleteBranch()
+
+  async function handleDeleteBranch() {
+    try {
+      await deleteBranch.mutateAsync({ id: branch.id })
+      toast.success("Xóa chi nhánh thành công")
+      await queryClient.invalidateQueries({
+        queryKey: COMPANY_BRANCHES_QUERY_KEY,
+      })
+    } catch {
+      toast.error("Không thể xóa chi nhánh")
+    }
+  }
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="size-8 text-destructive"
+          disabled={deleteBranch.isPending}
+        >
+          {deleteBranch.isPending ? (
+            <Loader2Icon className="animate-spin" />
+          ) : (
+            <Trash2Icon />
+          )}
+          <span className="sr-only">Xóa {branch.name}</span>
         </Button>
-      </DialogFooter>
-    </form>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Xóa chi nhánh?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Chi nhánh {branch.name} sẽ bị xóa khỏi danh sách công ty.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deleteBranch.isPending}>
+            Hủy
+          </AlertDialogCancel>
+          <AlertDialogAction
+            variant="destructive"
+            disabled={deleteBranch.isPending}
+            onClick={handleDeleteBranch}
+          >
+            {deleteBranch.isPending ? (
+              <Loader2Icon className="animate-spin" />
+            ) : null}
+            Xóa
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
 
 export function CompanyBranch() {
+  const { data: branchesResponse, isError, isLoading } = useGetBranches()
+  const branches = branchesResponse?.data ?? []
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null)
+  const [selectedBranch, setSelectedBranch] =
+    useState<CompanyBranchRequestDto | null>(null)
+
+  function handleOpenChange(open: boolean) {
+    setDialogOpen(open)
+
+    if (!open) {
+      setSelectedBranch(null)
+    }
+  }
 
   function openCreateDialog() {
     setSelectedBranch(null)
     setDialogOpen(true)
   }
 
-  function openEditDialog(branch: Branch) {
+  function openEditDialog(branch: CompanyBranchRequestDto) {
     setSelectedBranch(branch)
     setDialogOpen(true)
   }
@@ -120,10 +301,10 @@ export function CompanyBranch() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <h2 className="text-xl font-semibold tracking-normal">
-            Danh Sách chi nhánh
+            Danh sách chi nhánh
           </h2>
           <p className="text-sm font-medium text-muted-foreground">
-            {branches.length} chi nhánh
+            {isLoading ? "Đang tải chi nhánh" : `${branches.length} chi nhánh`}
           </p>
         </div>
         <Button type="button" size="lg" onClick={openCreateDialog}>
@@ -166,31 +347,59 @@ export function CompanyBranch() {
                       <PencilIcon />
                       <span className="sr-only">Chỉnh sửa {branch.name}</span>
                     </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="size-8 text-destructive"
-                    >
-                      <Trash2Icon />
-                      <span className="sr-only">Xóa {branch.name}</span>
-                    </Button>
+                    <DeleteBranchButton branch={branch} />
                   </div>
                 </TableCell>
               </TableRow>
             ))}
+
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={4} className="h-24 text-center">
+                  <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                    <Loader2Icon className="size-4 animate-spin" />
+                    Đang tải danh sách chi nhánh
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : null}
+
+            {!isLoading && !isError && branches.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={4}
+                  className="h-24 text-center text-muted-foreground"
+                >
+                  Chưa có chi nhánh nào
+                </TableCell>
+              </TableRow>
+            ) : null}
+
+            {isError ? (
+              <TableRow>
+                <TableCell
+                  colSpan={4}
+                  className="h-24 text-center text-destructive"
+                >
+                  Không thể tải danh sách chi nhánh
+                </TableCell>
+              </TableRow>
+            ) : null}
           </TableBody>
         </Table>
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl font-semibold">
               {selectedBranch ? "Chỉnh sửa chi nhánh" : "Thêm chi nhánh"}
             </DialogTitle>
           </DialogHeader>
-          <BranchDialogForm branch={selectedBranch} />
+          <BranchDialogForm
+            branch={selectedBranch}
+            onOpenChange={handleOpenChange}
+          />
         </DialogContent>
       </Dialog>
     </section>

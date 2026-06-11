@@ -26,3 +26,14 @@ export interface CompanyGeneralResponseDto extends CompanyGeneralRequestDto {
   logoUrl?: string;
   coverUrl?: string;
 }
+
+
+export interface CompanyBranchReponseDto {
+  name: string;
+  address:string;
+  city: string;
+}
+
+export interface CompanyBranchRequestDto extends CompanyBranchReponseDto {
+  id: string;
+}
