@@ -34,7 +34,7 @@ namespace JobHunter.Service.Infrastructure.Persistence
         {
             return _context.CompanyBranches
                 .AsNoTracking()
-                .Where(branch => branch.CompanyId == companyId && !branch.IsDelete)
+                .Where(branch => branch.CompanyId == companyId)
                 .OrderBy(branch => branch.Name)
                 .ToListAsync();
         }
@@ -66,7 +66,7 @@ namespace JobHunter.Service.Infrastructure.Persistence
         public async Task<CompanyBranch> UpdateCompanyBranchAsync(Guid companyId, Guid branchId, string name, string address, string city)
         {
             var branch = await _context.CompanyBranches
-                .FirstOrDefaultAsync(b => b.Id == branchId && b.CompanyId == companyId && !b.IsDelete);
+                .FirstOrDefaultAsync(b => b.Id == branchId && b.CompanyId == companyId);
 
             if (branch == null)
             {
@@ -160,14 +160,21 @@ namespace JobHunter.Service.Infrastructure.Persistence
         public async Task DeleteBranchAsync(Guid companyId, Guid branchId)
         {
             var branch = await _context.CompanyBranches
-                .FirstOrDefaultAsync(b => b.Id == branchId && b.CompanyId == companyId && !b.IsDelete);
+                .FirstOrDefaultAsync(b => b.Id == branchId && b.CompanyId == companyId);
 
             if (branch == null)
             {
-                throw new Exception("Branch not found");
+                throw new KeyNotFoundException("Branch not found");
             }
 
-            branch.IsDelete = true;
+            var hasJobs = await _context.Jobs
+                .AnyAsync(job => job.CompanyId == companyId && job.BranchId == branchId);
+            if (hasJobs)
+            {
+                throw new InvalidOperationException("Cannot delete branch because it has jobs");
+            }
+
+            _context.CompanyBranches.Remove(branch);
             await _context.SaveChangesAsync();
         }    }
 }
