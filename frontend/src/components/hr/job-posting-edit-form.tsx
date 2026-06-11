@@ -641,21 +641,6 @@ export function JobPostingEditForm({
     : "Nhập thông tin để tạo bài đăng tuyển dụng."
   const submitLabel = isEditMode ? "Lưu thay đổi" : "Tạo tin"
 
-  useEffect(() => {
-    const currentSubCategory = form.getValues("subCategory")
-
-    if (
-      currentSubCategory &&
-      selectedCategory &&
-      !subCategoryOptions.some((option) => option.id === currentSubCategory)
-    ) {
-      form.setValue("subCategory", "", {
-        shouldDirty: true,
-        shouldValidate: true,
-      })
-    }
-  }, [form, selectedCategory, subCategoryOptions])
-
   return (
     <Form {...form}>
       <form
@@ -782,8 +767,12 @@ export function JobPostingEditForm({
                 <FormItem>
                   <FormLabel>Danh mục con</FormLabel>
                   <PostingSelect
+                    key={`${selectedCategoryId}-${subCategoryOptions.length}`}
                     disabled={
-                      isFormDisabled || isCategoriesLoading || !selectedCategory
+                      isFormDisabled ||
+                      isCategoriesLoading ||
+                      !selectedCategory ||
+                      subCategoryOptions.length === 0
                     }
                     options={subCategoryOptions}
                     placeholder={
