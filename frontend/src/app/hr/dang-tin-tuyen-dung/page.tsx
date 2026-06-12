@@ -14,18 +14,19 @@ import {
   ChevronRightIcon,
   ChevronsLeftIcon,
   ChevronsRightIcon,
-  EyeIcon,
   LockIcon,
   PencilIcon,
   PlusIcon,
   SearchIcon,
 } from "lucide-react"
 
-import { useJobPostingsQuery, type getJobPostingsParams } from "@/api/hrjob.api"
+import { useJobPostingsQuery, type getJobPostingsParams, usePatchCloseJob } from "@/api/hrjob.api"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 import {
   Select,
   SelectContent,
@@ -68,6 +69,52 @@ const getErrorMessage = (error: unknown) => {
   }
 
   return "Không thể tải danh sách tin tuyển dụng."
+}
+
+const JobActionCell = ({ job }: { job: JobPosting }) => {
+  const queryClient = useQueryClient()
+  const { mutate: closeJob, isPending, variables } = usePatchCloseJob()
+  
+  const isClosing = isPending && variables === job.id
+  const isClosed = job.status === "Closed" // Hoặc điều kiện trạng thái của bạn
+
+  const handleClose = () => {
+    closeJob(job.id, {
+      onSuccess: () => {
+        toast.success(`Đã đóng tin: ${job.title}`)
+        // Load lại danh sách sau khi đóng thành công
+        queryClient.invalidateQueries({ queryKey: ["jobPostings"] }) 
+      },
+      onError: () => {
+        toast.error("Không thể đóng tin tuyển dụng này. Vui lòng thử lại.")
+      }
+    })
+  }
+
+  return (
+    <div className="flex justify-end gap-1">
+      <Button variant="ghost" size="icon" className="size-8" asChild>
+        <Link href={`/hr/dang-tin-tuyen-dung/${job.id}/chinh-sua`}>
+          <PencilIcon />
+          <span className="sr-only">Sửa {job.title}</span>
+        </Link>
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="size-8 text-destructive"
+        onClick={handleClose}
+        disabled={isClosed || isPending} // Disable nếu đang loading hoặc đã đóng
+      >
+        {isClosing ? (
+          <span className="size-4 animate-spin rounded-full border-2 border-destructive border-t-transparent" />
+        ) : (
+          <LockIcon />
+        )}
+        <span className="sr-only">Đóng {job.title}</span>
+      </Button>
+    </div>
+  )
 }
 
 const columns: ColumnDef<JobPosting>[] = [
@@ -128,27 +175,12 @@ const columns: ColumnDef<JobPosting>[] = [
   {
     id: "actions",
     header: () => <div className="text-right">Hành động</div>,
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-1">
-        <Button variant="ghost" size="icon" className="size-8" asChild>
-          <Link href={`/hr/dang-tin-tuyen-dung/${row.original.id}/chinh-sua`}>
-            <PencilIcon />
-            <span className="sr-only">Sửa {row.original.title}</span>
-          </Link>
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-8 text-destructive"
-        >
-          <LockIcon />
-          <span className="sr-only">Đóng {row.original.title}</span>
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => <JobActionCell job={row.original} />,
     enableHiding: false,
   },
 ]
+
+
 
 export default function JobPostingPage() {
   const [search, setSearch] = React.useState("")

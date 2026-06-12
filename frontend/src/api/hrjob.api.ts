@@ -62,6 +62,10 @@ export const jobApi = {
       await api.get<ResponseEntity<ExperienceLevel[]>>("experienceLevels");
     return res.data;
   },
+  async patchCloseJob(jobId: string){
+    const res = await api.patch<ResponseEntity<JobPostDetail>>(`hr/jobs/${jobId}/close`);
+    return res.data;
+  }
 };
 
 export function useJobPostingsQuery(params: getJobPostingsParams) {
@@ -126,5 +130,11 @@ export function useUpdateJobPosting() {
     UpdateJobPostingVariables
   >({
     mutationFn: ({ jobId, payload }) => jobApi.updateJobPosting(jobId, payload),
+  });
+}
+
+export function usePatchCloseJob(){
+  return useMutation<ResponseEntity<JobPostDetail>, ApiError, string>({
+    mutationFn: (jobId) => jobApi.patchCloseJob(jobId)
   });
 }
