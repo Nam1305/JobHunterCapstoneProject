@@ -1,8 +1,8 @@
 import Link from "next/link"
 
-import { CompanyBrandingForm } from "@/components/hr/company-branding-form"
-import { CompanyBranch } from "@/components/hr/company-branch"
-import { CompanyGeneralInformationForm } from "@/components/hr/company-general-form"
+import { CompanyBrandingForm } from "./company-branding-form"
+import { CompanyBranch } from "./company-branch"
+import { CompanyGeneralInformationForm } from "./company-general-form"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export type CompanyInformationTab = "general" | "branding" | "branches"

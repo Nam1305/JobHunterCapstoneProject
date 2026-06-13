@@ -1,7 +1,7 @@
 import {
   CompanyInformationForm,
   type CompanyInformationTab,
-} from "@/components/hr/company-information-form"
+} from "@/app/hr/thong-tin-cong-ty/_components/company-information-form"
 import { notFound } from "next/navigation"
 
 const tabBySlug: Record<string, CompanyInformationTab> = {
