@@ -6,7 +6,7 @@ import type {
   UpdateJobPostRequest,
 } from "@/types/job"
 
-export const WORK_TYPES = ["Onsite", "Remote", " Hybrid", "Oversea"]
+export const WORK_TYPES = ["Onsite", "Remote", "Hybrid", "Oversea"]
 export const WORK_TYPE_OPTIONS = WORK_TYPES.map((name) => ({ id: name, name }))
 export const EMPTY_BRANCH_OPTIONS: JobPostingOption[] = []
 export const EMPTY_CATEGORY_OPTIONS: Category[] = []

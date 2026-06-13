@@ -1,6 +1,6 @@
 "use client"
 
-import { useJobPostingForm } from "@/hooks/use-job-posting-form"
+import { useJobPostingForm } from "@/app/hr/dang-tin-tuyen-dung/_hooks/use-job-posting-form"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {

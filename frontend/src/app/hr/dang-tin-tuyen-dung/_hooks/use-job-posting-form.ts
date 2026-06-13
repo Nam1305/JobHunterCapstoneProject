@@ -22,7 +22,7 @@ import {
   FormValues,
   toFormValues,
   toUpdatePayload,
-} from "@/components/hr/job-posting-form-schema"
+} from "@/app/hr/dang-tin-tuyen-dung/_components/job-posting-form-schema"
 import type {
   JobPostingCategory as Category,
   JobPostingOption,

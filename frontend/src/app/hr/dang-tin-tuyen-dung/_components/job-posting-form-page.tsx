@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
-import { JobPostingEditForm } from "@/components/hr/job-posting-edit-form"
+import { JobPostingEditForm } from "./job-posting-edit-form"
 import {
   Breadcrumb,
   BreadcrumbItem,
