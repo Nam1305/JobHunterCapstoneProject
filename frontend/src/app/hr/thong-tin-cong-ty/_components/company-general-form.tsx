@@ -208,7 +208,7 @@ export function CompanyGeneralInformationForm() {
 
   if (isLoading) {
     return (
-      <div className="flex w-full flex-1 flex-col gap-6 p-4 md:gap-7 md:p-6">
+      <div className="flex w-full flex-1 flex-col gap-6 md:gap-7">
         <Section title="Thông tin chung">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2Icon className="size-4 animate-spin" />
@@ -319,7 +319,7 @@ function CompanyGeneralInformationFields({
   return (
     <Form {...form}>
       <form
-        className="flex w-full flex-1 flex-col gap-6 p-4 md:gap-7 md:p-6"
+        className="flex w-full flex-1 flex-col gap-6 md:gap-7"
         onSubmit={form.handleSubmit(handleSubmit)}
       >
         <Section title="Thông tin chung">

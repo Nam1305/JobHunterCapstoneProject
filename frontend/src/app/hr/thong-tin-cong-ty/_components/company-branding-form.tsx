@@ -327,14 +327,15 @@ function TeamPhotoUrlList({
 }
 
 export function CompanyBrandingForm() {
-  const queryClient = useQueryClient()
   const { data: brandingResponse, isLoading: isBrandingLoading } =
     useGetBranding()
   const updateBranding = useUpdateBranding()
   const branding = brandingResponse?.data
   const isFormLoading = isBrandingLoading || updateBranding.isPending
   const hasHydratedFormRef = useRef(false)
-  const initialFormValuesRef = useRef(defaultBrandingFormValues)
+  const [initialFormValues, setInitialFormValues] = useState(
+    defaultBrandingFormValues
+  )
   const form = useForm<BrandingFormValues>({
     resolver: zodResolver(brandingFormSchema),
     defaultValues: defaultBrandingFormValues,
@@ -348,7 +349,7 @@ export function CompanyBrandingForm() {
     const formValues = toBrandingFormValues(branding)
 
     form.reset(formValues)
-    initialFormValuesRef.current = formValues
+    setInitialFormValues(formValues)
     hasHydratedFormRef.current = true
   }, [branding, form])
 
@@ -360,7 +361,7 @@ export function CompanyBrandingForm() {
       },
       {
         onSuccess: (response) => {
-          initialFormValuesRef.current = values
+          setInitialFormValues(values)
           toast.success(
             response.message || "Cập nhật thương hiệu công ty thành công"
           )
@@ -378,13 +379,13 @@ export function CompanyBrandingForm() {
   }
 
   function handleReset() {
-    form.reset(initialFormValuesRef.current)
+    form.reset(initialFormValues)
   }
 
   return (
     <Form {...form}>
       <form
-        className="flex w-full flex-1 flex-col gap-6 p-4 md:gap-7 md:p-6"
+        className="flex w-full flex-1 flex-col gap-6 md:gap-7"
         onSubmit={form.handleSubmit(handleSubmit)}
       >
         <Section title="Nội dung thương hiệu">

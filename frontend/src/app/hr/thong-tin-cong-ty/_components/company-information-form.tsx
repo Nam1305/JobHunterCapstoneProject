@@ -25,10 +25,10 @@ export function CompanyInformationForm({
             </p>
           </div>
 
-          <Tabs defaultValue={currentTab} className="w-full">
+          <Tabs defaultValue={currentTab} className="w-full gap-5">
             <TabsList
               variant="default"
-              className="w-full max-w-max rounded-full bg-muted p-1"
+              className="w-full rounded-full bg-muted p-1"
             >
               <TabsTrigger value="general" asChild>
                 <Link href="/hr/thong-tin-cong-ty/thong-tin-chung">
@@ -45,15 +45,15 @@ export function CompanyInformationForm({
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="general" className="mt-6">
+            <TabsContent value="general" className="mt-0">
               <CompanyGeneralInformationForm />
             </TabsContent>
 
-            <TabsContent value="branding" className="mt-6">
+            <TabsContent value="branding" className="mt-0">
               <CompanyBrandingForm />
             </TabsContent>
 
-            <TabsContent value="branches" className="mt-6">
+            <TabsContent value="branches" className="mt-0">
               <CompanyBranch />
             </TabsContent>
           </Tabs>
