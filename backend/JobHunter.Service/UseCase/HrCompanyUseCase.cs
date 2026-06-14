@@ -213,7 +213,7 @@ public class HrCompanyUseCase : IHrCompanyUseCase
         }).ToList();
     }
 
-    public async Task<BranchDetailsDto> CreateBranchAsync(Guid userId, CreateBranchRequestDto request)
+    public async Task CreateBranchAsync(Guid userId, CreateBranchRequestDto request)
     {
         var user = await _userRepository.GetUserById(userId);
         if (user == null)
@@ -241,18 +241,10 @@ public class HrCompanyUseCase : IHrCompanyUseCase
             throw new ArgumentException("Branch city is required.", nameof(request.City));
         }
 
-        var branch = await _hrCompanyRepository.AddCompanyBranchAsync(user.CompanyId.Value, request.Name.Trim(), request.Address.Trim(), request.City.Trim());
-
-        return new BranchDetailsDto
-        {
-            Id = branch.Id,
-            Name = branch.Name ?? string.Empty,
-            Address = branch.Address ?? string.Empty,
-            City = branch.City ?? string.Empty
-        };
+        await _hrCompanyRepository.AddCompanyBranchAsync(user.CompanyId.Value, request.Name.Trim(), request.Address.Trim(), request.City.Trim());
     }
 
-    public async Task<BranchDetailsDto> UpdateBranchAsync(Guid userId, Guid branchId, CreateBranchRequestDto request)
+    public async Task UpdateBranchAsync(Guid userId, Guid branchId, CreateBranchRequestDto request)
     {
         var user = await _userRepository.GetUserById(userId);
         if (user == null)
@@ -280,15 +272,7 @@ public class HrCompanyUseCase : IHrCompanyUseCase
             throw new ArgumentException("Branch city is required.", nameof(request.City));
         }
 
-        var branch = await _hrCompanyRepository.UpdateCompanyBranchAsync(user.CompanyId.Value, branchId, request.Name.Trim(), request.Address.Trim(), request.City.Trim());
-
-        return new BranchDetailsDto
-        {
-            Id = branch.Id,
-            Name = branch.Name ?? string.Empty,
-            Address = branch.Address ?? string.Empty,
-            City = branch.City ?? string.Empty
-        };
+        await _hrCompanyRepository.UpdateCompanyBranchAsync(user.CompanyId.Value, branchId, request.Name.Trim(), request.Address.Trim(), request.City.Trim());
     }
 
     public async Task DeleteBranchAsync(Guid userId, Guid branchId)
@@ -307,7 +291,7 @@ public class HrCompanyUseCase : IHrCompanyUseCase
         await _hrCompanyRepository.DeleteBranchAsync(user.CompanyId.Value, branchId);
     }
 
-    public async Task<BrandingResponseDto> UpdateBrandingAsync(Guid userId, EditBrandingDto request)
+    public async Task UpdateBrandingAsync(Guid userId, EditBrandingDto request)
     {
         var user = await _userRepository.GetUserById(userId);
         if (user == null)
@@ -320,27 +304,7 @@ public class HrCompanyUseCase : IHrCompanyUseCase
             throw new InvalidOperationException("User is not assigned to a company");
         }
 
-        var company = await _hrCompanyRepository.GetByIdAsync(user.CompanyId.Value);
-        if (company == null)
-        {
-            throw new KeyNotFoundException("Company not found");
-        }
-
-        company.Overview = request.Overview;
-        company.Benefits = request.Benefits;
-
-        await _hrCompanyRepository.UpdateBrandingAsync(company.Id, company.Overview, company.Benefits);
-
-        var brandingResponse = new BrandingResponseDto
-        {
-            Overview = company.Overview,
-            Benefits = company.Benefits,
-            TeamPhotoUrls = company.TeamPhotoUrls != null
-                ? JsonSerializer.Deserialize<List<string>>(company.TeamPhotoUrls)
-                : new List<string>()
-        };
-
-        return brandingResponse;
+        await _hrCompanyRepository.UpdateBrandingAsync(user.CompanyId.Value, request.Overview, request.Benefits);
     }
 
     public async Task UpdateCoverImageAsync(Guid userId, IFormFile coverImageFile)
@@ -389,20 +353,13 @@ public class HrCompanyUseCase : IHrCompanyUseCase
             throw new InvalidOperationException("User is not assigned to a company");
         }
 
-        var company = await _hrCompanyRepository.GetByIdAsync(user.CompanyId.Value);
-        if (company == null)
-        {
-            throw new KeyNotFoundException("Company not found");
-        }
-
-        company.Name = request.Name;
-        company.Country = request.Country;
-        company.WebsiteUrl = request.WebsiteUrl;
-        company.CompanyType = request.CompanyType;
-        company.TeamSize = request.TeamSize;
-
-        await _hrCompanyRepository.UpdateGeneralInfoAsync(company.Id, company.Name, company.Country, company.WebsiteUrl, company.CompanyType, company.TeamSize);
-        return;
+        await _hrCompanyRepository.UpdateGeneralInfoAsync(
+            user.CompanyId.Value,
+            request.Name,
+            request.Country,
+            request.WebsiteUrl,
+            request.CompanyType,
+            request.TeamSize);
     }
 
     public async Task UpdateLogoAsync(Guid userId, IFormFile logoFile)

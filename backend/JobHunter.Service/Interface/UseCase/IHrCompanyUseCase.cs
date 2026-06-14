@@ -9,7 +9,7 @@ public interface IHrCompanyUseCase
 
     public Task DeleteTeamImageAsync(Guid userId, string imageUrl);
 
-    public Task<BrandingResponseDto> UpdateBrandingAsync(Guid userId, EditBrandingDto request);
+    public Task UpdateBrandingAsync(Guid userId, EditBrandingDto request);
 
     public Task UpdateLogoAsync(Guid userId, IFormFile logoFile);
 
@@ -23,9 +23,9 @@ public interface IHrCompanyUseCase
 
     public Task<List<BranchDetailsDto>> GetCompanyBranchesByUserIdAsync(Guid userId);
 
-    public Task<BranchDetailsDto> CreateBranchAsync(Guid userId, CreateBranchRequestDto request);
+    public Task CreateBranchAsync(Guid userId, CreateBranchRequestDto request);
 
-    public Task<BranchDetailsDto> UpdateBranchAsync(Guid userId, Guid branchId, CreateBranchRequestDto request);
+    public Task UpdateBranchAsync(Guid userId, Guid branchId, CreateBranchRequestDto request);
 
     public Task DeleteBranchAsync(Guid userId, Guid branchId);
 } 

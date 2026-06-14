@@ -39,10 +39,10 @@ namespace JobHunter.Service.Infrastructure.Persistence
                 .ToListAsync();
         }
 
-        public async Task<CompanyBranch> AddCompanyBranchAsync(Guid companyId, string name, string address, string city)
+        public async Task AddCompanyBranchAsync(Guid companyId, string name, string address, string city)
         {
-            var company = await _context.Companies.FindAsync(companyId);
-            if (company == null)
+            var companyExists = await _context.Companies.AnyAsync(company => company.Id == companyId);
+            if (!companyExists)
             {
                 throw new Exception("Company not found");
             }
@@ -59,27 +59,24 @@ namespace JobHunter.Service.Infrastructure.Persistence
 
             _context.CompanyBranches.Add(branch);
             await _context.SaveChangesAsync();
-
-            return branch;
         }
 
-        public async Task<CompanyBranch> UpdateCompanyBranchAsync(Guid companyId, Guid branchId, string name, string address, string city)
+        public async Task UpdateCompanyBranchAsync(Guid companyId, Guid branchId, string name, string address, string city)
         {
-            var branch = await _context.CompanyBranches
-                .FirstOrDefaultAsync(b => b.Id == branchId && b.CompanyId == companyId);
+            var updatedRows = await _context.CompanyBranches
+                .Where(branch => branch.Id == branchId && branch.CompanyId == companyId)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(branch => branch.Name, name)
+                    .SetProperty(branch => branch.Address, address)
+                    .SetProperty(branch => branch.City, city)
+                    .SetProperty(
+                        branch => branch.CitySlug,
+                        string.IsNullOrWhiteSpace(city) ? null : JobHunter.Service.Utils.SlugGenerator.GenerateSlug(city)));
 
-            if (branch == null)
+            if (updatedRows == 0)
             {
                 throw new Exception("Branch not found");
             }
-
-            branch.Name = name;
-            branch.Address = address;
-            branch.City = city;
-            branch.CitySlug = string.IsNullOrWhiteSpace(city) ? null : JobHunter.Service.Utils.SlugGenerator.GenerateSlug(city);
-
-            await _context.SaveChangesAsync();
-            return branch;
         }
 
         public async Task DeleteTeamImagesAsync(Guid companyId, string imageUrl)
@@ -98,23 +95,16 @@ namespace JobHunter.Service.Infrastructure.Persistence
 
         public async Task UpdateBrandingAsync(Guid companyId, string? overview, string? benefits)
         {
-            var company = await _context.Companies.FindAsync(companyId);
-            if (company == null)
+            var updatedRows = await _context.Companies
+                .Where(company => company.Id == companyId)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(company => company.Overview, company => overview ?? company.Overview)
+                    .SetProperty(company => company.Benefits, company => benefits ?? company.Benefits));
+
+            if (updatedRows == 0)
             {
                 throw new Exception("Company not found");
             }
-
-            if (overview != null)
-            {
-                company.Overview = overview;
-            }
-
-            if (benefits != null)
-            {
-                company.Benefits = benefits;
-            }
-
-            await _context.SaveChangesAsync();
         }
 
         public async Task UpdateLogoAsync(Guid companyId, string logoUrl)
@@ -141,32 +131,24 @@ namespace JobHunter.Service.Infrastructure.Persistence
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateGeneralInfoAsync(Guid companyId, string name, string? country, string? websiteUrl, string? companyType, string? TeamSize)
+        public async Task UpdateGeneralInfoAsync(Guid companyId, string? name, string? country, string? websiteUrl, string? companyType, string? TeamSize)
         {
-            var company = await _context.Companies.FindAsync(companyId);
-            if (company == null)
+            var updatedRows = await _context.Companies
+                .Where(company => company.Id == companyId)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(company => company.Name, name)
+                    .SetProperty(company => company.Country, country)
+                    .SetProperty(company => company.WebsiteUrl, websiteUrl)
+                    .SetProperty(company => company.CompanyType, companyType)
+                    .SetProperty(company => company.TeamSize, TeamSize));
+
+            if (updatedRows == 0)
             {
                 throw new Exception("Company not found");
             }
-
-            company.Name = name;
-            company.Country = country;
-            company.WebsiteUrl = websiteUrl;
-            company.CompanyType = companyType;
-            company.TeamSize = TeamSize;
-
-            await _context.SaveChangesAsync();
         }
         public async Task DeleteBranchAsync(Guid companyId, Guid branchId)
         {
-            var branch = await _context.CompanyBranches
-                .FirstOrDefaultAsync(b => b.Id == branchId && b.CompanyId == companyId);
-
-            if (branch == null)
-            {
-                throw new KeyNotFoundException("Branch not found");
-            }
-
             var hasJobs = await _context.Jobs
                 .AnyAsync(job => job.CompanyId == companyId && job.BranchId == branchId);
             if (hasJobs)
@@ -174,7 +156,13 @@ namespace JobHunter.Service.Infrastructure.Persistence
                 throw new InvalidOperationException("Cannot delete branch because it has jobs");
             }
 
-            _context.CompanyBranches.Remove(branch);
-            await _context.SaveChangesAsync();
+            var deletedRows = await _context.CompanyBranches
+                .Where(branch => branch.Id == branchId && branch.CompanyId == companyId)
+                .ExecuteDeleteAsync();
+
+            if (deletedRows == 0)
+            {
+                throw new KeyNotFoundException("Branch not found");
+            }
         }    }
 }

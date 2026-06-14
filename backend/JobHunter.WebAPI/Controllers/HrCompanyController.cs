@@ -20,21 +20,27 @@ namespace JobHunter.WebAPI.Controllers
 
         [HttpPost("branding/team-images")]
         
-        public async Task<ActionResult<ResponseBase<List<string>>>> AddTeamImages([FromForm] List<IFormFile> images)
+        public async Task<ActionResult<ResponseBase<object?>>> AddTeamImages([FromForm] List<IFormFile> images)
         {
             // get userId from claim
             var userId = User.GetUserId();
-            var newImageUrls = await _hrCompanyUseCase.AddTeamImagesAsync(userId, images);
-            return new ResponseBase<List<string>>(newImageUrls);
+            await _hrCompanyUseCase.AddTeamImagesAsync(userId, images);
+            return new ResponseBase<object?>(null)
+            {
+                Message = "Tải ảnh đội ngũ thành công"
+            };
 
         }
             
         [HttpDelete("branding/team-images")]
-        public async Task<ActionResult<ResponseBase<string>>> DeleteTeamImage([FromQuery] string imageUrl)
+        public async Task<ActionResult<ResponseBase<object?>>> DeleteTeamImage([FromQuery] string imageUrl)
         {
             var userId = User.GetUserId();
             await _hrCompanyUseCase.DeleteTeamImageAsync(userId, imageUrl);
-            return new ResponseBase<string>("Xóa ảnh thành công");
+            return new ResponseBase<object?>(null)
+            {
+                Message = "Xóa ảnh thành công"
+            };
         }
 
         [HttpGet("branding")]
@@ -47,11 +53,14 @@ namespace JobHunter.WebAPI.Controllers
 
         // update overview and benefits
         [HttpPut("branding")]
-        public async Task<ActionResult<ResponseBase<BrandingResponseDto>>> UpdateBranding([FromBody] EditBrandingDto request)
+        public async Task<ActionResult<ResponseBase<object?>>> UpdateBranding([FromBody] EditBrandingDto request)
         {
             var userId = User.GetUserId();
-            var updatedBranding = await _hrCompanyUseCase.UpdateBrandingAsync(userId, request);
-            return new ResponseBase<BrandingResponseDto>(updatedBranding);
+            await _hrCompanyUseCase.UpdateBrandingAsync(userId, request);
+            return new ResponseBase<object?>(null)
+            {
+                Message = "Cập nhật thông tin thương hiệu thành công"
+            };
         }
 
         [HttpPut("logo")]
@@ -73,11 +82,14 @@ namespace JobHunter.WebAPI.Controllers
 
         // update General
         [HttpPut("general")]
-        public async Task<ActionResult<ResponseBase<string>>> UpdateGeneralInfo([FromBody] EditGeneralDto request)
+        public async Task<ActionResult<ResponseBase<object?>>> UpdateGeneralInfo([FromBody] EditGeneralDto request)
         {
             var userId = User.GetUserId();
             await _hrCompanyUseCase.UpdateGeneralInfoAsync(userId, request);
-            return new ResponseBase<string>("Cập nhật thông tin chung thành công");
+            return new ResponseBase<object?>(null)
+            {
+                Message = "Cập nhật thông tin chung thành công"
+            };
         }
 
         // get General
@@ -108,27 +120,36 @@ namespace JobHunter.WebAPI.Controllers
         }
 
         [HttpPost("branch")]
-        public async Task<ActionResult<ResponseBase<BranchDetailsDto>>> CreateBranch([FromBody] CreateBranchRequestDto request)
+        public async Task<ActionResult<ResponseBase<object?>>> CreateBranch([FromBody] CreateBranchRequestDto request)
         {
             var userId = User.GetUserId();
-            var createdBranch = await _hrCompanyUseCase.CreateBranchAsync(userId, request);
-            return new ResponseBase<BranchDetailsDto>(createdBranch);
+            await _hrCompanyUseCase.CreateBranchAsync(userId, request);
+            return new ResponseBase<object?>(null)
+            {
+                Message = "Tạo chi nhánh thành công"
+            };
         }
 
         [HttpPut("branch/{id}")]
-        public async Task<ActionResult<ResponseBase<BranchDetailsDto>>> UpdateBranch(Guid id, [FromBody] CreateBranchRequestDto request)
+        public async Task<ActionResult<ResponseBase<object?>>> UpdateBranch(Guid id, [FromBody] CreateBranchRequestDto request)
         {
             var userId = User.GetUserId();
-            var updatedBranch = await _hrCompanyUseCase.UpdateBranchAsync(userId, id, request);
-            return new ResponseBase<BranchDetailsDto>(updatedBranch);
+            await _hrCompanyUseCase.UpdateBranchAsync(userId, id, request);
+            return new ResponseBase<object?>(null)
+            {
+                Message = "Cập nhật chi nhánh thành công"
+            };
         }
 
         [HttpDelete("branch/{id}")]
-        public async Task<ActionResult<ResponseBase<string>>> DeleteBranch(Guid id)
+        public async Task<ActionResult<ResponseBase<object?>>> DeleteBranch(Guid id)
         {
             var userId = User.GetUserId();
             await _hrCompanyUseCase.DeleteBranchAsync(userId, id);
-            return new ResponseBase<string>("Xóa chi nhánh thành công");
+            return new ResponseBase<object?>(null)
+            {
+                Message = "Xóa chi nhánh thành công"
+            };
         }
     }
 }

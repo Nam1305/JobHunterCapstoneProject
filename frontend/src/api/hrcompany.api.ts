@@ -7,19 +7,19 @@ import { BrandingRequestDto, BrandingResponseDto, CompanyGeneralRequestDto, Comp
 type ApiError = AxiosError<ResponseEntity<null>>;
 
 export const companyApi = {
-    async addTeamImages(images: File[]): Promise<string[]>{
+    async addTeamImages(images: File[]): Promise<ResponseEntity<null>>{
         const formData = new FormData();
         images.forEach((image) => formData.append("images", image));
 
-        const res = await api.post<string[]>(`hr/company/branding/team-images`, formData, {
+        const res = await api.post<ResponseEntity<null>>(`hr/company/branding/team-images`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
         });
         return res.data;
     },
-    async deleteTeamImage(imageUrl: string): Promise<string> {
-        const res = await api.delete<string>(`hr/company/branding/team-images`, {
+    async deleteTeamImage(imageUrl: string): Promise<ResponseEntity<null>> {
+        const res = await api.delete<ResponseEntity<null>>(`hr/company/branding/team-images`, {
             params: {
                 imageUrl
             }
@@ -68,13 +68,13 @@ export const companyApi = {
 }
 
 export function useAddTeamImages() {
-    return useMutation<string[], ApiError, {images: File[]}>({
+    return useMutation<ResponseEntity<null>, ApiError, {images: File[]}>({
         mutationFn: ({ images }) => companyApi.addTeamImages(images),
     });
 }
 
 export function useDeleteTeamImage() {
-    return useMutation<string, ApiError, {imageUrl: string}>({
+    return useMutation<ResponseEntity<null>, ApiError, {imageUrl: string}>({
         mutationFn: ({ imageUrl }) => companyApi.deleteTeamImage(imageUrl),
     });
 }
