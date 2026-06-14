@@ -53,6 +53,18 @@ const defaultBrandingFormValues: BrandingFormValues = {
   benefits: "",
 }
 
+function toBrandingFormValues(
+  branding: {
+    overview?: string
+    benefits?: string
+  } | null | undefined
+): BrandingFormValues {
+  return {
+    overview: branding?.overview ?? "",
+    benefits: branding?.benefits ?? "",
+  }
+}
+
 type UploadedTeamPhoto = {
   id: string
   file: File
@@ -136,7 +148,7 @@ function TeamPhotoUrlList({
     }
   }, [])
 
-  async function handleUploadPhoto(event: ChangeEvent<HTMLInputElement>) {
+  function handleUploadPhoto(event: ChangeEvent<HTMLInputElement>) {
     const selectedFiles = Array.from(event.target.files ?? [])
 
     if (selectedFiles.length === 0) {
@@ -151,43 +163,63 @@ function TeamPhotoUrlList({
 
     setUploadedPhotos((currentPhotos) => [...currentPhotos, ...previewPhotos])
 
-    try {
-      await addTeamImages.mutateAsync({ images: selectedFiles })
-      toast.success("Tải ảnh đội ngũ thành công")
-      await queryClient.invalidateQueries({
-        queryKey: COMPANY_BRANDING_QUERY_KEY,
-      })
-    } catch {
-      toast.error("Không thể tải ảnh đội ngũ")
-    } finally {
-      previewPhotos.forEach((photo) => URL.revokeObjectURL(photo.previewUrl))
-      setUploadedPhotos((currentPhotos) =>
-        currentPhotos.filter(
-          (photo) =>
-            !previewPhotos.some((previewPhoto) => previewPhoto.id === photo.id)
-        )
-      )
+    addTeamImages.mutate(
+      { images: selectedFiles },
+      {
+        onSuccess: () => {
+          toast.success("Tải ảnh đội ngũ thành công")
+          void queryClient.invalidateQueries({
+            queryKey: COMPANY_BRANDING_QUERY_KEY,
+          })
+        },
+        onError: (error) => {
+          toast.error(
+            error.response?.data.message || "Không thể tải ảnh đội ngũ"
+          )
+        },
+        onSettled: () => {
+          previewPhotos.forEach((photo) =>
+            URL.revokeObjectURL(photo.previewUrl)
+          )
+          setUploadedPhotos((currentPhotos) =>
+            currentPhotos.filter(
+              (photo) =>
+                !previewPhotos.some(
+                  (previewPhoto) => previewPhoto.id === photo.id
+                )
+            )
+          )
 
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ""
+          if (fileInputRef.current) {
+            fileInputRef.current.value = ""
+          }
+        },
       }
-    }
+    )
   }
 
-  async function handleRemoveExistingPhoto(imageUrl: string) {
+  function handleRemoveExistingPhoto(imageUrl: string) {
     setDeletingImageUrl(imageUrl)
 
-    try {
-      await deleteTeamImage.mutateAsync({ imageUrl })
-      toast.success("Xóa ảnh đội ngũ thành công")
-      await queryClient.invalidateQueries({
-        queryKey: COMPANY_BRANDING_QUERY_KEY,
-      })
-    } catch {
-      toast.error("Không thể xóa ảnh đội ngũ")
-    } finally {
-      setDeletingImageUrl(null)
-    }
+    deleteTeamImage.mutate(
+      { imageUrl },
+      {
+        onSuccess: () => {
+          toast.success("Xóa ảnh đội ngũ thành công")
+          void queryClient.invalidateQueries({
+            queryKey: COMPANY_BRANDING_QUERY_KEY,
+          })
+        },
+        onError: (error) => {
+          toast.error(
+            error.response?.data.message || "Không thể xóa ảnh đội ngũ"
+          )
+        },
+        onSettled: () => {
+          setDeletingImageUrl(null)
+        },
+      }
+    )
   }
 
   function handleRemoveUploadedPhoto(photoId: string) {
@@ -301,37 +333,52 @@ export function CompanyBrandingForm() {
   const updateBranding = useUpdateBranding()
   const branding = brandingResponse?.data
   const isFormLoading = isBrandingLoading || updateBranding.isPending
-  const brandingFormValues: BrandingFormValues = {
-    overview: branding?.overview ?? "",
-    benefits: branding?.benefits ?? "",
-  }
+  const hasHydratedFormRef = useRef(false)
+  const initialFormValuesRef = useRef(defaultBrandingFormValues)
   const form = useForm<BrandingFormValues>({
     resolver: zodResolver(brandingFormSchema),
     defaultValues: defaultBrandingFormValues,
-    values: brandingFormValues,
   })
 
-  async function handleSubmit(values: BrandingFormValues) {
-    form.clearErrors("root")
-
-    try {
-      await updateBranding.mutateAsync({
-        brandingData: values,
-      })
-      toast.success("Cập nhật thương hiệu công ty thành công")
-      await queryClient.invalidateQueries({
-        queryKey: COMPANY_BRANDING_QUERY_KEY,
-      })
-    } catch {
-      const message = "Không thể cập nhật thương hiệu công ty"
-
-      form.setError("root", { message })
-      toast.error(message)
+  useEffect(() => {
+    if (!branding || hasHydratedFormRef.current) {
+      return
     }
+
+    const formValues = toBrandingFormValues(branding)
+
+    form.reset(formValues)
+    initialFormValuesRef.current = formValues
+    hasHydratedFormRef.current = true
+  }, [branding, form])
+
+  function handleSubmit(values: BrandingFormValues) {
+    form.clearErrors("root")
+    updateBranding.mutate(
+      {
+        brandingData: values,
+      },
+      {
+        onSuccess: (response) => {
+          initialFormValuesRef.current = values
+          toast.success(
+            response.message || "Cập nhật thương hiệu công ty thành công"
+          )
+        },
+        onError: (error) => {
+          const message =
+            error.response?.data.message ||
+            "Không thể cập nhật thương hiệu công ty"
+
+          form.setError("root", { message })
+          toast.error(message)
+        },
+      }
+    )
   }
 
   function handleReset() {
-    form.reset(brandingFormValues)
+    form.reset(initialFormValuesRef.current)
   }
 
   return (

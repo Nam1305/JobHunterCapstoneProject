@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useQueryClient } from "@tanstack/react-query"
 import { Loader2Icon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
-import { useState, type ReactNode } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
@@ -59,6 +59,7 @@ import {
 import { CompanyBranchRequestDto } from "@/types/company"
 
 const COMPANY_BRANCHES_QUERY_KEY = ["companyBranches"]
+const BRANCH_OPTIONS_QUERY_KEY = ["branches"]
 
 const branchFormSchema = z.object({
   name: z.string().trim().min(1, "Vui lòng nhập tên chi nhánh"),
@@ -72,6 +73,25 @@ const defaultBranchFormValues: BranchFormValues = {
   name: "",
   address: "",
   city: "",
+}
+
+function toBranchFormValues(
+  branch: CompanyBranchRequestDto | null
+): BranchFormValues {
+  return {
+    name: branch?.name ?? "",
+    address: branch?.address ?? "",
+    city: branch?.city ?? "",
+  }
+}
+
+function invalidateBranchQueries(queryClient: ReturnType<typeof useQueryClient>) {
+  void queryClient.invalidateQueries({
+    queryKey: COMPANY_BRANCHES_QUERY_KEY,
+  })
+  void queryClient.invalidateQueries({
+    queryKey: BRANCH_OPTIONS_QUERY_KEY,
+  })
 }
 
 function Section({
@@ -102,46 +122,62 @@ function BranchDialogForm({
   const createBranch = useCreateBranch()
   const updateBranch = useUpdateBranch()
   const isSubmitting = createBranch.isPending || updateBranch.isPending
-  const branchFormValues: BranchFormValues = {
-    name: branch?.name ?? "",
-    address: branch?.address ?? "",
-    city: branch?.city ?? "",
-  }
+  const branchFormValues = toBranchFormValues(branch)
   const form = useForm<BranchFormValues>({
     resolver: zodResolver(branchFormSchema),
     defaultValues: defaultBranchFormValues,
-    values: branchFormValues,
   })
 
-  async function handleSubmit(values: BranchFormValues) {
+  useEffect(() => {
+    form.reset(branchFormValues)
+  }, [branch?.id, form])
+
+  function handleSubmit(values: BranchFormValues) {
     form.clearErrors("root")
 
-    try {
-      if (branch) {
-        await updateBranch.mutateAsync({
+    if (branch) {
+      updateBranch.mutate(
+        {
           id: branch.id,
           branchData: values,
-        })
-        toast.success("Cập nhật chi nhánh thành công")
-      } else {
-        await createBranch.mutateAsync({
-          branchData: values,
-        })
-        toast.success("Thêm chi nhánh thành công")
-      }
+        },
+        {
+          onSuccess: (response) => {
+            toast.success(response.message || "Cập nhật chi nhánh thành công")
+            invalidateBranchQueries(queryClient)
+            onOpenChange(false)
+          },
+          onError: (error) => {
+            const message =
+              error.response?.data.message || "Không thể cập nhật chi nhánh"
 
-      await queryClient.invalidateQueries({
-        queryKey: COMPANY_BRANCHES_QUERY_KEY,
-      })
-      onOpenChange(false)
-    } catch {
-      const message = branch
-        ? "Không thể cập nhật chi nhánh"
-        : "Không thể thêm chi nhánh"
-
-      form.setError("root", { message })
-      toast.error(message)
+            form.setError("root", { message })
+            toast.error(message)
+          },
+        }
+      )
+      return
     }
+
+    createBranch.mutate(
+      {
+        branchData: values,
+      },
+      {
+        onSuccess: (response) => {
+          toast.success(response.message || "Thêm chi nhánh thành công")
+          invalidateBranchQueries(queryClient)
+          onOpenChange(false)
+        },
+        onError: (error) => {
+          const message =
+            error.response?.data.message || "Không thể thêm chi nhánh"
+
+          form.setError("root", { message })
+          toast.error(message)
+        },
+      }
+    )
   }
 
   function handleCancel() {
@@ -248,16 +284,21 @@ function DeleteBranchButton({ branch }: { branch: CompanyBranchRequestDto }) {
   const queryClient = useQueryClient()
   const deleteBranch = useDeleteBranch()
 
-  async function handleDeleteBranch() {
-    try {
-      await deleteBranch.mutateAsync({ id: branch.id })
-      toast.success("Xóa chi nhánh thành công")
-      await queryClient.invalidateQueries({
-        queryKey: COMPANY_BRANCHES_QUERY_KEY,
-      })
-    } catch {
-      toast.error("Không thể xóa chi nhánh")
-    }
+  function handleDeleteBranch() {
+    deleteBranch.mutate(
+      { id: branch.id },
+      {
+        onSuccess: (response) => {
+          toast.success(response.message || "Xóa chi nhánh thành công")
+          invalidateBranchQueries(queryClient)
+        },
+        onError: (error) => {
+          toast.error(
+            error.response?.data.message || "Không thể xóa chi nhánh"
+          )
+        },
+      }
+    )
   }
 
   return (

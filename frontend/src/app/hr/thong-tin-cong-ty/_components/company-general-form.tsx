@@ -55,14 +55,6 @@ const companyGeneralFormSchema = z.object({
 
 type CompanyGeneralFormValues = z.infer<typeof companyGeneralFormSchema>
 
-const defaultCompanyGeneralFormValues: CompanyGeneralFormValues = {
-  name: "",
-  websiteUrl: "",
-  teamSize: "",
-  country: "",
-  companyType: "",
-}
-
 const companySizes = [
   "1-100 nhân sự",
   "100 - 1000 nhân sự",
@@ -84,6 +76,24 @@ const fallbackImages = {
   logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=800&q=80",
   cover:
     "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1600&q=80",
+}
+
+function toCompanyGeneralFormValues(
+  companyGeneral: {
+    name?: string
+    websiteUrl?: string
+    teamSize?: string
+    country?: string
+    companyType?: string
+  } | null | undefined
+): CompanyGeneralFormValues {
+  return {
+    name: companyGeneral?.name ?? "",
+    websiteUrl: companyGeneral?.websiteUrl ?? "",
+    teamSize: companyGeneral?.teamSize ?? "",
+    country: companyGeneral?.country ?? "",
+    companyType: companyGeneral?.companyType ?? "",
+  }
 }
 
 function Section({
@@ -193,77 +203,117 @@ function ImageUploadField({
 }
 
 export function CompanyGeneralInformationForm() {
+  const { data: companyGeneralResponse, isLoading } = useGetCompanyGeneral()
+  const companyGeneral = companyGeneralResponse?.data
+
+  if (isLoading) {
+    return (
+      <div className="flex w-full flex-1 flex-col gap-6 p-4 md:gap-7 md:p-6">
+        <Section title="Thông tin chung">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2Icon className="size-4 animate-spin" />
+            Đang tải thông tin công ty
+          </div>
+        </Section>
+      </div>
+    )
+  }
+
+  return (
+    <CompanyGeneralInformationFields
+      companyGeneral={companyGeneral}
+      initialValues={toCompanyGeneralFormValues(companyGeneral)}
+    />
+  )
+}
+
+function CompanyGeneralInformationFields({
+  companyGeneral,
+  initialValues,
+}: {
+  companyGeneral: {
+    logoUrl?: string
+    coverUrl?: string
+  } | null | undefined
+  initialValues: CompanyGeneralFormValues
+}) {
   const queryClient = useQueryClient()
-  const { data: companyGeneralResponse, isLoading: isCompanyGeneralLoading } =
-    useGetCompanyGeneral()
   const updateCompanyGeneral = useUpdateCompanyGeneral()
   const updateCompanyLogo = useUpdateCompanyLogo()
   const updateCompanyCover = useUpdateCompanyCover()
-  const companyGeneral = companyGeneralResponse?.data
-  const isTextFormLoading =
-    isCompanyGeneralLoading || updateCompanyGeneral.isPending
+  const isTextFormLoading = updateCompanyGeneral.isPending
   const isUploadingLogo = updateCompanyLogo.isPending
   const isUploadingCover = updateCompanyCover.isPending
-  const isMediaLoading =
-    isCompanyGeneralLoading || isUploadingLogo || isUploadingCover
-  const companyGeneralFormValues: CompanyGeneralFormValues = {
-    name: companyGeneral?.name ?? "",
-    websiteUrl: companyGeneral?.websiteUrl ?? "",
-    teamSize: companyGeneral?.teamSize ?? "",
-    country: companyGeneral?.country ?? "",
-    companyType: companyGeneral?.companyType ?? "",
-  }
+  const isMediaLoading = isUploadingLogo || isUploadingCover
   const form = useForm<CompanyGeneralFormValues>({
     resolver: zodResolver(companyGeneralFormSchema),
-    defaultValues: defaultCompanyGeneralFormValues,
-    values: companyGeneralFormValues,
+    defaultValues: initialValues,
   })
 
-  async function handleSubmit(values: CompanyGeneralFormValues) {
+  function handleSubmit(values: CompanyGeneralFormValues) {
     form.clearErrors("root")
-
-    try {
-      await updateCompanyGeneral.mutateAsync({
+    updateCompanyGeneral.mutate(
+      {
         companyData: values,
-      })
-      toast.success("Cập nhật thông tin công ty thành công")
-      await queryClient.invalidateQueries({
-        queryKey: COMPANY_GENERAL_QUERY_KEY,
-      })
-    } catch {
-      const message = "Không thể cập nhật thông tin công ty"
+      },
+      {
+        onSuccess: (response) => {
+          toast.success(
+            response.message || "Cập nhật thông tin công ty thành công"
+          )
+        },
+        onError: (error) => {
+          const message =
+            error.response?.data.message ||
+            "Không thể cập nhật thông tin công ty"
 
-      form.setError("root", { message })
-      toast.error(message)
-    }
+          form.setError("root", { message })
+          toast.error(message)
+        },
+      }
+    )
   }
 
   function handleReset() {
-    form.reset(companyGeneralFormValues)
+    form.reset(initialValues)
   }
 
-  async function handleLogoUpload(logoFile: File) {
-    try {
-      await updateCompanyLogo.mutateAsync({ logoFile })
-      toast.success("Cập nhật logo công ty thành công")
-      await queryClient.invalidateQueries({
-        queryKey: COMPANY_GENERAL_QUERY_KEY,
-      })
-    } catch {
-      toast.error("Không thể cập nhật logo công ty")
-    }
+  function handleLogoUpload(logoFile: File) {
+    updateCompanyLogo.mutate(
+      { logoFile },
+      {
+        onSuccess: (response) => {
+          toast.success(response.message || "Cập nhật logo công ty thành công")
+          void queryClient.invalidateQueries({
+            queryKey: COMPANY_GENERAL_QUERY_KEY,
+          })
+        },
+        onError: (error) => {
+          toast.error(
+            error.response?.data.message || "Không thể cập nhật logo công ty"
+          )
+        },
+      }
+    )
   }
 
-  async function handleCoverUpload(coverFile: File) {
-    try {
-      await updateCompanyCover.mutateAsync({ coverFile })
-      toast.success("Cập nhật ảnh bìa thành công")
-      await queryClient.invalidateQueries({
-        queryKey: COMPANY_GENERAL_QUERY_KEY,
-      })
-    } catch {
-      toast.error("Không thể cập nhật ảnh bìa")
-    }
+  function handleCoverUpload(coverFile: File) {
+    updateCompanyCover.mutate(
+      { coverFile },
+      {
+        onSuccess: (response) => {
+          toast.success(response.message || "Cập nhật ảnh bìa thành công")
+          void queryClient.invalidateQueries({
+            queryKey: COMPANY_GENERAL_QUERY_KEY,
+          })
+        },
+        onError: (error) => {
+          toast.error(
+            error.response?.data.message || "Không thể cập nhật ảnh bìa"
+          )
+        },
+      }
+    )
   }
 
   return (
@@ -423,7 +473,6 @@ export function CompanyGeneralInformationForm() {
               imageSrc={companyGeneral?.logoUrl ?? fallbackImages.logo}
               imageAlt="Logo công ty"
               disabled={isMediaLoading}
-              isLoading={isCompanyGeneralLoading}
               isUploading={isUploadingLogo}
               onFileChange={handleLogoUpload}
             />
@@ -433,7 +482,6 @@ export function CompanyGeneralInformationForm() {
               imageSrc={companyGeneral?.coverUrl ?? fallbackImages.cover}
               imageAlt="Ảnh bìa công ty"
               disabled={isMediaLoading}
-              isLoading={isCompanyGeneralLoading}
               isUploading={isUploadingCover}
               onFileChange={handleCoverUpload}
             />

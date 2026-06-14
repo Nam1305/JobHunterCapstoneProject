@@ -10,7 +10,7 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
-type ApiError = AxiosError<ResponseEntity<string>>;
+type ApiError = AxiosError<ResponseEntity<null>>;
 
 export interface getJobPostingsParams {
   search?: string;
@@ -69,7 +69,7 @@ export const jobApi = {
 };
 
 export function useJobPostingsQuery(params: getJobPostingsParams) {
-  return useQuery<ResponseEntity<PageResult<JobPosting>>, AxiosError>({
+  return useQuery<ResponseEntity<PageResult<JobPosting>>, ApiError>({
     queryKey: ["jobPostings", params],
     queryFn: () => jobApi.getJobPostings(params),
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -77,7 +77,7 @@ export function useJobPostingsQuery(params: getJobPostingsParams) {
 }
 
 export function useJobPostingDetailQuery(jobId: string, enabled = true) {
-  return useQuery<ResponseEntity<JobPostDetail>, AxiosError>({
+  return useQuery<ResponseEntity<JobPostDetail>, ApiError>({
     queryKey: ["jobPostingDetail", jobId],
     queryFn: () => jobApi.getJobPostingDetail(jobId),
     enabled: enabled && Boolean(jobId),
@@ -86,7 +86,7 @@ export function useJobPostingDetailQuery(jobId: string, enabled = true) {
 }
 
 export function useCategoriesQuery() {
-  return useQuery<JobPostingCategory[], AxiosError>({
+  return useQuery<JobPostingCategory[], ApiError>({
     queryKey: ["categories"],
     queryFn: () => jobApi.getCategories(),
     staleTime: Infinity,
@@ -95,7 +95,7 @@ export function useCategoriesQuery() {
 }
 
 export function useExperienceLevelsQuery() {
-  return useQuery<ResponseEntity<ExperienceLevel[]>, AxiosError>({
+  return useQuery<ResponseEntity<ExperienceLevel[]>, ApiError>({
     queryKey: ["experienceLevels"],
     queryFn: () => jobApi.getExperienceLevels(),
     staleTime: Infinity,

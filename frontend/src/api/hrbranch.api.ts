@@ -5,6 +5,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { CompanyBranchReponseDto, CompanyBranchRequestDto } from "@/types/company";
 
+type ApiError = AxiosError<ResponseEntity<null>>;
+
 export const branchApi = {
     async getBranchOption(): Promise<BranchOption[]>{
         const res = await api.get<ResponseEntity<BranchOption[]>>("hr/company/branch/getbyUId");
@@ -30,7 +32,7 @@ export const branchApi = {
 
 
 export function useGetBranchOption(){
-    return useQuery<BranchOption[], AxiosError>({
+    return useQuery<BranchOption[], ApiError>({
         queryKey: ["branches"],
         queryFn:  branchApi.getBranchOption,
         staleTime: 5 * 60 * 1000,
@@ -38,7 +40,7 @@ export function useGetBranchOption(){
 }
 
 export function useGetBranches(){
-    return useQuery<ResponseEntity<CompanyBranchRequestDto[]>, AxiosError>({
+    return useQuery<ResponseEntity<CompanyBranchRequestDto[]>, ApiError>({
         queryKey: ["companyBranches"],
         queryFn: branchApi.getBranches,
         staleTime: 5 * 60 * 1000
@@ -46,19 +48,19 @@ export function useGetBranches(){
 }
 
 export function useCreateBranch(){
-    return useMutation<ResponseEntity<null>, AxiosError, { branchData: CompanyBranchReponseDto }>({
+    return useMutation<ResponseEntity<null>, ApiError, { branchData: CompanyBranchReponseDto }>({
         mutationFn: ({ branchData }) => branchApi.createBranch(branchData),
     });
 }
 
 export function useUpdateBranch(){
-    return useMutation<ResponseEntity<null>, AxiosError, { id: string; branchData: CompanyBranchReponseDto }>({
+    return useMutation<ResponseEntity<null>, ApiError, { id: string; branchData: CompanyBranchReponseDto }>({
         mutationFn: ({ id, branchData }) => branchApi.updateBranch(id, branchData),
     });
 }
 
 export function useDeleteBranch(){
-    return useMutation<ResponseEntity<null>, AxiosError, { id: string }>({
+    return useMutation<ResponseEntity<null>, ApiError, { id: string }>({
         mutationFn: ({ id }) => branchApi.deleteBranch(id),
     });
 }

@@ -1,8 +1,10 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "./api";
 import { ResponseEntity } from "@/types/base";
-import { ApiError } from "next/dist/server/api-utils";
+import { AxiosError } from "axios";
 import { BrandingRequestDto, BrandingResponseDto, CompanyGeneralRequestDto, CompanyGeneralResponseDto } from "@/types/company";
+
+type ApiError = AxiosError<ResponseEntity<null>>;
 
 export const companyApi = {
     async addTeamImages(images: File[]): Promise<string[]>{
