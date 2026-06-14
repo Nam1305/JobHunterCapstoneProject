@@ -1,5 +1,8 @@
 using JobHunter.Domain;
 using JobHunter.Domain.Entities;
+using JobHunter.Service.DTOs.Category;
+using JobHunter.Service.DTOs.ExperienceLevel;
+using JobHunter.Service.DTOs.Job;
 using JobHunter.Service.Interface.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,12 +17,21 @@ public class HrJobRepository : IHrJobRepository
         _context = context;
     }
 
-    public Task<List<Job>> GetJobs(Guid companyId, string? search, JobStatus? status, int page, int pageSize)
+    public Task<List<JobPostingDto>> GetJobs(Guid companyId, string? search, JobStatus? status, int page, int pageSize)
     {
         return BuildQuery(companyId, search, status)
             .OrderByDescending(job => job.UpdatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Select(job => new JobPostingDto
+            {
+                Id = job.Id,
+                Title = job.Title,
+                CreatedAt = job.CreatedAt,
+                ExpiredAt = job.ExpiredAt,
+                UpdatedAt = job.UpdatedAt,
+                ApplicantCount = 0
+            })
             .ToListAsync();
     }
 
@@ -40,17 +52,34 @@ public class HrJobRepository : IHrJobRepository
     public Task<Job?> GetJobByIdForUpdate(Guid id)
     {
         return _context.Jobs
-            .Include(job => job.Subcategory)
             .Include(job => job.JobLevels)
             .FirstOrDefaultAsync(job => job.Id == id);
     }
 
-    public Task<List<JobCategory>> GetCategoriesWithSubcategories()
+    public Task<Job?> GetJobByIdForClose(Guid id)
+    {
+        return _context.Jobs
+            .FirstOrDefaultAsync(job => job.Id == id);
+    }
+
+    public Task<List<CategoryDto>> GetCategoriesWithSubcategories()
     {
         return _context.JobCategories
             .AsNoTracking()
-            .Include(category => category.JobSubcategories)
             .OrderBy(category => category.Name)
+            .Select(category => new CategoryDto
+            {
+                Id = category.Id.ToString(),
+                Name = category.Name ?? string.Empty,
+                Subcategories = category.JobSubcategories
+                    .OrderBy(subcategory => subcategory.Name)
+                    .Select(subcategory => new SubcategoryDto
+                    {
+                        Id = subcategory.Id.ToString(),
+                        Name = subcategory.Name ?? string.Empty
+                    })
+                    .ToList()
+            })
             .ToListAsync();
     }
 
@@ -68,11 +97,16 @@ public class HrJobRepository : IHrJobRepository
             .FirstOrDefaultAsync(branch => branch.CompanyId == companyId && branch.Id == branchId);
     }
 
-    public Task<List<JobLevel>> GetExperienceLevels()
+    public Task<List<ExperienceLevelDto>> GetExperienceLevels()
     {
         return _context.JobLevels
             .AsNoTracking()
             .OrderBy(level => level.Title)
+            .Select(level => new ExperienceLevelDto
+            {
+                Id = level.Id,
+                Name = level.Title ?? string.Empty
+            })
             .ToListAsync();
     }
 

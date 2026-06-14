@@ -53,36 +53,43 @@ public class HrJobController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "HR")]
-    public async Task<ActionResult<ResponseBase<JobDetailDto>>> CreateJob([FromBody] CreateJobRequestDto request)
+    public async Task<ActionResult<ResponseBase<object?>>> CreateJob([FromBody] CreateJobRequestDto request)
     {
         var userId = User.GetUserId();
-        var job = await _jobUseCase.CreateJob(userId, request);
-        var response = new ResponseBase<JobDetailDto>(job)
+        var jobId = await _jobUseCase.CreateJob(userId, request);
+        var response = new ResponseBase<object?>(null)
         {
-            Status = StatusCodes.Status201Created
+            Status = StatusCodes.Status201Created,
+            Message = "Tạo tin tuyển dụng thành công"
         };
 
-        return CreatedAtAction(nameof(GetJobDetail), new { uid = job.Id }, response);
+        return CreatedAtAction(nameof(GetJobDetail), new { uid = jobId }, response);
     }
 
     [HttpPut("{uid:guid}")]
     [Authorize(Roles = "HR")]
-    public async Task<ActionResult<ResponseBase<JobDetailDto>>> UpdateJob(Guid uid, [FromBody] CreateJobRequestDto request)
+    public async Task<ActionResult<ResponseBase<object?>>> UpdateJob(Guid uid, [FromBody] CreateJobRequestDto request)
     {
         var userId = User.GetUserId();
-        var job = await _jobUseCase.UpdateJob(userId, uid, request);
+        await _jobUseCase.UpdateJob(userId, uid, request);
 
-        return new ResponseBase<JobDetailDto>(job);
+        return new ResponseBase<object?>(null)
+        {
+            Message = "Cập nhật tin tuyển dụng thành công"
+        };
     }
 
     [HttpPatch("{uid:guid}/close")]
     [Authorize(Roles = "HR")]
-    public async Task<ActionResult<ResponseBase<JobDetailDto>>> CloseJob(Guid uid)
+    public async Task<ActionResult<ResponseBase<object?>>> CloseJob(Guid uid)
     {
         var userId = User.GetUserId();
-        var job = await _jobUseCase.CloseJob(userId, uid);
+        await _jobUseCase.CloseJob(userId, uid);
 
-        return new ResponseBase<JobDetailDto>(job);
+        return new ResponseBase<object?>(null)
+        {
+            Message = "Đóng tin tuyển dụng thành công"
+        };
     }
 
     [HttpGet("{uid:guid}")]

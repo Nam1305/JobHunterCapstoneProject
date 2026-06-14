@@ -41,7 +41,7 @@ export const jobApi = {
     return res.data;
   },
   async updateJobPosting(jobId: string, payload: UpdateJobPostRequest) {
-    const res = await api.put<ResponseEntity<JobPostDetail>>(
+    const res = await api.put<ResponseEntity<null>>(
       `hr/jobs/${jobId}`,
       payload
     );
@@ -49,8 +49,8 @@ export const jobApi = {
   },
   async createJobPosting(
     payload: UpdateJobPostRequest
-  ): Promise<ResponseEntity<string>> {
-    const res = await api.post<ResponseEntity<string>>(`hr/jobs`, payload);
+  ): Promise<ResponseEntity<null>> {
+    const res = await api.post<ResponseEntity<null>>(`hr/jobs`, payload);
     return res.data;
   },
   async getCategories() {
@@ -63,7 +63,7 @@ export const jobApi = {
     return res.data;
   },
   async patchCloseJob(jobId: string){
-    const res = await api.patch<ResponseEntity<JobPostDetail>>(`hr/jobs/${jobId}/close`);
+    const res = await api.patch<ResponseEntity<null>>(`hr/jobs/${jobId}/close`);
     return res.data;
   }
 };
@@ -105,7 +105,7 @@ export function useExperienceLevelsQuery() {
 
 export function useCreateJobPosting() {
   return useMutation<
-    ResponseEntity<string>,
+    ResponseEntity<null>,
     ApiError,
     UpdateJobPostRequest
   >({
@@ -115,7 +115,7 @@ export function useCreateJobPosting() {
 
 export function useUpdateJobPosting() {
   return useMutation<
-    ResponseEntity<JobPostDetail>,
+    ResponseEntity<null>,
     ApiError,
     UpdateJobPostingVariables
   >({
@@ -124,7 +124,7 @@ export function useUpdateJobPosting() {
 }
 
 export function usePatchCloseJob(){
-  return useMutation<ResponseEntity<JobPostDetail>, ApiError, string>({
+  return useMutation<ResponseEntity<null>, ApiError, string>({
     mutationFn: (jobId) => jobApi.patchCloseJob(jobId)
   });
 }

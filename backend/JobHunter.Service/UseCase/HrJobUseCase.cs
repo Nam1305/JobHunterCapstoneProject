@@ -55,20 +55,16 @@ public class HrJobUseCase : IHrJobUseCase
         var totalCount = await _jobRepository.CountJobs(user.CompanyId.Value, search, status);
         var now = DateTimeOffset.UtcNow;
 
+        foreach (var job in jobs)
+        {
+            job.Status = !job.ExpiredAt.HasValue || job.ExpiredAt > now
+                ? JobStatus.Open
+                : JobStatus.Closed;
+        }
+
         return new PageResult<JobPostingDto>
         {
-            Items = jobs.Select(job => new JobPostingDto
-            {
-                Id = job.Id,
-                Title = job.Title,
-                CreatedAt = job.CreatedAt,
-                ExpiredAt = job.ExpiredAt,
-                UpdatedAt = job.UpdatedAt,
-                Status = !job.ExpiredAt.HasValue || job.ExpiredAt > now
-                    ? JobStatus.Open
-                    : JobStatus.Closed,
-                ApplicantCount = 0
-            }).ToList(),
+            Items = jobs,
             Page = page,
             PageSize = pageSize,
             TotalCount = totalCount
@@ -94,19 +90,7 @@ public class HrJobUseCase : IHrJobUseCase
             throw new KeyNotFoundException("Categories not found");
         }
 
-        return categories.Select(category => new CategoryDto
-        {
-            Id = category.Id.ToString(),
-            Name = category.Name ?? string.Empty,
-            Subcategories = category.JobSubcategories
-                .OrderBy(subcategory => subcategory.Name)
-                .Select(subcategory => new SubcategoryDto
-                {
-                    Id = subcategory.Id.ToString(),
-                    Name = subcategory.Name ?? string.Empty
-                })
-                .ToList()
-        }).ToList();
+        return categories;
     }
 
     public async Task<List<ExperienceLevelDto>> GetExperienceLevels()
@@ -117,14 +101,10 @@ public class HrJobUseCase : IHrJobUseCase
             throw new KeyNotFoundException("Experience levels not found");
         }
 
-        return levels.Select(level => new ExperienceLevelDto
-        {
-            Id = level.Id,
-            Name = level.Title ?? string.Empty
-        }).ToList();
+        return levels;
     }
 
-    public async Task<JobDetailDto> CreateJob(Guid userId, CreateJobRequestDto request)
+    public async Task<Guid> CreateJob(Guid userId, CreateJobRequestDto request)
     {
         ValidateCreateJobRequest(request);
 
@@ -190,12 +170,11 @@ public class HrJobUseCase : IHrJobUseCase
         }
 
         await _jobRepository.CreateJob(job);
-        job.Subcategory = subcategory;
 
-        return MapJobDetail(job);
+        return job.Id;
     }
 
-    public async Task<JobDetailDto> UpdateJob(Guid userId, Guid uid, CreateJobRequestDto request)
+    public async Task UpdateJob(Guid userId, Guid uid, CreateJobRequestDto request)
     {
         ValidateCreateJobRequest(request);
 
@@ -266,12 +245,9 @@ public class HrJobUseCase : IHrJobUseCase
         }
 
         await _jobRepository.SaveChanges();
-        job.Subcategory = subcategory;
-
-        return MapJobDetail(job);
     }
 
-    public async Task<JobDetailDto> CloseJob(Guid userId, Guid uid)
+    public async Task CloseJob(Guid userId, Guid uid)
     {
         var user = await _userRepository.GetUserById(userId);
         if (user == null)
@@ -284,7 +260,7 @@ public class HrJobUseCase : IHrJobUseCase
             throw new InvalidOperationException("User is not assigned to a company");
         }
 
-        var job = await _jobRepository.GetJobByIdForUpdate(uid);
+        var job = await _jobRepository.GetJobByIdForClose(uid);
         if (job == null || job.CompanyId != user.CompanyId.Value)
         {
             throw new KeyNotFoundException("Job not found");
@@ -296,8 +272,6 @@ public class HrJobUseCase : IHrJobUseCase
         job.UpdatedBy = userId.ToString();
 
         await _jobRepository.SaveChanges();
-
-        return MapJobDetail(job);
     }
 
     private static void ValidateCreateJobRequest(CreateJobRequestDto? request)

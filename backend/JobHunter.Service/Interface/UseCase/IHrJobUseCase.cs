@@ -12,11 +12,11 @@ public interface IHrJobUseCase
 
     Task<JobDetailDto> GetJobDetailsById(Guid uid);
 
-    Task<JobDetailDto> CreateJob(Guid userId, CreateJobRequestDto request);
+    Task<Guid> CreateJob(Guid userId, CreateJobRequestDto request);
 
-    Task<JobDetailDto> UpdateJob(Guid userId, Guid uid, CreateJobRequestDto request);
+    Task UpdateJob(Guid userId, Guid uid, CreateJobRequestDto request);
 
-    Task<JobDetailDto> CloseJob(Guid userId, Guid uid);
+    Task CloseJob(Guid userId, Guid uid);
 
     Task<List<CategoryDto>> GetCategories();
 
