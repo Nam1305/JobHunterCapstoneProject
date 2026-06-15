@@ -31,15 +31,15 @@ public class HRController : ControllerBase
         return new ResponseBase<PageResult<JobItemDto>>(result);
     }
 
-    [HttpGet("jobs/{slug}/candidates")]
+    [HttpGet("jobs/{jobId:guid}/candidates")]
     public async Task<ActionResult<ResponseBase<PageResult<CandidateDto>>>> GetCandidates(
-        string slug,
+        Guid jobId,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] string? status = null)
     {
         var userId = User.GetUserId();
-        var result = await _hrDashboardUseCase.GetCandidates(userId, slug, status, page, pageSize);
+        var result = await _hrDashboardUseCase.GetCandidates(userId, jobId, status, page, pageSize);
         return new ResponseBase<PageResult<CandidateDto>>(result);
     }
 

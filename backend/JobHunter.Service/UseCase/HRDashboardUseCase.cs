@@ -43,7 +43,7 @@ public class HRDashboardUseCase : IHRDashboardUseCase
         };
     }
 
-    public async Task<PageResult<CandidateDto>> GetCandidates(Guid userId, string jobSlug, string? status, int page, int pageSize)
+    public async Task<PageResult<CandidateDto>> GetCandidates(Guid userId, Guid jobId, string? status, int page, int pageSize)
     {
         var user = await _userRepository.GetUserById(userId);
         if (user == null)
@@ -51,16 +51,12 @@ public class HRDashboardUseCase : IHRDashboardUseCase
         if (user.CompanyId == null)
             throw new UnauthorizedAccessException("Tài khoản HR chưa được liên kết với công ty");
 
-        var jobId = await _jobRepository.GetJobIdBySlug(jobSlug);
-        if (jobId == null)
-            throw new KeyNotFoundException("Không tìm thấy công việc");
-
-        var isOwned = await _jobRepository.IsJobOwnedByCompany(jobId.Value, user.CompanyId.Value);
+        var isOwned = await _jobRepository.IsJobOwnedByCompany(jobId, user.CompanyId.Value);
         if (!isOwned)
             throw new KeyNotFoundException("Không tìm thấy công việc");
 
-        var items = await _applicationRepository.GetCandidatesByJob(jobId.Value, status, page, pageSize);
-        var total = await _applicationRepository.CountCandidatesByJob(jobId.Value, status);
+        var items = await _applicationRepository.GetCandidatesByJob(jobId, status, page, pageSize);
+        var total = await _applicationRepository.CountCandidatesByJob(jobId, status);
 
         return new PageResult<CandidateDto>
         {
