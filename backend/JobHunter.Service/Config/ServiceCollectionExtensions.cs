@@ -19,15 +19,19 @@ public static class ServiceCollectionExtensions
         // Repositories
         services.AddScoped<ITokenRepository, TokenRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ICompanyRepository, CompanyRepository>();
+        services.AddScoped<IJobRepository, JobRepository>();
         services.AddScoped<IHrJobRepository, HrJobRepository>();
         services.AddScoped<IHrCompanyRepository, HrCompanyRepository>();
-       
+
         // Use cases
         services.AddScoped<IAuthUseCase, AuthUseCase>();
         services.AddScoped<IUserUseCase, UserUseCase>();
+        services.AddScoped<ICompanyUseCase, CompanyUseCase>();
+        services.AddScoped<IJobUseCase, JobUseCase>();
         services.AddScoped<IHrJobUseCase, HrJobUseCase>();
         services.AddScoped<IHrCompanyUseCase, HrCompanyUseCase>();
-        
+
         // Services
         services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
         services.AddSingleton<IAmazonS3>(_ =>
@@ -54,7 +58,7 @@ public static class ServiceCollectionExtensions
 
             return new FileService(s3Client, logger, bucketName, publicUrl);
         });
-        
+
         return services;
     }
 
