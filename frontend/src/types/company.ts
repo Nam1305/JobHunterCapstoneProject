@@ -1,4 +1,5 @@
 import type { CompanyBranchResponse } from "./job"
+import { File } from "buffer";
 
 export interface CompanyCard {
   id: string
@@ -28,7 +29,6 @@ export interface Company {
   slug: string
   companyBranches: CompanyBranchResponse[]
 }
-import { File } from "buffer";
 
 export interface TeamImages {
   urls: File[]
