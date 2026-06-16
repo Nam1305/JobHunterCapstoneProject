@@ -9,4 +9,5 @@ public interface ICandidateResumeUseCase
     Task<ResumeDto> UploadResume(Guid userId, IFormFile file);
     Task<ResumeDto> ToggleLookingForJobStatus(Guid userId, Guid resumeId, bool isLookingForJob);
     Task DeleteResume(Guid userId, Guid resumeId);
+    Task<ApplicationResultDto> ApplyJob(Guid userId, ApplyJobRequestDto request);
 }

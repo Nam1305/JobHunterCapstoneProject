@@ -56,4 +56,13 @@ public class CandidateController : ControllerBase
         await _candidateResumeUseCase.DeleteResume(userId, resumeId);
         return new ResponseBase<object>(null);
     }
+
+    [HttpPost("applications")]
+    public async Task<ActionResult<ResponseBase<ApplicationResultDto>>> ApplyJob(
+        [FromBody] ApplyJobRequestDto request)
+    {
+        var userId = User.GetUserId();
+        var result = await _candidateResumeUseCase.ApplyJob(userId, request);
+        return new ResponseBase<ApplicationResultDto>(result);
+    }
 }

@@ -1,3 +1,4 @@
+using JobHunter.Domain.Entities;
 using JobHunter.Domain.Enums;
 using JobHunter.Service.DTOs.HR;
 using JobHunter.Service.Interface.Persistence;
@@ -83,5 +84,18 @@ public class ApplicationRepository : IApplicationRepository
         return _context.Applications
             .Where(a => a.Id == applicationId)
             .ExecuteUpdateAsync(s => s.SetProperty(a => a.Status, status));
+    }
+
+    public Task<bool> HasApplied(Guid userId, Guid jobId)
+    {
+        return _context.Applications
+            .AnyAsync(a => a.JobId == jobId && a.Resume != null && a.Resume.UserId == userId);
+    }
+
+    public async Task<Application> AddApplication(Application application)
+    {
+        await _context.Applications.AddAsync(application);
+        await _context.SaveChangesAsync();
+        return application;
     }
 }

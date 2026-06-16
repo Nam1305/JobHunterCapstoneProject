@@ -8,4 +8,5 @@ public interface IJobRepository
     Task<int> CountHrJobs(Guid companyId, string? search, string? status);
     Task<bool> IsJobOwnedByCompany(Guid jobId, Guid companyId);
     Task<Guid?> GetJobIdBySlug(string slug);
+    Task<bool> IsJobExists(Guid jobId);
 }

@@ -1,4 +1,5 @@
 using JobHunter.Domain.Entities;
+using JobHunter.Domain.Enums;
 using JobHunter.Service.DTOs.Candidate;
 using JobHunter.Service.Interface.Persistence;
 using JobHunter.Service.Interface.Service;
@@ -10,11 +11,19 @@ namespace JobHunter.Service.UseCase;
 public class CandidateResumeUseCase : ICandidateResumeUseCase
 {
     private readonly IResumeRepository _resumeRepository;
+    private readonly IApplicationRepository _applicationRepository;
+    private readonly IJobRepository _jobRepository;
     private readonly IFileService _fileService;
 
-    public CandidateResumeUseCase(IResumeRepository resumeRepository, IFileService fileService)
+    public CandidateResumeUseCase(
+        IResumeRepository resumeRepository,
+        IApplicationRepository applicationRepository,
+        IJobRepository jobRepository,
+        IFileService fileService)
     {
         _resumeRepository = resumeRepository;
+        _applicationRepository = applicationRepository;
+        _jobRepository = jobRepository;
         _fileService = fileService;
     }
 
@@ -65,5 +74,34 @@ public class CandidateResumeUseCase : ICandidateResumeUseCase
             await _fileService.DeleteFileAsync(resume.FileUrl);
 
         await _resumeRepository.DeleteResume(resume);
+    }
+
+    public async Task<ApplicationResultDto> ApplyJob(Guid userId, ApplyJobRequestDto request)
+    {
+        var resume = await _resumeRepository.GetResumeById(request.ResumeId)
+            ?? throw new KeyNotFoundException("Không tìm thấy CV");
+
+        if (resume.UserId != userId)
+            throw new UnauthorizedAccessException("CV này không thuộc về bạn");
+
+        var jobExists = await _jobRepository.IsJobExists(request.JobId);
+        if (!jobExists)
+            throw new KeyNotFoundException("Không tìm thấy công việc");
+
+        var alreadyApplied = await _applicationRepository.HasApplied(userId, request.JobId);
+        if (alreadyApplied)
+            throw new ArgumentException("Bạn đã ứng tuyển công việc này rồi");
+
+        var application = new Application
+        {
+            ResumeId = request.ResumeId,
+            JobId = request.JobId,
+            CoverLetter = request.CoverLetter,
+            Status = ApplicationStatus.Pending,
+            AppliedAt = DateTimeOffset.UtcNow
+        };
+
+        var saved = await _applicationRepository.AddApplication(application);
+        return ApplicationResultDto.From(saved);
     }
 }

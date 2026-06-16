@@ -68,4 +68,9 @@ public class JobRepository : IJobRepository
             .Select(j => (Guid?)j.Id)
             .FirstOrDefaultAsync();
     }
+
+    public Task<bool> IsJobExists(Guid jobId)
+    {
+        return _context.Jobs.AnyAsync(j => j.Id == jobId);
+    }
 }
