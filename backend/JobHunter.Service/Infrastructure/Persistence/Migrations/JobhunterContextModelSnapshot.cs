@@ -535,6 +535,10 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("created_by");
 
+                    b.Property<string>("FileName")
+                        .HasColumnType("text")
+                        .HasColumnName("file_name");
+
                     b.Property<string>("FileUrl")
                         .HasColumnType("text")
                         .HasColumnName("file_url");

@@ -339,6 +339,7 @@ public partial class JobhunterContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+            entity.Property(e => e.FileName).HasColumnName("file_name");
             entity.Property(e => e.FileUrl).HasColumnName("file_url");
             entity.Property(e => e.IsPublic).HasColumnName("is_public");
             entity.Property(e => e.ResumeEmbedding)

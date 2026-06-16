@@ -19,6 +19,7 @@ public class CandidateController : ControllerBase
         _candidateResumeUseCase = candidateResumeUseCase;
     }
 
+    //get all resumes of current candidate
     [HttpGet("resumes")]
     public async Task<ActionResult<ResponseBase<List<ResumeDto>>>> GetResumes()
     {
@@ -27,6 +28,7 @@ public class CandidateController : ControllerBase
         return new ResponseBase<List<ResumeDto>>(result);
     }
 
+    //upload CV
     [HttpPost("resumes")]
     public async Task<ActionResult<ResponseBase<ResumeDto>>> UploadResume(IFormFile file)
     {
@@ -35,6 +37,7 @@ public class CandidateController : ControllerBase
         return new ResponseBase<ResumeDto>(result);
     }
 
+    //toogle status finding job or not
     [HttpPatch("resumes/{resumeId:guid}/status")]
     public async Task<ActionResult<ResponseBase<ResumeDto>>> ToggleStatus(
         Guid resumeId,
@@ -45,6 +48,7 @@ public class CandidateController : ControllerBase
         return new ResponseBase<ResumeDto>(result);
     }
 
+    //delete Resume
     [HttpDelete("resumes/{resumeId:guid}")]
     public async Task<ActionResult<ResponseBase<object>>> DeleteResume(Guid resumeId)
     {

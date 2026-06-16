@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using JobHunter.Domain.Entities;
 
 namespace JobHunter.Service.DTOs.Candidate;
 
@@ -18,4 +19,13 @@ public class ResumeDto
 
     [JsonPropertyName("isLookingForJob")]
     public bool IsLookingForJob { get; set; }
+
+    public static ResumeDto From(Resume resume) => new()
+    {
+        Id = resume.Id,
+        FileName = resume.FileName,
+        FileUrl = resume.FileUrl,
+        CreatedDate = resume.CreatedAt,
+        IsLookingForJob = resume.IsPublic
+    };
 }

@@ -7,6 +7,8 @@ public partial class Resume : BaseEntity
 {
     public Guid UserId { get; set; }
 
+    public string? FileName { get; set; }
+
     public string? FileUrl { get; set; }
 
     public bool IsPublic { get; set; }

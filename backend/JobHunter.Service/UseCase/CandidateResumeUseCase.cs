@@ -21,7 +21,7 @@ public class CandidateResumeUseCase : ICandidateResumeUseCase
     public async Task<List<ResumeDto>> GetResumes(Guid userId)
     {
         var resumes = await _resumeRepository.GetResumesByUserId(userId);
-        return resumes.Select(ToDto).ToList();
+        return resumes.Select(ResumeDto.From).ToList();
     }
 
     public async Task<ResumeDto> UploadResume(Guid userId, IFormFile file)
@@ -37,7 +37,7 @@ public class CandidateResumeUseCase : ICandidateResumeUseCase
         };
 
         var saved = await _resumeRepository.AddResume(resume);
-        return ToDto(saved);
+        return ResumeDto.From(saved);
     }
 
     public async Task<ResumeDto> ToggleLookingForJobStatus(Guid userId, Guid resumeId, bool isLookingForJob)
@@ -50,7 +50,7 @@ public class CandidateResumeUseCase : ICandidateResumeUseCase
 
         resume.IsPublic = isLookingForJob;
         await _resumeRepository.UpdateResume(resume);
-        return ToDto(resume);
+        return ResumeDto.From(resume);
     }
 
     public async Task DeleteResume(Guid userId, Guid resumeId)
@@ -66,13 +66,4 @@ public class CandidateResumeUseCase : ICandidateResumeUseCase
 
         await _resumeRepository.DeleteResume(resume);
     }
-
-    private static ResumeDto ToDto(Resume resume) => new()
-    {
-        Id = resume.Id,
-        FileName = resume.FileName,
-        FileUrl = resume.FileUrl,
-        CreatedDate = resume.CreatedAt,
-        IsLookingForJob = resume.IsPublic
-    };
 }
