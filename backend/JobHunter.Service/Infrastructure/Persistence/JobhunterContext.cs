@@ -91,7 +91,6 @@ public partial class JobhunterContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("updated_at");
             entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
-
             entity.HasOne(d => d.Company).WithMany(p => p.CompanyBranches)
                 .HasForeignKey(d => d.CompanyId)
                 .HasConstraintName("company_branches_company_id_fkey");

@@ -50,6 +50,17 @@ export default function UserLayout({
       </header>
 
       <main>{children}</main>
+
+      <footer className="border-t bg-muted/30">
+        <UserContainer className="flex flex-col gap-3 py-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
+          <p>© 2026 JobHunter. All rights reserved.</p>
+          <div className="flex gap-4">
+            <Link href="#">Privacy</Link>
+            <Link href="#">Terms</Link>
+            <Link href="#">Contact</Link>
+          </div>
+        </UserContainer>
+      </footer>
     </div>
   )
 }

@@ -1,4 +1,5 @@
 using System.Security.Claims;
+
 using JobHunter.Service.DTOs.Auth;
 using JobHunter.Service.Interface.Persistence;
 

@@ -26,8 +26,9 @@ namespace JobHunter.Service.Config
                             }
 
                             var host = uri.Host;
-                            return host == "localhost" ||
-                                   host.EndsWith(".vercel.app");
+                            return string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase) ||
+                                   host.EndsWith(".vercel.app", StringComparison.OrdinalIgnoreCase) ||
+                                   host.EndsWith(".quocdk.id.vn", StringComparison.OrdinalIgnoreCase);
                         })
                         .AllowAnyHeader()
                         .AllowAnyMethod()

@@ -265,11 +265,12 @@ export function UserInfoDataTable() {
   const pageResult = usersQuery.data?.data
   const data = pageResult?.items ?? []
   const totalCount = pageResult?.totalCount ?? 0
+  const pageCount = pageResult?.totalPage ?? 0
 
   const table = useReactTable({
     data,
     columns: userColumns,
-    pageCount: Math.max(1, Math.ceil(totalCount / pagination.pageSize)),
+    pageCount: pageCount,
     state: {
       sorting,
       columnVisibility,
