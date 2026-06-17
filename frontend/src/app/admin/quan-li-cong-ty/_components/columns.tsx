@@ -30,7 +30,7 @@ export const columns: ColumnDef<CompanyRegistrationRequest>[] = [
     accessorKey: "website",
     header: "Website",
     cell: ({ row }) => {
-      const url = row.original.website
+      const url = row.original.websiteUrl
       const fullUrl = url.startsWith("http") ? url : `https://${url}`
       return (
         <a

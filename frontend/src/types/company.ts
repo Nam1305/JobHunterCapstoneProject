@@ -74,7 +74,25 @@ export interface CompanyRegistrationRequest {
   phone: string
   email: string
   companyName: string
-  website: string
+  websiteUrl: string
   status: "chờ xét duyệt" | "đã duyệt"
   createdAt: string
 }
+
+export interface CompanyRegistrationRequestDetail extends CompanyRegistrationRequest {
+  companyType: string
+  country: string
+  teamSize: string
+  overview?: string
+  taxCode?: string
+}
+
+export interface CompanyTaxInfo {
+  name: string
+  internationalName: string | null
+  shortName: string | null
+  address: string
+  status: string
+}
+
+

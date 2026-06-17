@@ -2,7 +2,7 @@
 
 import type { PaginationState } from "@tanstack/react-table"
 import { toast } from "sonner"
-import { useState } from "react";
+import { useState } from "react"
 
 import {
   AlertDialog,
@@ -14,14 +14,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { CompanyRegistrationRequest } from "@/types/company";
+import { CompanyRegistrationRequest } from "@/types/company"
 
 import { CompanyRequestTable } from "./_components/company-table"
 import { INITIAL_MOCK_DATA } from "./_components/mock-data"
+import { CompanyRequestDetailModal } from "./_components/company-request-detail-modal"
 
 export default function CompanyManagementPage() {
   const [data, setData] = useState<CompanyRegistrationRequest[]>(INITIAL_MOCK_DATA)
-  const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<"tất cả" | "chờ xét duyệt" | "đã duyệt">("tất cả")
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -29,13 +29,14 @@ export default function CompanyManagementPage() {
   })
   const [approvingId, setApprovingId] = useState<string | null>(null)
   const [requestToApprove, setRequestToApprove] = useState<CompanyRegistrationRequest | null>(null)
+  const [viewingRequest, setViewingRequest] = useState<CompanyRegistrationRequest | null>(null)
 
   const handleApprove = (request: CompanyRegistrationRequest) => {
     setRequestToApprove(request)
   }
 
   const handleView = (request: CompanyRegistrationRequest) => {
-    toast.info(`Xem chi tiết yêu cầu của ${request.hrName} (${request.companyName})`)
+    setViewingRequest(request)
   }
 
   const handleConfirmApprove = () => {
@@ -61,16 +62,9 @@ export default function CompanyManagementPage() {
   const pendingCount = data.filter((item) => item.status === "chờ xét duyệt").length
   const approvedCount = data.filter((item) => item.status === "đã duyệt").length
 
-  // Filter & Search processing
+  // Filter by status processing
   const filteredData = data.filter((item) => {
-    const matchesStatus = statusFilter === "tất cả" || item.status === statusFilter
-    const normalizedSearch = search.toLowerCase().trim()
-    const matchesSearch =
-      normalizedSearch === "" ||
-      item.hrName.toLowerCase().includes(normalizedSearch) ||
-      item.email.toLowerCase().includes(normalizedSearch) ||
-      item.companyName.toLowerCase().includes(normalizedSearch)
-    return matchesStatus && matchesSearch
+    return statusFilter === "tất cả" || item.status === statusFilter
   })
 
   // Paged Data processing
@@ -82,12 +76,7 @@ export default function CompanyManagementPage() {
   const totalCount = filteredData.length
   const pageCount = Math.ceil(filteredData.length / pagination.pageSize)
 
-  // Reset page index on search or filter change
-  const handleSearchChange = (value: string) => {
-    setSearch(value)
-    setPagination((prev) => ({ ...prev, pageIndex: 0 }))
-  }
-
+  // Reset page index on filter change
   const handleStatusFilterChange = (value: "tất cả" | "chờ xét duyệt" | "đã duyệt") => {
     setStatusFilter(value)
     setPagination((prev) => ({ ...prev, pageIndex: 0 }))
@@ -95,6 +84,19 @@ export default function CompanyManagementPage() {
 
   return (
     <>
+      <CompanyRequestDetailModal
+        key={viewingRequest?.id || "empty"}
+        open={Boolean(viewingRequest)}
+        onOpenChange={(open) => {
+          if (!open) setViewingRequest(null)
+        }}
+        request={viewingRequest}
+        onApprove={(request) => {
+          setViewingRequest(null)
+          handleApprove(request)
+        }}
+      />
+
       <AlertDialog
         open={Boolean(requestToApprove)}
         onOpenChange={(open) => {
@@ -122,8 +124,6 @@ export default function CompanyManagementPage() {
           data={paginatedData}
           pendingCount={pendingCount}
           approvedCount={approvedCount}
-          search={search}
-          onSearchChange={handleSearchChange}
           statusFilter={statusFilter}
           onStatusFilterChange={handleStatusFilterChange}
           onApprove={handleApprove}
@@ -138,3 +138,4 @@ export default function CompanyManagementPage() {
     </>
   )
 }
+

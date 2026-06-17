@@ -18,7 +18,7 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -44,8 +44,6 @@ export interface CompanyRequestTableProps {
   data: CompanyRegistrationRequest[]
   pendingCount: number
   approvedCount: number
-  search: string
-  onSearchChange: (value: string) => void
   statusFilter: "tất cả" | "chờ xét duyệt" | "đã duyệt"
   onStatusFilterChange: (value: "tất cả" | "chờ xét duyệt" | "đã duyệt") => void
   onApprove: (request: CompanyRegistrationRequest) => void
@@ -61,8 +59,6 @@ export function CompanyRequestTable({
   data,
   pendingCount,
   approvedCount,
-  search,
-  onSearchChange,
   statusFilter,
   onStatusFilterChange,
   onApprove,
@@ -107,38 +103,25 @@ export function CompanyRequestTable({
             Theo dõi và duyệt thông tin yêu cầu đăng ký HR.
           </p>
         </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant={statusFilter === "chờ xét duyệt" ? "secondary" : "ghost"}
-            onClick={() =>
-              onStatusFilterChange(statusFilter === "chờ xét duyệt" ? "tất cả" : "chờ xét duyệt")
-            }
-            disabled={!!approvingId}
-            className="h-8 rounded-full px-3 text-xs"
-          >
-            {pendingCount} chờ duyệt
-          </Button>
-          <Button
-            variant={statusFilter === "đã duyệt" ? "secondary" : "ghost"}
-            onClick={() =>
-              onStatusFilterChange(statusFilter === "đã duyệt" ? "tất cả" : "đã duyệt")
-            }
-            disabled={!!approvingId}
-            className="h-8 rounded-full px-3 text-xs"
-          >
-            {approvedCount} đã duyệt
-          </Button>
-        </div>
       </div>
 
-      <div className="flex max-w-sm items-center gap-2">
-        <Input
-          value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
+      <div className="flex max-w-xs items-center gap-2">
+        <Select
+          value={statusFilter}
           disabled={!!approvingId}
-          placeholder="Tìm kiếm theo tên, email, công ty..."
-        />
+          onValueChange={(value) =>
+            onStatusFilterChange(value as "tất cả" | "chờ xét duyệt" | "đã duyệt")
+          }
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Lọc theo trạng thái" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="tất cả">Tất cả trạng thái</SelectItem>
+            <SelectItem value="chờ xét duyệt">Chờ xét duyệt</SelectItem>
+            <SelectItem value="đã duyệt">Đã duyệt</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="overflow-hidden rounded-lg border">
