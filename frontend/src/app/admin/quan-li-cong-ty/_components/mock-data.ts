@@ -66,7 +66,7 @@ export const INITIAL_MOCK_DATA: CompanyRegistrationRequest[] = [
     id: "7",
     hrName: "Đinh Quang Minh",
     phone: "0977 890 123",
-    email: "minh.dinh@gamestudio.gg",
+    email: "quangminh.dinh@gamestudio.gg",
     companyName: "Game Studio VN",
     websiteUrl: "gamestudio.gg",
     status: "đã duyệt",

@@ -57,8 +57,6 @@ export interface CompanyRequestTableProps {
 
 export function CompanyRequestTable({
   data,
-  pendingCount,
-  approvedCount,
   statusFilter,
   onStatusFilterChange,
   onApprove,

@@ -95,7 +95,7 @@ export const MOCK_REQUEST_DETAILS: Record<string, CompanyRegistrationRequestDeta
     id: "7",
     hrName: "Đinh Quang Minh",
     phone: "0977 890 123",
-    email: "minh.dinh@gamestudio.gg",
+    email: "dinhquangminh240804@gmail.com",
     companyName: "Game Studio VN",
     websiteUrl: "gamestudio.gg",
     status: "đã duyệt",

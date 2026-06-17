@@ -138,7 +138,7 @@ export function CompanyRequestDetailModal({
                     </div>
                     <div className="space-y-1">
                       <span className="text-xs text-zinc-400 dark:text-zinc-500">Email</span>
-                      <p className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">{detail.email}</p>
+                      <p className="text-sm font-semibold text-zinc-950 break-all dark:text-zinc-50">{detail.email}</p>
                     </div>
                     <div className="space-y-1">
                       <span className="text-xs text-zinc-400 dark:text-zinc-500">Số điện thoại</span>
@@ -153,7 +153,7 @@ export function CompanyRequestDetailModal({
                   </div>
                 </div>
 
-                <Separator orientation="vertical" />
+                {/* <Separator orientation="vertical" /> */}
 
                 {/* RIGHT COLUMN: Thông tin công ty */}
                 <div className="flex-1 space-y-4">
