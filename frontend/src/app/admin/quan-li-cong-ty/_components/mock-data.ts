@@ -1,13 +1,5 @@
-export interface CompanyRegistrationRequest {
-  id: string
-  hrName: string
-  phone: string
-  email: string
-  companyName: string
-  website: string
-  status: "chờ xét duyệt" | "đã duyệt"
-  createdAt: string
-}
+
+import { CompanyRegistrationRequest } from "@/types/company";
 
 export const INITIAL_MOCK_DATA: CompanyRegistrationRequest[] = [
   {

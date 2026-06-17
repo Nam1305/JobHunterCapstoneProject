@@ -1,8 +1,8 @@
 "use client"
 
-import * as React from "react"
 import type { PaginationState } from "@tanstack/react-table"
 import { toast } from "sonner"
+import { useState } from "react";
 
 import {
   AlertDialog,
@@ -14,20 +14,21 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { CompanyRegistrationRequest } from "@/types/company";
 
 import { CompanyRequestTable } from "./_components/company-table"
-import { INITIAL_MOCK_DATA, type CompanyRegistrationRequest } from "./_components/mock-data"
+import { INITIAL_MOCK_DATA } from "./_components/mock-data"
 
 export default function CompanyManagementPage() {
-  const [data, setData] = React.useState<CompanyRegistrationRequest[]>(INITIAL_MOCK_DATA)
-  const [search, setSearch] = React.useState("")
-  const [statusFilter, setStatusFilter] = React.useState<"tất cả" | "chờ xét duyệt" | "đã duyệt">("tất cả")
-  const [pagination, setPagination] = React.useState<PaginationState>({
+  const [data, setData] = useState<CompanyRegistrationRequest[]>(INITIAL_MOCK_DATA)
+  const [search, setSearch] = useState("")
+  const [statusFilter, setStatusFilter] = useState<"tất cả" | "chờ xét duyệt" | "đã duyệt">("tất cả")
+  const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   })
-  const [approvingId, setApprovingId] = React.useState<string | null>(null)
-  const [requestToApprove, setRequestToApprove] = React.useState<CompanyRegistrationRequest | null>(null)
+  const [approvingId, setApprovingId] = useState<string | null>(null)
+  const [requestToApprove, setRequestToApprove] = useState<CompanyRegistrationRequest | null>(null)
 
   const handleApprove = (request: CompanyRegistrationRequest) => {
     setRequestToApprove(request)
@@ -57,35 +58,26 @@ export default function CompanyManagementPage() {
   }
 
   // Count helper functions on full dataset
-  const pendingCount = React.useMemo(
-    () => data.filter((item) => item.status === "chờ xét duyệt").length,
-    [data]
-  )
-  const approvedCount = React.useMemo(
-    () => data.filter((item) => item.status === "đã duyệt").length,
-    [data]
-  )
+  const pendingCount = data.filter((item) => item.status === "chờ xét duyệt").length
+  const approvedCount = data.filter((item) => item.status === "đã duyệt").length
 
   // Filter & Search processing
-  const filteredData = React.useMemo(() => {
-    return data.filter((item) => {
-      const matchesStatus = statusFilter === "tất cả" || item.status === statusFilter
-      const normalizedSearch = search.toLowerCase().trim()
-      const matchesSearch =
-        normalizedSearch === "" ||
-        item.hrName.toLowerCase().includes(normalizedSearch) ||
-        item.email.toLowerCase().includes(normalizedSearch) ||
-        item.companyName.toLowerCase().includes(normalizedSearch)
-      return matchesStatus && matchesSearch
-    })
-  }, [data, statusFilter, search])
+  const filteredData = data.filter((item) => {
+    const matchesStatus = statusFilter === "tất cả" || item.status === statusFilter
+    const normalizedSearch = search.toLowerCase().trim()
+    const matchesSearch =
+      normalizedSearch === "" ||
+      item.hrName.toLowerCase().includes(normalizedSearch) ||
+      item.email.toLowerCase().includes(normalizedSearch) ||
+      item.companyName.toLowerCase().includes(normalizedSearch)
+    return matchesStatus && matchesSearch
+  })
 
   // Paged Data processing
-  const paginatedData = React.useMemo(() => {
-    const start = pagination.pageIndex * pagination.pageSize
-    const end = start + pagination.pageSize
-    return filteredData.slice(start, end)
-  }, [filteredData, pagination])
+  const paginatedData = filteredData.slice(
+    pagination.pageIndex * pagination.pageSize,
+    pagination.pageIndex * pagination.pageSize + pagination.pageSize
+  )
 
   const totalCount = filteredData.length
   const pageCount = Math.ceil(filteredData.length / pagination.pageSize)

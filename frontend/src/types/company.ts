@@ -36,7 +36,7 @@ export interface TeamImages {
 
 export interface BrandingResponseDto extends BrandingRequestDto {
 
-    teamPhotoUrls?: string[];
+  teamPhotoUrls?: string[];
 }
 
 export interface BrandingRequestDto {
@@ -60,10 +60,21 @@ export interface CompanyGeneralResponseDto extends CompanyGeneralRequestDto {
 
 export interface CompanyBranchReponseDto {
   name: string;
-  address:string;
+  address: string;
   city: string;
 }
 
 export interface CompanyBranchRequestDto extends CompanyBranchReponseDto {
   id: string;
+}
+
+export interface CompanyRegistrationRequest {
+  id: string
+  hrName: string
+  phone: string
+  email: string
+  companyName: string
+  website: string
+  status: "chờ xét duyệt" | "đã duyệt"
+  createdAt: string
 }

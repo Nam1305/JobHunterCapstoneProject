@@ -3,7 +3,7 @@ import { CheckIcon, ExternalLinkIcon, EyeIcon, Loader2Icon } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import type { CompanyRegistrationRequest } from "./mock-data"
+import { CompanyRegistrationRequest } from "@/types/company";
 
 export const columns: ColumnDef<CompanyRegistrationRequest>[] = [
   {

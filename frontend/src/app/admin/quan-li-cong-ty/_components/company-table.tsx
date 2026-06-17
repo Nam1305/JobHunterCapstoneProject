@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/table"
 
 import { columns } from "./columns"
-import type { CompanyRegistrationRequest } from "./mock-data"
+import { CompanyRegistrationRequest } from "@/types/company";
 
 export interface CompanyRequestTableProps {
   data: CompanyRegistrationRequest[]
