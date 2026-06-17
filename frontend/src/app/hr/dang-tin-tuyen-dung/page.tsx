@@ -21,6 +21,7 @@ import {
 } from "lucide-react"
 
 import { useJobPostingsQuery, type getJobPostingsParams, usePatchCloseJob } from "@/api/hrjob.api"
+import { useDebounce } from "@/hooks/use-debounce"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -184,20 +185,12 @@ const columns: ColumnDef<JobPosting>[] = [
 
 export default function JobPostingPage() {
   const [search, setSearch] = React.useState("")
-  const [debouncedSearch, setDebouncedSearch] = React.useState("")
+  const debouncedSearch = useDebounce(search, 1000)
   const [status, setStatus] = React.useState<JobPostingStatusFilter>("all")
   const [pagination, setPagination] = React.useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   })
-
-  React.useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      setDebouncedSearch(search)
-    }, 1000)
-
-    return () => window.clearTimeout(timeoutId)
-  }, [search])
 
   const queryParams = React.useMemo<getJobPostingsParams>(
     () => ({

@@ -99,15 +99,14 @@ function BranchDialogForm({
   const createBranch = useCreateBranch()
   const updateBranch = useUpdateBranch()
   const isSubmitting = createBranch.isPending || updateBranch.isPending
-  const branchFormValues = toBranchFormValues(branch)
   const form = useForm<BranchFormValues>({
     resolver: zodResolver(branchFormSchema),
     defaultValues: defaultBranchFormValues,
   })
 
   useEffect(() => {
-    form.reset(branchFormValues)
-  }, [branch?.id, form])
+    form.reset(toBranchFormValues(branch))
+  }, [branch, form])
 
   function handleSubmit(values: BranchFormValues) {
     form.clearErrors("root")
@@ -158,7 +157,7 @@ function BranchDialogForm({
   }
 
   function handleCancel() {
-    form.reset(branchFormValues)
+    form.reset(toBranchFormValues(branch))
     onOpenChange(false)
   }
 
