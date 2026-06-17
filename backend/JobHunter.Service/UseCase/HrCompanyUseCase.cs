@@ -1,9 +1,20 @@
 using System.Text.Json;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using JobHunter.Service.DTOs;
 using JobHunter.Service.DTOs.Company;
+using JobHunter.Service.DTOs.Auth;
+using JobHunter.Domain;
+using JobHunter.Domain.Entities;
 using JobHunter.Service.Interface.Persistence;
 using JobHunter.Service.Interface.Service;
+using JobHunter.Service.Interface.UseCase;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using JobHunter.Service.Utils;
 
 public class HrCompanyUseCase : IHrCompanyUseCase
 {
@@ -13,11 +24,20 @@ public class HrCompanyUseCase : IHrCompanyUseCase
 
     private readonly IFileService _fileService;
 
-    public HrCompanyUseCase(IHrCompanyRepository hrCompanyRepository, IUserRepository userRepository, IFileService fileService)
+    // private readonly ITokenRepository _tokenRepository;
+
+    private readonly ICompanyRepository _companyRepository;
+
+    // private readonly IConfiguration _configuration;
+
+    public HrCompanyUseCase(IHrCompanyRepository hrCompanyRepository, IUserRepository userRepository, IFileService fileService, ITokenRepository tokenRepository, ICompanyRepository companyRepository, IConfiguration configuration)
     {
         _hrCompanyRepository = hrCompanyRepository;
         _userRepository = userRepository;
         _fileService = fileService;
+        // _tokenRepository = tokenRepository;
+        _companyRepository = companyRepository;
+        // _configuration = configuration;
     }
 
 
@@ -392,5 +412,65 @@ public class HrCompanyUseCase : IHrCompanyUseCase
 
         company.LogoUrl = newLogoUrl;
         await _hrCompanyRepository.UpdateLogoAsync(company.Id, company.LogoUrl);
+    }
+
+    public async Task RegisterHrCompany(RegisterHrCompanyRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.HrName))
+        {
+            throw new ArgumentException("HR name is required");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Email))
+        {
+            throw new ArgumentException("Email is required");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Password))
+        {
+            throw new ArgumentException("Password is required");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.CompanyName))
+        {
+            throw new ArgumentException("Company name is required");
+        }
+
+        var existingUser = await _userRepository.GetUserByEmail(request.Email);
+        if (existingUser != null)
+        {
+            throw new ArgumentException("Email already exists");
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var company = new Company
+        {
+            Name = request.CompanyName,
+            WebsiteUrl = request.WebsiteUrl,
+            TaxCode = request.TaxCode,
+            Country = request.Country,
+            CompanyType = request.CompanyType,
+            TeamSize = request.TeamSize,
+            Overview = request.Overview,
+            Status = false,
+            Slug = $"{SlugGenerator.GenerateSlug(request.CompanyName)}-{now.ToUnixTimeMilliseconds()}",
+            CreatedBy = request.Email,
+            UpdatedBy = request.Email
+        };
+
+        var user = new User
+        {
+            Name = request.HrName,
+            Email = request.Email,
+            Phone = request.Phone,
+            Password = PasswordHashing.HashPassword(request.Password),
+            Role = UserRole.HR,
+            CreatedBy = request.Email,
+            UpdatedBy = request.Email
+        };
+
+        var createdUser = await _companyRepository.AddCompanyWithHrUser(company, user);
+
+        return;
     }
 }

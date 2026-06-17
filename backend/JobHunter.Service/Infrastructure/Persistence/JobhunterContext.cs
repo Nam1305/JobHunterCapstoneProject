@@ -56,6 +56,10 @@ public partial class JobhunterContext : DbContext
             entity.Property(e => e.Name).HasColumnName("name");
             entity.Property(e => e.Overview).HasColumnName("overview");
             entity.Property(e => e.Slug).HasColumnName("slug");
+            entity.Property(e => e.Status)
+                .HasColumnName("status")
+                .HasDefaultValue(false);
+            entity.Property(e => e.TaxCode).HasColumnName("tax_code");
             entity.Property(e => e.TeamPhotoUrls)
                 .HasColumnType("jsonb")
                 .HasColumnName("team_photo_urls");

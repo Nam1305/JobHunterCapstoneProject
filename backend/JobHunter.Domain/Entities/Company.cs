@@ -9,9 +9,13 @@ public partial class Company : BaseEntity
 
     public string? WebsiteUrl { get; set; }
 
+    public string? TaxCode { get; set; }
+
     public string? Country { get; set; }
 
     public string? CompanyType { get; set; }
+
+    public bool Status { get; set; } = false;
 
     public string? LogoUrl { get; set; }
 

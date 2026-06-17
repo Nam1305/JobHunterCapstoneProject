@@ -1,5 +1,7 @@
 using JobHunter.Service.DTOs;
+using JobHunter.Service.DTOs.Auth;
 using JobHunter.Service.DTOs.Company;
+using JobHunter.Service.Interface.UseCase;
 using JobHunter.Service.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +18,14 @@ namespace JobHunter.WebAPI.Controllers
         public HRCompanyController(IHrCompanyUseCase hrCompanyUseCase)
         {
             _hrCompanyUseCase = hrCompanyUseCase;
+        }
+
+        [AllowAnonymous]
+        [HttpPost("register")]
+        public async Task<ActionResult<ResponseBase<string>>> RegisterHrCompany([FromBody] RegisterHrCompanyRequest request)
+        {
+            await _hrCompanyUseCase.RegisterHrCompany(request);
+            return new ResponseBase<string>("Gửi thông tin đăng ký thành công. Vui lòng chờ xét duyệt từ Admin");
         }
 
         [HttpPost("branding/team-images")]

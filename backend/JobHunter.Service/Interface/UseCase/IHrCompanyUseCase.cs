@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 
 public interface IHrCompanyUseCase
 {
+    public Task RegisterHrCompany(RegisterHrCompanyRequest request);
     public Task<List<string>> AddTeamImagesAsync(Guid userId, List<IFormFile> images);
 
     public Task<BrandingResponseDto> GetBrandingByUserIdAsync(Guid userId);
