@@ -99,9 +99,13 @@ export function CompanyRequestTable({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Yêu cầu đăng ký HR</h1>
-          <p className="text-sm text-muted-foreground">{totalCount} yêu cầu</p>
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Yêu cầu đăng ký HR
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Theo dõi và duyệt thông tin yêu cầu đăng ký HR.
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -133,14 +137,13 @@ export function CompanyRequestTable({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           disabled={!!approvingId}
-          placeholder="Tìm theo tên, email, công ty..."
-          className="h-9"
+          placeholder="Tìm kiếm theo tên, email, công ty..."
         />
       </div>
 
-      <div className="overflow-hidden rounded-lg border bg-background">
+      <div className="overflow-hidden rounded-lg border">
         <Table>
-          <TableHeader className="bg-muted/50">
+          <TableHeader className="bg-muted">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
@@ -175,14 +178,14 @@ export function CompanyRequestTable({
         </Table>
       </div>
 
-      <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+      <div className="flex items-center justify-between gap-4">
         <div className="text-sm text-muted-foreground">
-          Hiển thị {totalCount} kết quả
+          Tổng {totalCount} yêu cầu
         </div>
 
         <div className="flex items-center gap-3">
           <div className="hidden items-center gap-2 md:flex">
-            <Label htmlFor="rows-per-page" className="text-sm">
+            <Label htmlFor="company-rows-per-page" className="text-sm">
               Số hàng mỗi trang:
             </Label>
             <Select
@@ -195,7 +198,7 @@ export function CompanyRequestTable({
                 })
               }}
             >
-              <SelectTrigger id="rows-per-page" size="sm" className="h-8 w-20">
+              <SelectTrigger id="company-rows-per-page" size="sm" className="w-20">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent side="top">
@@ -211,46 +214,47 @@ export function CompanyRequestTable({
           </div>
 
           <div className="text-sm font-medium">
-            Trang {table.getState().pagination.pageIndex + 1} / {table.getPageCount() || 1}
+            Trang {table.getState().pagination.pageIndex + 1} / {" "}
+            {table.getPageCount() || 1}
           </div>
 
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              className="hidden h-8 w-8 p-0 md:flex"
+              className="hidden size-8 p-0 md:flex"
               onClick={() => table.setPageIndex(0)}
               disabled={!table.getCanPreviousPage() || !!approvingId}
             >
-              <ChevronsLeftIcon className="h-4 w-4" />
+              <ChevronsLeftIcon />
               <span className="sr-only">Đến trang đầu</span>
             </Button>
             <Button
               variant="outline"
               size="icon"
-              className="h-8 w-8"
+              className="size-8"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage() || !!approvingId}
             >
-              <ChevronLeftIcon className="h-4 w-4" />
+              <ChevronLeftIcon />
               <span className="sr-only">Đến trang trước</span>
             </Button>
             <Button
               variant="outline"
               size="icon"
-              className="h-8 w-8"
+              className="size-8"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage() || !!approvingId}
             >
-              <ChevronRightIcon className="h-4 w-4" />
+              <ChevronRightIcon />
               <span className="sr-only">Đến trang tiếp theo</span>
             </Button>
             <Button
               variant="outline"
-              className="hidden h-8 w-8 p-0 md:flex"
+              className="hidden size-8 p-0 md:flex"
               onClick={() => table.setPageIndex(table.getPageCount() - 1)}
               disabled={!table.getCanNextPage() || !!approvingId}
             >
-              <ChevronsRightIcon className="h-4 w-4" />
+              <ChevronsRightIcon />
               <span className="sr-only">Đến trang cuối</span>
             </Button>
           </div>

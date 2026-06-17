@@ -40,7 +40,7 @@ export const columns: ColumnDef<CompanyRegistrationRequest>[] = [
           className="flex items-center gap-1 text-muted-foreground hover:text-primary hover:underline"
         >
           {url}
-          <ExternalLinkIcon className="h-3 w-3" />
+          <ExternalLinkIcon className="size-3" />
         </a>
       )
     },
@@ -53,11 +53,7 @@ export const columns: ColumnDef<CompanyRegistrationRequest>[] = [
       return (
         <Badge
           variant={isApproved ? "default" : "outline"}
-          className={
-            isApproved
-              ? "bg-zinc-900 text-zinc-50 border-transparent dark:bg-zinc-50 dark:text-zinc-900"
-              : "border-zinc-300 text-zinc-700 bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:bg-zinc-900/50"
-          }
+          className="px-2"
         >
           {row.original.status}
         </Badge>
@@ -84,27 +80,27 @@ export const columns: ColumnDef<CompanyRegistrationRequest>[] = [
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-zinc-500 hover:text-zinc-950 dark:hover:text-zinc-50"
+            className="size-8 text-zinc-500 hover:text-zinc-950 dark:hover:text-zinc-50"
             onClick={() => meta?.onView?.(request)}
             disabled={isAnyApproving}
             title="Xem chi tiết"
           >
-            <EyeIcon className="h-4 w-4" />
+            <EyeIcon className="size-4" />
             <span className="sr-only">Xem chi tiết</span>
           </Button>
           {!isApproved && (
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-zinc-500 hover:text-emerald-600"
+              className="size-8 text-zinc-500 hover:text-emerald-600"
               onClick={() => meta?.onApprove?.(request)}
               disabled={isAnyApproving}
               title="Duyệt"
             >
               {isApproving ? (
-                <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
+                <Loader2Icon className="size-4 animate-spin text-muted-foreground" />
               ) : (
-                <CheckIcon className="h-4 w-4" />
+                <CheckIcon className="size-4" />
               )}
               <span className="sr-only">Duyệt</span>
             </Button>
