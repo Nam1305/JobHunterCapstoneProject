@@ -9,6 +9,12 @@ public partial class Application : BaseEntity
 
     public Guid JobId { get; set; }
 
+    public string Email { get; set; } = null!;
+
+    public string Name { get; set; } = null!;
+
+    public string Phone { get; set; } = null!;
+
     public string? CoverLetter { get; set; }
 
     public ApplicationStatus? Status { get; set; }

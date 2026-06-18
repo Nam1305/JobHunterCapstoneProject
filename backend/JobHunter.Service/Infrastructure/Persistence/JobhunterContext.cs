@@ -372,8 +372,17 @@ public partial class JobhunterContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+            entity.Property(e => e.Email)
+                .HasMaxLength(255)
+                .HasColumnName("email");
             entity.Property(e => e.JobId).HasColumnName("job_id");
             entity.Property(e => e.MatchScore).HasColumnName("match_score");
+            entity.Property(e => e.Name)
+                .HasMaxLength(255)
+                .HasColumnName("name");
+            entity.Property(e => e.Phone)
+                .HasMaxLength(20)
+                .HasColumnName("phone");
             entity.Property(e => e.ResumeId).HasColumnName("resume_id");
             entity.Property(e => e.Status)
                 .HasMaxLength(50)

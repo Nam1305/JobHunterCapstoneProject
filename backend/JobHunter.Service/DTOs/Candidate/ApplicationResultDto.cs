@@ -14,6 +14,15 @@ public class ApplicationResultDto
     [JsonPropertyName("resumeId")]
     public Guid? ResumeId { get; set; }
 
+    [JsonPropertyName("email")]
+    public string Email { get; set; } = string.Empty;
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("phone")]
+    public string Phone { get; set; } = string.Empty;
+
     [JsonPropertyName("coverLetter")]
     public string? CoverLetter { get; set; }
 
@@ -28,6 +37,9 @@ public class ApplicationResultDto
         Id = application.Id,
         JobId = application.JobId,
         ResumeId = application.ResumeId,
+        Email = application.Email,
+        Name = application.Name,
+        Phone = application.Phone,
         CoverLetter = application.CoverLetter,
         Status = application.Status?.ToString(),
         AppliedAt = application.AppliedAt

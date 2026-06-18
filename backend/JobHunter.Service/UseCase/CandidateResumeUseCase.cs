@@ -78,6 +78,15 @@ public class CandidateResumeUseCase : ICandidateResumeUseCase
 
     public async Task<ApplicationResultDto> ApplyJob(Guid userId, ApplyJobRequestDto request)
     {
+        if (string.IsNullOrWhiteSpace(request.Email))
+            throw new ArgumentException("Email không được để trống");
+
+        if (string.IsNullOrWhiteSpace(request.Name))
+            throw new ArgumentException("Tên không được để trống");
+
+        if (string.IsNullOrWhiteSpace(request.Phone))
+            throw new ArgumentException("Số điện thoại không được để trống");
+
         var resume = await _resumeRepository.GetResumeById(request.ResumeId)
             ?? throw new KeyNotFoundException("Không tìm thấy CV");
 
@@ -96,6 +105,9 @@ public class CandidateResumeUseCase : ICandidateResumeUseCase
         {
             ResumeId = request.ResumeId,
             JobId = request.JobId,
+            Email = request.Email.Trim(),
+            Name = request.Name.Trim(),
+            Phone = request.Phone.Trim(),
             CoverLetter = request.CoverLetter,
             Status = ApplicationStatus.Pending,
             AppliedAt = DateTimeOffset.UtcNow
