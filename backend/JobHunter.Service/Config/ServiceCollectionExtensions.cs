@@ -20,6 +20,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITokenRepository, TokenRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICompanyRepository, CompanyRepository>();
+        services.AddScoped<IAdminCompanyRepository, AdminCompanyRepository>();
         services.AddScoped<IJobRepository, JobRepository>();
         services.AddScoped<IHrJobRepository, HrJobRepository>();
         services.AddScoped<IHrCompanyRepository, HrCompanyRepository>();
@@ -28,6 +29,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthUseCase, AuthUseCase>();
         services.AddScoped<IUserUseCase, UserUseCase>();
         services.AddScoped<ICompanyUseCase, CompanyUseCase>();
+        services.AddScoped<IAdminCompanyUseCase, AdminCompanyUseCase>();
         services.AddScoped<IJobUseCase, JobUseCase>();
         services.AddScoped<IHrJobUseCase, HrJobUseCase>();
         services.AddScoped<IHrCompanyUseCase, HrCompanyUseCase>();
