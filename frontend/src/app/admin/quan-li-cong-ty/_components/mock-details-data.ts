@@ -13,7 +13,7 @@ export const MOCK_REQUEST_DETAILS: Record<string, CompanyRegistrationRequestDeta
     companyType: "Công nghệ thông tin",
     country: "Việt Nam",
     teamSize: "100-500 nhân viên",
-    overview: "<p>Chúng tôi là công ty công nghệ hàng đầu cung cấp giải pháp phần mềm doanh nghiệp.</p>",
+    overview: "<b>Kiểm tra các format</b><div><i>in nghiêng.</i></div><div><ul><li><b><i>1</i></b></li><li><b><i>2</i></b></li><li><b><i>3</i></b></li></ul><ol><li><b><i>a</i></b></li><li><b><i>b</i></b></li><li><b><i>c</i></b></li><li><b><i>d</i></b></li></ol></div>",
     taxCode: "0100109106",
   },
   "2": {

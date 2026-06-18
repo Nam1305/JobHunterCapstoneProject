@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CompanyRegistrationRequest } from "@/types/company"
 import { useCompanyRegistrationRequestDetails, useCheckTaxCodeMutation } from "@/api/admin-company-registration.api"
@@ -74,21 +75,23 @@ export function CompanyRequestDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-4xl gap-6 p-6">
-        <DialogHeader className="flex-row items-center justify-between pr-6">
-          <DialogTitle className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-            Chi tiết yêu cầu đăng ký
-          </DialogTitle>
-          {!loading && detail && (
-            <Badge
-              variant={isApproved ? "default" : "secondary"}
-              className="px-2.5 py-0.5 rounded-full font-medium"
-            >
-              {detail.status === "chờ xét duyệt" ? "Chờ duyệt" : "Đã duyệt"}
-            </Badge>
-          )}
+      <DialogContent className="max-w-4xl gap-0 p-0">
+        <DialogHeader className="flex-row items-center justify-between p-6 pb-4">
+          <div className="flex items-center gap-3">
+            <DialogTitle className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+              Chi tiết yêu cầu đăng ký
+            </DialogTitle>
+            {!loading && detail && (
+              <Badge
+                variant={isApproved ? "default" : "secondary"}
+                className="px-2.5 py-0.5 rounded-full font-medium"
+              >
+                {detail.status === "chờ xét duyệt" ? "Chờ duyệt" : "Đã duyệt"}
+              </Badge>
+            )}
+          </div>
         </DialogHeader>
-
+        <ScrollArea className="max-h-[65vh] overflow-y-auto px-6 pb-6">
         {loading ? (
           <div className="space-y-6 py-4">
             {/* Skeleton: Two-column layout */}
@@ -123,7 +126,7 @@ export function CompanyRequestDetailModal({
           </div>
         ) : (
           detail && (
-            <>
+            <div className="space-y-6">
               {/* Two-column section: HR info | Company info */}
               <div className="flex gap-6">
                 {/* LEFT COLUMN: Thông tin HR */}
@@ -206,7 +209,7 @@ export function CompanyRequestDetailModal({
               {/* TAX CODE SECTION — full width */}
               {detail.taxCode && (
                 <>
-                  <Separator />
+                  <Separator className="my-2" />
                   <div className="space-y-4">
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
                       Mã số thuế
@@ -265,7 +268,7 @@ export function CompanyRequestDetailModal({
               {/* COMPANY DESCRIPTION — full width, read-only HTML card */}
               {detail.overview && (
                 <>
-                  <Separator />
+                  <Separator className="my-2" />
                   <div className="space-y-4">
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
                       Giới thiệu chung về công ty
@@ -278,20 +281,22 @@ export function CompanyRequestDetailModal({
                 </>
               )}
 
-              {/* Footer Actions */}
-              {!isApproved && (
-                <div className="flex justify-end pt-2">
-                  <Button
-                    onClick={() => onApprove(detail)}
-                    className="flex items-center gap-2 px-6 py-2 bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
-                  >
-                    <CheckIcon className="size-4" />
-                    Chấp nhận
-                  </Button>
-                </div>
-              )}
-            </>
+            </div>
           )
+        )}
+        </ScrollArea>
+
+        {/* Sticky Footer */}
+        {!loading && detail && !isApproved && (
+          <div className="flex justify-end border-t border-zinc-200 dark:border-zinc-800 px-6 py-4">
+            <Button
+              onClick={() => onApprove(detail)}
+              className="flex items-center gap-2 px-6 py-2 bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+            >
+              <CheckIcon className="size-4" />
+              Chấp nhận
+            </Button>
+          </div>
         )}
       </DialogContent>
     </Dialog>
