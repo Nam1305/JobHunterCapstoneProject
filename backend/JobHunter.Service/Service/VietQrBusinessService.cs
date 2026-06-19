@@ -24,6 +24,14 @@ public class VietQrBusinessService : IVietQrBusinessService
         }
 
         using var response = await _httpClient.GetAsync($"v2/business/{Uri.EscapeDataString(taxCode.Trim())}");
+        if (response.StatusCode == HttpStatusCode.TooManyRequests)
+        {
+            throw new HttpRequestException(
+                "VietQR rate limit exceeded. Please try again later.",
+                null,
+                HttpStatusCode.TooManyRequests);
+        }
+
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             throw new KeyNotFoundException("Tax code not found");
