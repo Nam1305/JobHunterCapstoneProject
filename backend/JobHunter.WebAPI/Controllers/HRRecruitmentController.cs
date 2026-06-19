@@ -52,12 +52,15 @@ public class HRRecruitmentController : ControllerBase
     }
 
     [HttpPost("applications/{applicationId:guid}/status")]
-    public async Task<ActionResult<ResponseBase<object>>> UpdateApplicationStatus(
+    public async Task<ActionResult<ResponseBase<object?>>> UpdateApplicationStatus(
         Guid applicationId,
         [FromBody] UpdateApplicationStatusRequestDto requestDto)
     {
         var userId = User.GetUserId();
         await _hrRecruitmentUseCase.UpdateApplicationStatus(userId, applicationId, requestDto.Status);
-        return new ResponseBase<object>(null);
+        return new ResponseBase<object?>(null)
+        {
+            Message = "Cập nhật trạng thái đơn ứng tuyển thành công"
+        };
     }
 }
