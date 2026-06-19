@@ -8,4 +8,6 @@ public interface IAdminCompanyUseCase
     Task<PageResult<CompanyRegistrationDto>> GetCompanyRegistrations(int page, int limit, string? status);
 
     Task<CompanyRegistrationDetailDto> GetCompanyRegistration(Guid uid);
+
+    Task ApproveCompanyRegistration(Guid uid);
 }

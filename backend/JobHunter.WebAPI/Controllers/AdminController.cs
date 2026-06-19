@@ -34,4 +34,11 @@ public class AdminController : ControllerBase
         var result = await _adminCompanyUseCase.GetCompanyRegistration(uid);
         return new ResponseBase<CompanyRegistrationDetailDto>(result);
     }
+
+    [HttpPatch("company-registrations/{uid:guid}/approve")]
+    public async Task<ActionResult<ResponseBase<object?>>> ApproveCompanyRegistration(Guid uid)
+    {
+        await _adminCompanyUseCase.ApproveCompanyRegistration(uid);
+        return new ResponseBase<object?>(null);
+    }
 }

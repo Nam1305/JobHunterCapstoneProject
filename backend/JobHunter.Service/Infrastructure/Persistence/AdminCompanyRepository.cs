@@ -46,4 +46,27 @@ public class AdminCompanyRepository : IAdminCompanyRepository
                 user.CompanyId == companyId &&
                 user.Company != null);
     }
+
+    public async Task<bool> ApproveCompanyRegistration(Guid companyId)
+    {
+        var registrationExists = await _context.Users
+            .AsNoTracking()
+            .AnyAsync(user =>
+                user.Role == UserRole.HR &&
+                user.CompanyId == companyId &&
+                user.Company != null);
+
+        if (!registrationExists)
+        {
+            return false;
+        }
+
+        await _context.Companies
+            .Where(company => company.Id == companyId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(company => company.Status, true)
+                .SetProperty(company => company.UpdatedAt, DateTimeOffset.UtcNow));
+
+        return true;
+    }
 }

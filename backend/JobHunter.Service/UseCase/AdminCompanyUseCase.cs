@@ -69,6 +69,15 @@ public class AdminCompanyUseCase : IAdminCompanyUseCase
         };
     }
 
+    public async Task ApproveCompanyRegistration(Guid uid)
+    {
+        var approved = await _adminCompanyRepository.ApproveCompanyRegistration(uid);
+        if (!approved)
+        {
+            throw new KeyNotFoundException("Company registration not found");
+        }
+    }
+
     private static bool? ParseCompanyRegistrationStatus(string? status)
     {
         if (string.IsNullOrWhiteSpace(status))
