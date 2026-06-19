@@ -25,9 +25,9 @@ public static class ServiceCollectionExtensions
         // Use cases
         services.AddScoped<IAuthUseCase, AuthUseCase>();
         services.AddScoped<IUserUseCase, UserUseCase>();
-        services.AddScoped<IHRDashboardUseCase, HRDashboardUseCase>();
+        services.AddScoped<IHRRecruitmentUseCase, HRRecruitmentUseCase>();
         services.AddScoped<ICandidateResumeUseCase, CandidateResumeUseCase>();
-        
+
         // Services
         services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
         services.AddSingleton<IAmazonS3>(_ =>
@@ -53,7 +53,7 @@ public static class ServiceCollectionExtensions
 
             return new FileService(s3Client, bucketName, publicUrl);
         });
-        
+
         return services;
     }
 

@@ -10,16 +10,16 @@ namespace JobHunter.WebAPI.Controllers;
 [Route("api/hr")]
 [ApiController]
 // [Authorize(Roles = "HR")]
-public class HRController : ControllerBase
+public class HRRecruitmentController : ControllerBase
 {
     private readonly IHRRecruitmentUseCase _hrRecruitmentUseCase;
 
-    public HRController(IHRRecruitmentUseCase hrRecruitmentUseCase)
+    public HRRecruitmentController(IHRRecruitmentUseCase hrRecruitmentUseCase)
     {
         _hrRecruitmentUseCase = hrRecruitmentUseCase;
     }
 
-    [HttpGet("jobs")]
+    [HttpGet("jobs/application-summary")]
     public async Task<ActionResult<ResponseBase<PageResult<JobItemDto>>>> GetJobs(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
