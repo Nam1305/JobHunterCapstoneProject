@@ -10,4 +10,6 @@ public interface IAdminCompanyUseCase
     Task<CompanyRegistrationDetailDto> GetCompanyRegistration(Guid uid);
 
     Task ApproveCompanyRegistration(Guid uid);
+
+    Task<CompanyTaxCodeInfoDto> CheckTaxCode(string taxCode);
 }

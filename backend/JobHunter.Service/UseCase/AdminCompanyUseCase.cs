@@ -1,6 +1,7 @@
 using JobHunter.Service.DTOs;
 using JobHunter.Service.DTOs.Company;
 using JobHunter.Service.Interface.Persistence;
+using JobHunter.Service.Interface.Service;
 using JobHunter.Service.Interface.UseCase;
 
 namespace JobHunter.Service.UseCase;
@@ -8,10 +9,14 @@ namespace JobHunter.Service.UseCase;
 public class AdminCompanyUseCase : IAdminCompanyUseCase
 {
     private readonly IAdminCompanyRepository _adminCompanyRepository;
+    private readonly IVietQrBusinessService _vietQrBusinessService;
 
-    public AdminCompanyUseCase(IAdminCompanyRepository adminCompanyRepository)
+    public AdminCompanyUseCase(
+        IAdminCompanyRepository adminCompanyRepository,
+        IVietQrBusinessService vietQrBusinessService)
     {
         _adminCompanyRepository = adminCompanyRepository;
+        _vietQrBusinessService = vietQrBusinessService;
     }
 
     public async Task<PageResult<CompanyRegistrationDto>> GetCompanyRegistrations(int page, int limit, string? status)
@@ -76,6 +81,11 @@ public class AdminCompanyUseCase : IAdminCompanyUseCase
         {
             throw new KeyNotFoundException("Company registration not found");
         }
+    }
+
+    public Task<CompanyTaxCodeInfoDto> CheckTaxCode(string taxCode)
+    {
+        return _vietQrBusinessService.GetBusinessByTaxCode(taxCode);
     }
 
     private static bool? ParseCompanyRegistrationStatus(string? status)

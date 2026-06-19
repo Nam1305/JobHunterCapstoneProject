@@ -36,6 +36,10 @@ public static class ServiceCollectionExtensions
 
         // Services
         services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
+        services.AddHttpClient<IVietQrBusinessService, VietQrBusinessService>(client =>
+        {
+            client.BaseAddress = new Uri("https://api.vietqr.io/");
+        });
         services.AddSingleton<IAmazonS3>(_ =>
         {
             var accessKey = GetRequiredConfigValue(configuration, "S3Credential:ACCESS_KEY");

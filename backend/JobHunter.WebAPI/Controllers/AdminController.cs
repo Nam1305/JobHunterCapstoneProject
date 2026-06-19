@@ -41,4 +41,11 @@ public class AdminController : ControllerBase
         await _adminCompanyUseCase.ApproveCompanyRegistration(uid);
         return new ResponseBase<object?>(null);
     }
+
+    [HttpGet("check-tax-code")]
+    public async Task<ActionResult<ResponseBase<CompanyTaxCodeInfoDto>>> CheckTaxCode([FromQuery] string taxCode)
+    {
+        var result = await _adminCompanyUseCase.CheckTaxCode(taxCode);
+        return new ResponseBase<CompanyTaxCodeInfoDto>(result);
+    }
 }
