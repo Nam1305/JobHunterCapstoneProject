@@ -1,0 +1,11 @@
+Dockerfile
+.dockerignore
+.git
+.idea
+.next
+.playwright-mcp
+node_modules
+npm-debug.log*
+.env
+.env.*
+tsconfig.tsbuildinfo

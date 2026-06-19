@@ -52,6 +52,7 @@ namespace JobHunter.WebAPI.Middlewares
             {
                 KeyNotFoundException => ((int)HttpStatusCode.NotFound, ex.Message, "NOT_FOUND"),
                 ArgumentException => ((int)HttpStatusCode.BadRequest, ex.Message, "BAD_REQUEST"),
+                InvalidOperationException => ((int)HttpStatusCode.Conflict, ex.Message, "CONFLICT"),
                 UnauthorizedAccessException => ((int)HttpStatusCode.Unauthorized, ex.Message, "UNAUTHORIZED"),
                 _ => ((int)HttpStatusCode.InternalServerError, "An unexpected error occurred.", "INTERNAL_ERROR")
             };

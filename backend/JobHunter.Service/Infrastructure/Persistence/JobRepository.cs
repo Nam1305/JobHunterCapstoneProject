@@ -1,3 +1,4 @@
+using JobHunter.Domain.Entities;
 using JobHunter.Service.DTOs.HR;
 using JobHunter.Service.Interface.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,110 @@ public class JobRepository : IJobRepository
         _context = context;
     }
 
+    public Task<List<Job>> GetTopJobs(int limit)
+    {
+        return _context.Jobs
+            .AsNoTracking()
+            .Include(j => j.Company)
+            .Include(j => j.Branch)
+            .Include(j => j.JobLevels)
+            .OrderByDescending(j => j.CreatedAt)
+            .Take(limit)
+            .ToListAsync();
+    }
+
+    public async Task<(List<Job> Items, int TotalCount)> GetJobs(
+        string? search,
+        string? location,
+        string? companySlug,
+        List<string> categorySlugs,
+        List<string> subcategorySlugs,
+        List<string> levelSlugs,
+        List<string> workTypes,
+        int page,
+        int pageSize)
+    {
+        var query = _context.Jobs
+            .AsNoTracking()
+            .Include(j => j.Company)
+            .Include(j => j.Branch)
+            .Include(j => j.JobLevels)
+            .Include(j => j.Subcategory)
+                .ThenInclude(s => s != null ? s.Category : null)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+            query = query.Where(j => EF.Functions.ILike(j.Title, $"%{search.Trim()}%"));
+
+        if (!string.IsNullOrWhiteSpace(location))
+            query = query.Where(j => j.Branch != null && EF.Functions.ILike(j.Branch.City, $"%{location.Trim()}%"));
+
+        if (!string.IsNullOrWhiteSpace(companySlug))
+            query = query.Where(j => j.Company.Slug == companySlug);
+
+        if (categorySlugs.Count > 0)
+            query = query.Where(j => j.Subcategory != null && categorySlugs.Contains(j.Subcategory.Category.Slug));
+
+        if (subcategorySlugs.Count > 0)
+            query = query.Where(j => j.Subcategory != null && subcategorySlugs.Contains(j.Subcategory.Slug));
+
+        if (levelSlugs.Count > 0)
+            query = query.Where(j => j.JobLevels.Any(jl => levelSlugs.Contains(jl.Slug)));
+
+        if (workTypes.Count > 0)
+            query = query.Where(j => j.WorkType != null && workTypes.Contains(j.WorkType.ToString()));
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderByDescending(j => j.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
+    }
+
+    public Task<Job?> GetJobBySlug(string slug)
+    {
+        return _context.Jobs
+            .AsNoTracking()
+            .Include(j => j.Company)
+            .Include(j => j.Branch)
+            .Include(j => j.JobLevels)
+            .Include(j => j.Subcategory)
+            .FirstOrDefaultAsync(j => j.Slug == slug);
+    }
+
+    public async Task<JobFilterOptionsData> GetFilterOptions()
+    {
+        var categories = await _context.JobCategories
+            .AsNoTracking()
+            .Include(c => c.JobSubcategories)
+            .OrderBy(c => c.Name)
+            .ToListAsync();
+
+        var levels = await _context.JobLevels
+            .AsNoTracking()
+            .OrderBy(l => l.Title)
+            .ToListAsync();
+
+        var workTypes = await _context.Jobs
+            .AsNoTracking()
+            .Where(j => j.WorkType != null)
+            .Select(j => j.WorkType!.ToString())
+            .Distinct()
+            .ToListAsync();
+
+        var locations = await _context.CompanyBranches
+            .AsNoTracking()
+            .Where(b => b.City != null)
+            .Select(b => b.City!)
+            .Distinct()
+            .OrderBy(c => c)
+            .ToListAsync();
+
+        return new JobFilterOptionsData(categories, levels, workTypes!, locations);
+    }
     public Task<List<JobItemDto>> GetHrJobs(Guid companyId, string? search, string? status, int page, int pageSize)
     {
         var now = DateTimeOffset.UtcNow;
