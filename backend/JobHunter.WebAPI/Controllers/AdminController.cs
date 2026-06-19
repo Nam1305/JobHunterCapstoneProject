@@ -19,12 +19,12 @@ public class AdminController : ControllerBase
     }
 
     [HttpGet("company-registrations")]
-    public async Task<ActionResult<ResponseBase<CompanyRegistrationPageDto>>> GetCompanyRegistrations(
+    public async Task<ActionResult<ResponseBase<PageResult<CompanyRegistrationDto>>>> GetCompanyRegistrations(
         [FromQuery] int page = 1,
         [FromQuery] int limit = 10,
         [FromQuery] string? status = null)
     {
         var result = await _adminCompanyUseCase.GetCompanyRegistrations(page, limit, status);
-        return new ResponseBase<CompanyRegistrationPageDto>(result);
+        return new ResponseBase<PageResult<CompanyRegistrationDto>>(result);
     }
 }

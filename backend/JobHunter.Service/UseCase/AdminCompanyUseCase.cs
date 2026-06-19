@@ -1,3 +1,4 @@
+using JobHunter.Service.DTOs;
 using JobHunter.Service.DTOs.Company;
 using JobHunter.Service.Interface.Persistence;
 using JobHunter.Service.Interface.UseCase;
@@ -13,7 +14,7 @@ public class AdminCompanyUseCase : IAdminCompanyUseCase
         _adminCompanyRepository = adminCompanyRepository;
     }
 
-    public async Task<CompanyRegistrationPageDto> GetCompanyRegistrations(int page, int limit, string? status)
+    public async Task<PageResult<CompanyRegistrationDto>> GetCompanyRegistrations(int page, int limit, string? status)
     {
         if (page < 1) throw new ArgumentException("Page must be greater than 0");
         if (limit < 1) throw new ArgumentException("Limit must be greater than 0");
@@ -21,12 +22,12 @@ public class AdminCompanyUseCase : IAdminCompanyUseCase
         var statusFilter = ParseCompanyRegistrationStatus(status);
         var (items, totalCount) = await _adminCompanyRepository.GetCompanyRegistrationUsers(page, limit, statusFilter);
 
-        return new CompanyRegistrationPageDto
+        return new PageResult<CompanyRegistrationDto>
         {
             Page = page,
-            Limit = limit,
-            Total = totalCount,
-            Data = items.Select(user => new CompanyRegistrationDto
+            PageSize = limit,
+            TotalCount = totalCount,
+            Items = items.Select(user => new CompanyRegistrationDto
             {
                 Id = user.Company!.Id,
                 HrName = user.Name,
