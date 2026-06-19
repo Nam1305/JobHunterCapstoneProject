@@ -12,11 +12,11 @@ namespace JobHunter.WebAPI.Controllers;
 // [Authorize(Roles = "HR")]
 public class HRController : ControllerBase
 {
-    private readonly IHRDashboardUseCase _hrDashboardUseCase;
+    private readonly IHRRecruitmentUseCase _hrRecruitmentUseCase;
 
-    public HRController(IHRDashboardUseCase hrDashboardUseCase)
+    public HRController(IHRRecruitmentUseCase hrRecruitmentUseCase)
     {
-        _hrDashboardUseCase = hrDashboardUseCase;
+        _hrRecruitmentUseCase = hrRecruitmentUseCase;
     }
 
     [HttpGet("jobs")]
@@ -27,7 +27,7 @@ public class HRController : ControllerBase
         [FromQuery] string? status = null)
     {
         var userId = User.GetUserId();
-        var result = await _hrDashboardUseCase.GetJobs(userId, search, status, page, pageSize);
+        var result = await _hrRecruitmentUseCase.GetJobs(userId, search, status, page, pageSize);
         return new ResponseBase<PageResult<JobItemDto>>(result);
     }
 
@@ -39,7 +39,7 @@ public class HRController : ControllerBase
         [FromQuery] string? status = null)
     {
         var userId = User.GetUserId();
-        var result = await _hrDashboardUseCase.GetCandidates(userId, jobId, status, page, pageSize);
+        var result = await _hrRecruitmentUseCase.GetCandidates(userId, jobId, status, page, pageSize);
         return new ResponseBase<PageResult<CandidateDto>>(result);
     }
 
@@ -47,7 +47,7 @@ public class HRController : ControllerBase
     public async Task<ActionResult<ResponseBase<ApplicationDetailDto>>> GetApplicationDetail(Guid applicationId)
     {
         var userId = User.GetUserId();
-        var result = await _hrDashboardUseCase.GetApplicationDetail(userId, applicationId);
+        var result = await _hrRecruitmentUseCase.GetApplicationDetail(userId, applicationId);
         return new ResponseBase<ApplicationDetailDto>(result);
     }
 
@@ -57,7 +57,7 @@ public class HRController : ControllerBase
         [FromBody] UpdateApplicationStatusRequestDto requestDto)
     {
         var userId = User.GetUserId();
-        await _hrDashboardUseCase.UpdateApplicationStatus(userId, applicationId, requestDto.Status);
+        await _hrRecruitmentUseCase.UpdateApplicationStatus(userId, applicationId, requestDto.Status);
         return new ResponseBase<object>(null);
     }
 }

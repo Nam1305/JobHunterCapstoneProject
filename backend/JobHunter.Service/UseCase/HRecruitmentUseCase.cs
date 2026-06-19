@@ -6,13 +6,13 @@ using JobHunter.Service.Interface.UseCase;
 
 namespace JobHunter.Service.UseCase;
 
-public class HRDashboardUseCase : IHRDashboardUseCase
+public class HRRecruitmentUseCase : IHRRecruitmentUseCase
 {
     private readonly IUserRepository _userRepository;
     private readonly IJobRepository _jobRepository;
     private readonly IApplicationRepository _applicationRepository;
 
-    public HRDashboardUseCase(
+    public HRRecruitmentUseCase(
         IUserRepository userRepository,
         IJobRepository jobRepository,
         IApplicationRepository applicationRepository)
