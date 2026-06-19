@@ -35,4 +35,15 @@ public class AdminCompanyRepository : IAdminCompanyRepository
 
         return (items, totalCount);
     }
+
+    public Task<User?> GetCompanyRegistrationUserByCompanyId(Guid companyId)
+    {
+        return _context.Users
+            .AsNoTracking()
+            .Include(user => user.Company)
+            .FirstOrDefaultAsync(user =>
+                user.Role == UserRole.HR &&
+                user.CompanyId == companyId &&
+                user.Company != null);
+    }
 }

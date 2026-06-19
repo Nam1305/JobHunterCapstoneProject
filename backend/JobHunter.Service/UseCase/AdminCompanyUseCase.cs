@@ -41,6 +41,34 @@ public class AdminCompanyUseCase : IAdminCompanyUseCase
         };
     }
 
+    public async Task<CompanyRegistrationDetailDto> GetCompanyRegistration(Guid uid)
+    {
+        var user = await _adminCompanyRepository.GetCompanyRegistrationUserByCompanyId(uid);
+        if (user == null)
+        {
+            throw new KeyNotFoundException("Company registration not found");
+        }
+
+        var company = user.Company!;
+
+        return new CompanyRegistrationDetailDto
+        {
+            Id = company.Id,
+            HrName = user.Name,
+            Phone = user.Phone,
+            Email = user.Email,
+            CompanyName = company.Name,
+            WebsiteUrl = company.WebsiteUrl,
+            TaxCode = company.TaxCode,
+            Status = company.Status ? "approved" : "pending",
+            Country = company.Country,
+            CompanyType = company.CompanyType,
+            TeamSize = company.TeamSize,
+            Overview = company.Overview,
+            CreateAt = company.CreatedAt
+        };
+    }
+
     private static bool? ParseCompanyRegistrationStatus(string? status)
     {
         if (string.IsNullOrWhiteSpace(status))

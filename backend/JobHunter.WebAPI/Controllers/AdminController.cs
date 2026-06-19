@@ -27,4 +27,11 @@ public class AdminController : ControllerBase
         var result = await _adminCompanyUseCase.GetCompanyRegistrations(page, limit, status);
         return new ResponseBase<PageResult<CompanyRegistrationDto>>(result);
     }
+
+    [HttpGet("company-registrations/{uid:guid}")]
+    public async Task<ActionResult<ResponseBase<CompanyRegistrationDetailDto>>> GetCompanyRegistration(Guid uid)
+    {
+        var result = await _adminCompanyUseCase.GetCompanyRegistration(uid);
+        return new ResponseBase<CompanyRegistrationDetailDto>(result);
+    }
 }
