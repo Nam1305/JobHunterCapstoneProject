@@ -13,34 +13,13 @@ import {
   ChevronRightIcon,
   ChevronsLeftIcon,
   ChevronsRightIcon,
-  DownloadIcon,
   EyeIcon,
-  ExternalLinkIcon,
-  FileTextIcon,
-  MailIcon,
-  MessageCircleIcon,
-  PhoneIcon,
-  SparklesIcon,
-  UserIcon,
-  XIcon,
 } from "lucide-react"
 
-import {
-  useHrRecruitmentApplicationDetailQuery,
-  useHrRecruitmentCandidatesQuery,
-} from "@/api/hr-recruitment.api"
+import { useHrRecruitmentCandidatesQuery } from "@/api/hr-recruitment.api"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer"
 import { Label } from "@/components/ui/label"
-import { Progress } from "@/components/ui/progress"
 import {
   Select,
   SelectContent,
@@ -61,6 +40,7 @@ import {
   ApplicationStatus,
   type HrRecruitmentCandidate,
 } from "@/types/hr-recruitment"
+import CandidateDetailDrawer from "./_components/candidate-detail-drawer"
 import CandidateManagementPanel from "./_components/candidate-management-panel"
 
 type CandidateStatusFilter = "all" | ApplicationStatus
@@ -138,233 +118,6 @@ const getCandidateColumns = (
     enableHiding: false,
   },
 ]
-
-const getInitials = (name: string | null | undefined) => {
-  if (!name) {
-    return "UV"
-  }
-
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(-2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase()
-}
-
-function CandidateDetailDrawer({
-  applicationId,
-  open,
-  onOpenChange,
-}: {
-  applicationId: string | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}) {
-  const { data, error, isFetching, isLoading } =
-    useHrRecruitmentApplicationDetailQuery(applicationId ?? "", open)
-
-  const detail = data?.data
-
-  return (
-    <Drawer direction="right" open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="inset-0 h-svh w-screen max-w-none p-0 before:inset-0 before:rounded-none before:border-0 data-[vaul-drawer-direction=right]:w-screen data-[vaul-drawer-direction=right]:sm:max-w-none">
-        <DrawerHeader className="flex-row items-center justify-between border-b px-6 py-4">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
-              {getInitials(detail?.candidateName)}
-            </div>
-            <div className="min-w-0">
-              <DrawerTitle className="truncate">
-                {detail?.candidateName ?? "Chi tiết ứng viên"}
-              </DrawerTitle>
-              <DrawerDescription>
-                Hồ sơ ứng tuyển
-                {detail?.applicationId ? ` · #${detail.applicationId}` : ""}
-              </DrawerDescription>
-            </div>
-          </div>
-          <DrawerClose asChild>
-            <Button variant="outline" size="icon" className="size-10">
-              <XIcon />
-              <span className="sr-only">Đóng</span>
-            </Button>
-          </DrawerClose>
-        </DrawerHeader>
-
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
-          {isLoading || isFetching ? (
-            <div className="flex h-full items-center justify-center text-muted-foreground">
-              Đang tải chi tiết ứng viên...
-            </div>
-          ) : error ? (
-            <div className="flex h-full items-center justify-center text-muted-foreground">
-              {getErrorMessage(error)}
-            </div>
-          ) : detail ? (
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(420px,1fr)]">
-              <div className="space-y-6">
-                <section className="space-y-4">
-                  <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                    Thông tin ứng viên
-                  </h2>
-                  <div className="overflow-hidden rounded-lg border">
-                    <CandidateInfoRow
-                      icon={<UserIcon />}
-                      label="Họ và tên"
-                      value={detail.candidateName ?? "Chưa có"}
-                    />
-                    <CandidateInfoRow
-                      icon={<PhoneIcon />}
-                      label="Số điện thoại"
-                      value={detail.phone ?? "Chưa có"}
-                    />
-                    <CandidateInfoRow
-                      icon={<MailIcon />}
-                      label="Email"
-                      value={detail.email ?? "Chưa có"}
-                    />
-                  </div>
-                </section>
-
-                <section className="space-y-4">
-                  <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                    Đánh giá tham khảo từ AI
-                  </h2>
-                  <div className="rounded-lg border p-5">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <SparklesIcon className="size-4" />
-                        Mức độ phù hợp
-                      </div>
-                      {detail.matchScore !== null ? (
-                        <Badge variant="secondary">Phù hợp</Badge>
-                      ) : null}
-                    </div>
-                    <div className="mt-6 text-4xl font-semibold">
-                      {formatMatchScore(detail.matchScore)}
-                    </div>
-                    <Progress
-                      value={detail.matchScore ?? 0}
-                      className="mt-4"
-                    />
-                    <div className="mt-5 border-t pt-5">
-                      <h3 className="font-semibold">Lý do phù hợp</h3>
-                      <p className="mt-3 leading-7 text-muted-foreground">
-                        {detail.aiSuggestion ?? "Chưa có đánh giá từ AI."}
-                      </p>
-                    </div>
-                  </div>
-                </section>
-
-                <section className="space-y-4">
-                  <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                    Thư giới thiệu
-                  </h2>
-                  <div className="min-h-40 whitespace-pre-line rounded-lg border p-5 leading-7 text-muted-foreground">
-                    {detail.coverLetter ?? "Ứng viên chưa gửi thư giới thiệu."}
-                  </div>
-                </section>
-              </div>
-
-              <section className="space-y-4">
-                <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                  Xem trước CV
-                </h2>
-                <div className="overflow-hidden rounded-lg border">
-                  <div className="flex items-center justify-between gap-3 border-b bg-muted/40 px-4 py-3">
-                    <div className="flex min-w-0 items-center gap-2 text-muted-foreground">
-                      <FileTextIcon className="size-4 shrink-0" />
-                      <span className="truncate">
-                        {detail.fileUrl ? "CV ứng viên" : "Chưa có CV"}
-                      </span>
-                    </div>
-                    {detail.fileUrl ? (
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" asChild>
-                          <a href={detail.fileUrl} download>
-                            <DownloadIcon />
-                            Tải xuống
-                          </a>
-                        </Button>
-                        <Button variant="outline" size="sm" asChild>
-                          <a
-                            href={detail.fileUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            <ExternalLinkIcon />
-                            Mở rộng
-                          </a>
-                        </Button>
-                      </div>
-                    ) : null}
-                  </div>
-                  <div className="h-[68vh] bg-muted/20 p-4">
-                    {detail.fileUrl ? (
-                      <iframe
-                        title="Xem trước CV"
-                        src={detail.fileUrl}
-                        className="h-full w-full rounded-lg border bg-background"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center rounded-lg border bg-background text-muted-foreground">
-                        Không có CV để xem trước.
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </section>
-            </div>
-          ) : (
-            <div className="flex h-full items-center justify-center text-muted-foreground">
-              Chọn một ứng viên để xem chi tiết.
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-center justify-between gap-4 border-t px-6 py-4">
-          <div>
-            <div>Trạng thái hồ sơ</div>
-            <div className="text-muted-foreground">
-              Hiện tại: {detail?.status ?? "Chưa có"}
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline">
-              <MessageCircleIcon />
-              Nhắn tin
-            </Button>
-            <DrawerClose asChild>
-              <Button variant="outline">Đóng</Button>
-            </DrawerClose>
-          </div>
-        </div>
-      </DrawerContent>
-    </Drawer>
-  )
-}
-
-function CandidateInfoRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode
-  label: string
-  value: string
-}) {
-  return (
-    <div className="grid grid-cols-[minmax(0,180px)_minmax(0,1fr)] items-center gap-4 border-b px-5 py-4 last:border-b-0">
-      <div className="flex items-center gap-3 text-muted-foreground">
-        <span className="[&_svg]:size-4">{icon}</span>
-        {label}
-      </div>
-      <div className="truncate text-right text-foreground">{value}</div>
-    </div>
-  )
-}
 
 export default function CandidateManagementPage() {
   const [selectedJobId, setSelectedJobId] = React.useState<string | null>(null)
