@@ -41,7 +41,7 @@ public class AdminCompanyUseCase : IAdminCompanyUseCase
                 CompanyName = user.Company.Name,
                 WebsiteUrl = user.Company.WebsiteUrl,
                 Status = user.Company.Status ? "approved" : "pending",
-                CreateAt = user.Company.CreatedAt
+                CreatedAt = user.Company.CreatedAt
             }).ToList()
         };
     }
@@ -70,7 +70,7 @@ public class AdminCompanyUseCase : IAdminCompanyUseCase
             CompanyType = company.CompanyType,
             TeamSize = company.TeamSize,
             Overview = company.Overview,
-            CreateAt = company.CreatedAt
+            CreatedAt = company.CreatedAt
         };
     }
 

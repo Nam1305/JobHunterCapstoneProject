@@ -28,5 +28,5 @@ public class CompanyRegistrationDetailDto
 
     public string? Overview { get; set; }
 
-    public DateTimeOffset? CreateAt { get; set; }
+    public DateTimeOffset? CreatedAt { get; set; }
 }

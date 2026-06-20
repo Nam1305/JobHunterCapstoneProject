@@ -49,13 +49,13 @@ export const columns: ColumnDef<CompanyRegistrationRequest>[] = [
     accessorKey: "status",
     header: "Trạng thái",
     cell: ({ row }) => {
-      const isApproved = row.original.status === "đã duyệt"
+      const isApproved = row.original.status === "approved" || row.original.status === "đã duyệt"
       return (
         <Badge
           variant={isApproved ? "default" : "outline"}
           className="px-2"
         >
-          {row.original.status}
+          {isApproved ? "Đã duyệt" : "Chờ xét duyệt"}
         </Badge>
       )
     },
@@ -65,7 +65,7 @@ export const columns: ColumnDef<CompanyRegistrationRequest>[] = [
     header: "Hành động",
     cell: ({ row, table }) => {
       const request = row.original
-      const isApproved = request.status === "đã duyệt"
+      const isApproved = request.status === "approved" || request.status === "đã duyệt"
       const meta = table.options.meta as {
         onApprove?: (request: CompanyRegistrationRequest) => void
         onView?: (request: CompanyRegistrationRequest) => void

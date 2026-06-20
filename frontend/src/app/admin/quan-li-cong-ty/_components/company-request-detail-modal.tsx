@@ -15,7 +15,7 @@ import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CompanyRegistrationRequest } from "@/types/company"
-import { useCompanyRegistrationRequestDetails, useCheckTaxCodeMutation } from "@/api/admin-company-registration.api"
+import { useCompanyRegistrationRequestDetails, useCheckTaxCodeMutation } from "@/api/admincompany.api"
 import { toast } from "sonner"
 
 interface CompanyRequestDetailModalProps {
@@ -31,20 +31,22 @@ export function CompanyRequestDetailModal({
   request,
   onApprove,
 }: CompanyRequestDetailModalProps) {
-  const { data: detail, isLoading: loading } = useCompanyRegistrationRequestDetails(
+  const { data: response, isLoading: loading } = useCompanyRegistrationRequestDetails(
     open && request ? request.id : null
   )
+  const detail = response?.data ?? null
 
   const taxMutation = useCheckTaxCodeMutation()
 
   const handleCheckTaxCode = () => {
     if (!detail?.taxCode) return
     taxMutation.mutate(detail.taxCode, {
-      onSuccess: () => {
-        toast.success("Đã lấy thông tin thuế thành công.")
+      onSuccess: (res) => {
+        toast.success(res.message || "Đã lấy thông tin thuế thành công.")
       },
       onError: (err) => {
-        toast.error(err.message || "Không tìm thấy thông tin thuế cho mã số thuế này.")
+        const message = err.response?.data?.message || "Không tìm thấy thông tin thuế cho mã số thuế này."
+        toast.error(message)
       },
     })
   }
@@ -64,7 +66,7 @@ export function CompanyRequestDetailModal({
     }
   }
 
-  const isApproved = request.status === "đã duyệt"
+  const isApproved = request.status === "approved" || request.status === "đã duyệt"
 
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
@@ -86,7 +88,7 @@ export function CompanyRequestDetailModal({
                 variant={isApproved ? "default" : "secondary"}
                 className="px-2.5 py-0.5 rounded-full font-medium"
               >
-                {detail.status === "chờ xét duyệt" ? "Chờ duyệt" : "Đã duyệt"}
+                {detail.status === "approved" || detail.status === "đã duyệt" ? "Đã duyệt" : "Chờ duyệt"}
               </Badge>
             )}
           </div>
@@ -240,7 +242,7 @@ export function CompanyRequestDetailModal({
                       </Button>
                     </div>
 
-                    {taxMutation.data && (
+                    {taxMutation.data?.data && (
                       <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 space-y-2 dark:border-zinc-800 dark:bg-zinc-900/50">
                         <div className="flex justify-between items-center text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
                           <span>Thông tin Tổng cục Thuế</span>
@@ -248,15 +250,15 @@ export function CompanyRequestDetailModal({
                             variant="outline"
                             className="text-[10px] py-0 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900"
                           >
-                            {taxMutation.data.status}
+                            {taxMutation.data.data.status}
                           </Badge>
                         </div>
                         <div className="space-y-1">
                           <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                            {taxMutation.data.name}
+                            {taxMutation.data.data.name}
                           </p>
                           <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                            Địa chỉ: {taxMutation.data.address}
+                            Địa chỉ: {taxMutation.data.data.address}
                           </p>
                         </div>
                       </div>

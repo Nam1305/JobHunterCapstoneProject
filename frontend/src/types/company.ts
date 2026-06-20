@@ -75,16 +75,16 @@ export interface CompanyRegistrationRequest {
   email: string
   companyName: string
   websiteUrl: string
-  status: "chờ xét duyệt" | "đã duyệt"
+  status: string
   createdAt: string
 }
 
 export interface CompanyRegistrationRequestDetail extends CompanyRegistrationRequest {
-  companyType: string
-  country: string
-  teamSize: string
-  overview?: string
-  taxCode?: string
+  taxCode: string | null
+  country: string | null
+  companyType: string | null
+  teamSize: string | null
+  overview: string | null
 }
 
 export interface CompanyTaxInfo {

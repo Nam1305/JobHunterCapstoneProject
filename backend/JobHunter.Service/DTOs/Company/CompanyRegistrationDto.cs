@@ -18,5 +18,5 @@ public class CompanyRegistrationDto
 
     public string Status { get; set; } = null!;
 
-    public DateTimeOffset? CreateAt { get; set; }
+    public DateTimeOffset? CreatedAt { get; set; }
 }
