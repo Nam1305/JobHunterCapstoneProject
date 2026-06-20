@@ -37,6 +37,23 @@ export function CompanyRequestDetailModal({
   const detail = response?.data ?? null
 
   const taxMutation = useCheckTaxCodeMutation()
+  const [cooldownTimeLeft, setCooldownTimeLeft] = React.useState<number>(0)
+
+  React.useEffect(() => {
+    if (cooldownTimeLeft <= 0) return
+
+    const timer = setInterval(() => {
+      setCooldownTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [cooldownTimeLeft])
 
   const handleCheckTaxCode = () => {
     if (!detail?.taxCode) return
@@ -45,11 +62,22 @@ export function CompanyRequestDetailModal({
         toast.success(res.message || "Đã lấy thông tin thuế thành công.")
       },
       onError: (err) => {
+        const isRateLimit =
+          err.response?.status === 429 ||
+          err.response?.data?.errorCode === "TOO_MANY_REQUESTS"
+        if (isRateLimit) {
+          setCooldownTimeLeft(10)
+        }
         const message = err.response?.data?.message || "Không tìm thấy thông tin thuế cho mã số thuế này."
         toast.error(message)
       },
     })
   }
+
+  const isRateLimitError =
+    taxMutation.isError &&
+    (taxMutation.error?.response?.status === 429 ||
+      taxMutation.error?.response?.data?.errorCode === "TOO_MANY_REQUESTS")
 
   if (!request) return null
 
@@ -71,6 +99,7 @@ export function CompanyRequestDetailModal({
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
       taxMutation.reset()
+      setCooldownTimeLeft(0)
     }
     onOpenChange(isOpen)
   }
@@ -224,11 +253,21 @@ export function CompanyRequestDetailModal({
                         type="button"
                         variant="outline"
                         size="sm"
-                        disabled={taxMutation.isPending}
+                        disabled={
+                          taxMutation.isPending ||
+                          taxMutation.isSuccess ||
+                          (taxMutation.isError && !isRateLimitError) ||
+                          cooldownTimeLeft > 0
+                        }
                         onClick={handleCheckTaxCode}
                         className="h-7 px-2.5 text-xs text-zinc-600 hover:text-zinc-900 border-zinc-200 dark:border-zinc-800"
                       >
-                        {taxMutation.isPending ? (
+                        {cooldownTimeLeft > 0 ? (
+                          <>
+                            <Loader2Icon className="mr-1 h-3.5 w-3.5 animate-spin text-zinc-400" />
+                            Thử lại sau {cooldownTimeLeft}s
+                          </>
+                        ) : taxMutation.isPending ? (
                           <>
                             <Loader2Icon className="mr-1 h-3.5 w-3.5 animate-spin" />
                             Đang tra cứu...
