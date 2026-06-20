@@ -12,5 +12,6 @@ public interface IApplicationRepository
     Task<Guid?> GetJobIdByApplication(Guid applicationId);
     Task UpdateApplicationStatus(Guid applicationId, ApplicationStatus status);
     Task<bool> HasApplied(Guid userId, Guid jobId);
+    Task<Application?> GetApplicationByCandidateAndJob(Guid userId, Guid jobId);
     Task<Application> AddApplication(Application application);
 }

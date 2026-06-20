@@ -92,6 +92,16 @@ public class ApplicationRepository : IApplicationRepository
             .AnyAsync(a => a.JobId == jobId && a.Resume != null && a.Resume.UserId == userId);
     }
 
+    public Task<Application?> GetApplicationByCandidateAndJob(Guid userId, Guid jobId)
+    {
+        return _context.Applications
+            .AsNoTracking()
+            .Include(a => a.Resume)
+            .Where(a => a.JobId == jobId && a.Resume != null && a.Resume.UserId == userId)
+            .OrderByDescending(a => a.AppliedAt)
+            .FirstOrDefaultAsync();
+    }
+
     public async Task<Application> AddApplication(Application application)
     {
         await _context.Applications.AddAsync(application);

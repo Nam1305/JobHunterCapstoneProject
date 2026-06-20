@@ -65,4 +65,13 @@ public class CandidateController : ControllerBase
         var result = await _candidateResumeUseCase.ApplyJob(userId, request);
         return new ResponseBase<ApplicationResultDto>(result);
     }
+
+    //Check status job application, apply or not ?
+    [HttpGet("applications/{jobId:guid}/status")]
+    public async Task<ActionResult<ResponseBase<JobApplicationStatusDto>>> GetApplicationStatus(Guid jobId)
+    {
+        var userId = User.GetUserId();
+        var result = await _candidateResumeUseCase.GetApplicationStatus(userId, jobId);
+        return new ResponseBase<JobApplicationStatusDto>(result);
+    }
 }

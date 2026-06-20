@@ -116,4 +116,29 @@ public class CandidateResumeUseCase : ICandidateResumeUseCase
         var saved = await _applicationRepository.AddApplication(application);
         return ApplicationResultDto.From(saved);
     }
+
+    public async Task<JobApplicationStatusDto> GetApplicationStatus(Guid userId, Guid jobId)
+    {
+        var jobExists = await _jobRepository.IsJobExists(jobId);
+        if (!jobExists)
+            throw new KeyNotFoundException("Không tìm thấy công việc");
+
+        var application = await _applicationRepository.GetApplicationByCandidateAndJob(userId, jobId);
+        if (application == null)
+        {
+            return new JobApplicationStatusDto
+            {
+                Status = "NotApplied",
+                CVAppliedURL = string.Empty,
+                AppliedAt = null
+            };
+        }
+
+        return new JobApplicationStatusDto
+        {
+            Status = application.Status?.ToString() ?? string.Empty,
+            CVAppliedURL = application.Resume?.FileUrl ?? string.Empty,
+            AppliedAt = application.AppliedAt
+        };
+    }
 }

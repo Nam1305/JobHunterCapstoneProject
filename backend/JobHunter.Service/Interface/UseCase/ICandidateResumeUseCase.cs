@@ -10,4 +10,5 @@ public interface ICandidateResumeUseCase
     Task<ResumeDto> ToggleLookingForJobStatus(Guid userId, Guid resumeId, bool isLookingForJob);
     Task DeleteResume(Guid userId, Guid resumeId);
     Task<ApplicationResultDto> ApplyJob(Guid userId, ApplyJobRequestDto request);
+    Task<JobApplicationStatusDto> GetApplicationStatus(Guid userId, Guid jobId);
 }
