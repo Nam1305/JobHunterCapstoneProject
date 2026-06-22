@@ -3,15 +3,21 @@
 import * as React from "react"
 import {
   MailIcon,
-  MessageCircleIcon,
   PhoneIcon,
+  SaveIcon,
   SparklesIcon,
   UserIcon,
   XIcon,
 } from "lucide-react"
 import dynamic from "next/dynamic"
+import { useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 
-import { useHrRecruitmentApplicationDetailQuery } from "@/api/hr-recruitment.api"
+import {
+  hrRecruitmentQueryKeys,
+  useHrRecruitmentApplicationDetailQuery,
+  useUpdateApplicationStatusMutation,
+} from "@/api/hr-recruitment.api"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -27,6 +33,18 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import type { ResponseEntity } from "@/types/base"
+import {
+  ApplicationStatus,
+  type HrRecruitmentApplicationDetail,
+} from "@/types/hr-recruitment"
 
 const CandidatePdfPreview = dynamic(
   () => import("./candidate-pdf-preview"),
@@ -82,6 +100,15 @@ const getInitials = (name: string | null | undefined) => {
     .toUpperCase()
 }
 
+const statusOptions = [
+  { label: "Đang chờ", value: ApplicationStatus.Pending },
+  { label: "Đã từ chối", value: ApplicationStatus.Rejected },
+  { label: "Đã chấp nhận", value: ApplicationStatus.Accepted },
+] as const
+
+const getStatusLabel = (status: ApplicationStatus | null | undefined) =>
+  statusOptions.find((option) => option.value === status)?.label ?? "Chưa có"
+
 function CandidateInfoRow({
   icon,
   label,
@@ -107,11 +134,93 @@ export default function CandidateDetailDrawer({
   open,
   onOpenChange,
 }: CandidateDetailDrawerProps) {
+  const queryClient = useQueryClient()
   const { data, error, isFetching, isLoading } =
     useHrRecruitmentApplicationDetailQuery(applicationId ?? "", open)
+  const updateStatusMutation = useUpdateApplicationStatusMutation()
 
   const detail = data?.data
+  const [draftStatusState, setDraftStatusState] = React.useState<{
+    applicationId: string
+    status: ApplicationStatus
+  } | null>(null)
+  const hasMatchingDraftStatus =
+    draftStatusState !== null &&
+    draftStatusState.applicationId === detail?.applicationId
+  const draftStatus = hasMatchingDraftStatus
+    ? draftStatusState.status
+    : (detail?.status ?? undefined)
+  const hasStatusChange =
+    Boolean(detail && draftStatus) && draftStatus !== detail?.status
+
   const handleClose = () => onOpenChange(false)
+  const handleStatusChange = (status: string) => {
+    if (!detail) {
+      return
+    }
+
+    setDraftStatusState({
+      applicationId: detail.applicationId,
+      status: status as ApplicationStatus,
+    })
+  }
+  const handleSaveStatus = async () => {
+    if (!detail || !draftStatus || draftStatus === detail.status) {
+      return
+    }
+
+    const detailQueryKey = hrRecruitmentQueryKeys.applicationDetail(
+      detail.applicationId
+    )
+    await queryClient.cancelQueries({ queryKey: detailQueryKey })
+
+    const previousDetail = queryClient.getQueryData<
+      ResponseEntity<HrRecruitmentApplicationDetail>
+    >(detailQueryKey)
+
+    queryClient.setQueryData<ResponseEntity<HrRecruitmentApplicationDetail>>(
+      detailQueryKey,
+      (current) =>
+        current?.data
+          ? {
+              ...current,
+              data: {
+                ...current.data,
+                status: draftStatus,
+              },
+            }
+          : current
+    )
+
+    updateStatusMutation.mutate(
+      {
+        applicationId: detail.applicationId,
+        payload: { status: draftStatus },
+      },
+      {
+        onSuccess: (response) => {
+          toast.success(response.message || "Cập nhật trạng thái thành công")
+        },
+        onError: (mutationError) => {
+          queryClient.setQueryData(detailQueryKey, previousDetail)
+          setDraftStatusState(
+            previousDetail?.data?.status
+              ? {
+                  applicationId: detail.applicationId,
+                  status: previousDetail.data.status,
+                }
+              : null
+          )
+          toast.error(getErrorMessage(mutationError))
+        },
+        onSettled: () => {
+          queryClient.invalidateQueries({
+            queryKey: hrRecruitmentQueryKeys.all,
+          })
+        },
+      }
+    )
+  }
 
   return (
     <Drawer
@@ -148,7 +257,7 @@ export default function CandidateDetailDrawer({
         </DrawerHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
-          {isLoading || isFetching ? (
+          {(isLoading || isFetching) && !detail ? (
             <div className="flex h-full items-center justify-center text-muted-foreground">
               Đang tải chi tiết ứng viên...
             </div>
@@ -223,9 +332,16 @@ export default function CandidateDetailDrawer({
                     <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                       Thư giới thiệu
                     </h2>
-                    <div className="min-h-40 whitespace-pre-line rounded-lg border p-5 leading-7 text-muted-foreground">
-                      {detail.coverLetter ?? "Ứng viên chưa gửi thư giới thiệu."}
-                    </div>
+                    {detail.coverLetter ? (
+                      <div
+                        className="min-h-40 rounded-lg border p-5 leading-7 text-muted-foreground [&_a]:text-primary [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-3 [&_p:last-child]:mb-0 [&_strong]:text-foreground [&_ul]:list-disc [&_ul]:pl-5"
+                        dangerouslySetInnerHTML={{ __html: detail.coverLetter }}
+                      />
+                    ) : (
+                      <div className="min-h-40 rounded-lg border p-5 leading-7 text-muted-foreground">
+                        Ứng viên chưa gửi thư giới thiệu.
+                      </div>
+                    )}
                   </section>
                 </div>
               </ResizablePanel>
@@ -270,13 +386,32 @@ export default function CandidateDetailDrawer({
           <div>
             <div>Trạng thái hồ sơ</div>
             <div className="text-muted-foreground">
-              Hiện tại: {detail?.status ?? "Chưa có"}
+              Hiện tại: {getStatusLabel(detail?.status)}
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline">
-              <MessageCircleIcon />
-              Nhắn tin
+            <Select
+              value={draftStatus}
+              onValueChange={handleStatusChange}
+              disabled={!detail || updateStatusMutation.isPending}
+            >
+              <SelectTrigger className="w-44">
+                <SelectValue placeholder="Chọn trạng thái" />
+              </SelectTrigger>
+              <SelectContent align="end">
+                {statusOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              onClick={handleSaveStatus}
+              disabled={!hasStatusChange || updateStatusMutation.isPending}
+            >
+              <SaveIcon />
+              Lưu thay đổi
             </Button>
             <Button variant="outline" onClick={handleClose}>
               Đóng

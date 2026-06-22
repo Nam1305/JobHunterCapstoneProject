@@ -35,15 +35,20 @@ interface CandidatePdfPreviewProps {
 const MIN_ZOOM = 0.75
 const MAX_ZOOM = 1.75
 const ZOOM_STEP = 0.25
+const WIDTH_CHANGE_THRESHOLD = 4
 
 export default function CandidatePdfPreview({
   fileUrl,
 }: CandidatePdfPreviewProps) {
   const containerRef = React.useRef<HTMLDivElement>(null)
+  const animationFrameRef = React.useRef<number | null>(null)
+  const latestObservedWidthRef = React.useRef(0)
+  const lastAppliedWidthRef = React.useRef(0)
   const [containerWidth, setContainerWidth] = React.useState(0)
   const [numPages, setNumPages] = React.useState(0)
   const [pageNumber, setPageNumber] = React.useState(1)
   const [zoom, setZoom] = React.useState(1)
+  const deferredContainerWidth = React.useDeferredValue(containerWidth)
 
   React.useEffect(() => {
     const container = containerRef.current
@@ -53,12 +58,43 @@ export default function CandidatePdfPreview({
     }
 
     const observer = new ResizeObserver(([entry]) => {
-      setContainerWidth(entry.contentRect.width)
+      latestObservedWidthRef.current = Math.round(entry.contentRect.width)
+
+      if (animationFrameRef.current !== null) {
+        return
+      }
+
+      animationFrameRef.current = window.requestAnimationFrame(() => {
+        animationFrameRef.current = null
+
+        const nextWidth = latestObservedWidthRef.current
+
+        if (nextWidth <= 0) {
+          return
+        }
+
+        if (
+          lastAppliedWidthRef.current > 0 &&
+          Math.abs(nextWidth - lastAppliedWidthRef.current) <
+            WIDTH_CHANGE_THRESHOLD
+        ) {
+          return
+        }
+
+        lastAppliedWidthRef.current = nextWidth
+        setContainerWidth(nextWidth)
+      })
     })
 
     observer.observe(container)
 
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+
+      if (animationFrameRef.current !== null) {
+        window.cancelAnimationFrame(animationFrameRef.current)
+      }
+    }
   }, [])
 
   const handleLoadSuccess = ({ numPages }: PDFDocumentProxy) => {
@@ -85,6 +121,7 @@ export default function CandidatePdfPreview({
   const isCompactToolbar = containerWidth > 0 && containerWidth < 640
   const currentPageLabel = `Trang ${numPages ? pageNumber : "-"} / ${numPages || "-"}`
   const zoomLabel = `${Math.round(zoom * 100)}%`
+  const pageWidth = deferredContainerWidth || 640
 
   return (
     <div className="bg-background">
@@ -237,7 +274,7 @@ export default function CandidatePdfPreview({
         >
           <Page
             pageNumber={pageNumber}
-            width={containerWidth || 640}
+            width={pageWidth}
             scale={zoom}
             renderAnnotationLayer={false}
             renderTextLayer={false}

@@ -14,6 +14,7 @@ import { AxiosError } from "axios";
 type ApiError = AxiosError<ResponseEntity<null>>;
 
 export const hrRecruitmentQueryKeys = {
+  all: ["hrRecruitment"] as const,
   jobs: (params: HrRecruitmentJobsParams) =>
     ["hrRecruitment", "jobs", params] as const,
   candidates: (params: HrRecruitmentCandidatesParams) =>
