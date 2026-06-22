@@ -109,6 +109,9 @@ const statusOptions = [
 const getStatusLabel = (status: ApplicationStatus | null | undefined) =>
   statusOptions.find((option) => option.value === status)?.label ?? "Chưa có"
 
+const isFinalStatus = (status: ApplicationStatus | null | undefined) =>
+  status === ApplicationStatus.Accepted || status === ApplicationStatus.Rejected
+
 function CandidateInfoRow({
   icon,
   label,
@@ -156,6 +159,10 @@ export default function CandidateDetailDrawer({
   const handleClose = () => onOpenChange(false)
   const handleStatusChange = (status: string) => {
     if (!detail) {
+      return
+    }
+
+    if (isFinalStatus(detail.status) && status === ApplicationStatus.Pending) {
       return
     }
 
@@ -400,7 +407,14 @@ export default function CandidateDetailDrawer({
               </SelectTrigger>
               <SelectContent align="end">
                 {statusOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    disabled={
+                      option.value === ApplicationStatus.Pending &&
+                      isFinalStatus(detail?.status)
+                    }
+                  >
                     {option.label}
                   </SelectItem>
                 ))}
