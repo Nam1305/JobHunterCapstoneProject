@@ -1,4 +1,5 @@
 using JobHunter.Domain.Entities;
+using JobHunter.Service.DTOs.HR;
 
 namespace JobHunter.Service.Interface.Persistence;
 
@@ -17,6 +18,11 @@ public interface IJobRepository
         int pageSize);
     Task<Job?> GetJobBySlug(string slug);
     Task<JobFilterOptionsData> GetFilterOptions();
+    Task<List<JobItemDto>> GetHrJobs(Guid companyId, string? search, string? status, int page, int pageSize);
+    Task<int> CountHrJobs(Guid companyId, string? search, string? status);
+    Task<bool> IsJobOwnedByCompany(Guid jobId, Guid companyId);
+    Task<Guid?> GetJobIdBySlug(string slug);
+    Task<bool> IsJobExists(Guid jobId);
 }
 
 public record JobFilterOptionsData(
@@ -24,3 +30,4 @@ public record JobFilterOptionsData(
     List<JobLevel> Levels,
     List<string> WorkTypes,
     List<string> Locations);
+

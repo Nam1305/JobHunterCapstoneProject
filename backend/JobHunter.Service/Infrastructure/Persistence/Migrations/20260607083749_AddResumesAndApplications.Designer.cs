@@ -4,6 +4,7 @@ using System.Text.Json;
 using JobHunter.Service.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pgvector;
@@ -13,9 +14,11 @@ using Pgvector;
 namespace JobHunter.Service.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(JobhunterContext))]
-    partial class JobhunterContextModelSnapshot : ModelSnapshot
+    [Migration("20260607083749_AddResumesAndApplications")]
+    partial class AddResumesAndApplications
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,12 +58,6 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("created_by");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("email");
-
                     b.Property<Guid>("JobId")
                         .HasColumnType("uuid")
                         .HasColumnName("job_id");
@@ -68,18 +65,6 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                     b.Property<decimal?>("MatchScore")
                         .HasColumnType("numeric")
                         .HasColumnName("match_score");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("name");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("phone");
 
                     b.Property<Guid?>("ResumeId")
                         .HasColumnType("uuid")
@@ -552,10 +537,6 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text")
                         .HasColumnName("created_by");
-
-                    b.Property<string>("FileName")
-                        .HasColumnType("text")
-                        .HasColumnName("file_name");
 
                     b.Property<string>("FileUrl")
                         .HasColumnType("text")

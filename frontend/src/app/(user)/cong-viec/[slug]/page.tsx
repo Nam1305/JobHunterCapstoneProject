@@ -15,6 +15,7 @@ import {
 import Link from "next/link"
 import { Suspense } from "react"
 
+import { ApplyJobButton } from "@/components/application/apply-job-button"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -342,10 +343,17 @@ function JobHeaderCard({ job }: { job: JobDetails }) {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <Button size="lg">
+          <ApplyJobButton
+            size="lg"
+            job={{
+              id: job.id,
+              title: job.title ?? "Chưa cập nhật tiêu đề",
+              companyName: job.companyName,
+            }}
+          >
             <Send />
             Ứng tuyển ngay
-          </Button>
+          </ApplyJobButton>
           <Button size="lg" variant="outline">
             <Heart />
             Lưu công việc
@@ -641,12 +649,25 @@ function SimilarJobRow({ job }: { job: JobCard }) {
           <Button aria-label="Lưu công việc" size="icon-sm" variant="ghost">
             <Heart />
           </Button>
-          <Button size="sm">Ứng tuyển</Button>
+          <ApplyJobButton
+            size="sm"
+            job={{
+              id: job.id,
+              title: job.title ?? "Chưa cập nhật tiêu đề",
+              companyName: job.companyName,
+            }}
+          />
         </div>
 
-        <Button className="w-full sm:hidden" size="sm">
-          Ứng tuyển
-        </Button>
+        <ApplyJobButton
+          className="w-full sm:hidden"
+          size="sm"
+          job={{
+            id: job.id,
+            title: job.title ?? "Chưa cập nhật tiêu đề",
+            companyName: job.companyName,
+          }}
+        />
       </div>
     </div>
   )

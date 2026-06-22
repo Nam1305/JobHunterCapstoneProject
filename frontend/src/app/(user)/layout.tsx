@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { LoginModalButton } from "@/components/auth/login-modal-button"
 import { UserContainer } from "@/components/user/user-container"
 import { ThemeToggle } from "@/providers/theme-provider"
+import { AuthModalRoot } from "@/components/auth/auth-modal-root"
+import { ApplicationModalRoot } from "@/components/application/application-modal-root"
 
 const navItems = [
   { href: "/", label: "Trang chủ", icon: Home },
@@ -49,7 +51,11 @@ export default function UserLayout({
         </UserContainer>
       </header>
 
-      <main>{children}</main>
+      <main>
+        {children}
+        <AuthModalRoot />
+        <ApplicationModalRoot />
+      </main>
 
       <footer className="border-t bg-muted/30">
         <UserContainer className="flex flex-col gap-3 py-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">

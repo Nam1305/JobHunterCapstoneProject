@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 
+import { ApplyJobButton } from "@/components/application/apply-job-button"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -339,7 +340,14 @@ export default async function UserHomePage() {
                         >
                           <Heart />
                         </Button>
-                        <Button className="relative z-10">Ứng tuyển</Button>
+                        <ApplyJobButton
+                          className="relative z-10"
+                          job={{
+                            id: job.id,
+                            title: job.title ?? "Chưa cập nhật tiêu đề",
+                            companyName: job.companyName,
+                          }}
+                        />
                       </div>
                     </div>
                   </CardContent>
