@@ -82,8 +82,12 @@ export function useApproveRegistrationMutation() {
   });
 }
 
-export function useCheckTaxCodeMutation() {
-  return useMutation<ResponseEntity<CompanyTaxInfo>, ApiError, string>({
-    mutationFn: (taxCode) => adminCompanyRegistrationApi.checkTaxCode(taxCode),
+export function useCheckTaxCodeQuery(taxCode: string | null) {
+  return useQuery<ResponseEntity<CompanyTaxInfo>, ApiError>({
+    queryKey: ["admin", "check-tax-code", taxCode],
+    queryFn: () => adminCompanyRegistrationApi.checkTaxCode(taxCode!),
+    enabled: !!taxCode,
+    staleTime: 10 * 60 * 1000,
+    retry: false,
   });
 }

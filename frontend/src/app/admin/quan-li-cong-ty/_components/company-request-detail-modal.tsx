@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { CheckIcon, ExternalLinkIcon, SearchIcon, Loader2Icon } from "lucide-react"
+import { CheckIcon, ExternalLinkIcon, Loader2Icon, AlertCircleIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -15,7 +15,7 @@ import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CompanyRegistrationRequest } from "@/types/company"
-import { useCompanyRegistrationRequestDetails, useCheckTaxCodeMutation } from "@/api/admincompany.api"
+import { useCompanyRegistrationRequestDetails, useCheckTaxCodeQuery } from "@/api/admincompany.api"
 import { toast } from "sonner"
 
 interface CompanyRequestDetailModalProps {
@@ -36,48 +36,17 @@ export function CompanyRequestDetailModal({
   )
   const detail = response?.data ?? null
 
-  const taxMutation = useCheckTaxCodeMutation()
-  const [cooldownTimeLeft, setCooldownTimeLeft] = React.useState<number>(0)
+  const taxCode = open && detail?.taxCode ? detail.taxCode : null
+  const taxQuery = useCheckTaxCodeQuery(taxCode)
 
   React.useEffect(() => {
-    if (cooldownTimeLeft <= 0) return
-
-    const timer = setInterval(() => {
-      setCooldownTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer)
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-
-    return () => clearInterval(timer)
-  }, [cooldownTimeLeft])
-
-  const handleCheckTaxCode = () => {
-    if (!detail?.taxCode) return
-    taxMutation.mutate(detail.taxCode, {
-      onSuccess: (res) => {
-        toast.success(res.message || "Đã lấy thông tin thuế thành công.")
-      },
-      onError: (err) => {
-        const isRateLimit =
-          err.response?.status === 429 ||
-          err.response?.data?.errorCode === "TOO_MANY_REQUESTS"
-        if (isRateLimit) {
-          setCooldownTimeLeft(10)
-        }
-        const message = err.response?.data?.message || "Không tìm thấy thông tin thuế cho mã số thuế này."
-        toast.error(message)
-      },
-    })
-  }
-
-  const isRateLimitError =
-    taxMutation.isError &&
-    (taxMutation.error?.response?.status === 429 ||
-      taxMutation.error?.response?.data?.errorCode === "TOO_MANY_REQUESTS")
+    if (taxQuery.isError) {
+      const message =
+        taxQuery.error?.response?.data?.message ||
+        "Không tìm thấy thông tin thuế cho mã số thuế này."
+      toast.error(message)
+    }
+  }, [taxQuery.isError, taxQuery.error])
 
   if (!request) return null
 
@@ -96,16 +65,8 @@ export function CompanyRequestDetailModal({
 
   const isApproved = request.status === "approved" || request.status === "đã duyệt"
 
-  const handleOpenChange = (isOpen: boolean) => {
-    if (!isOpen) {
-      taxMutation.reset()
-      setCooldownTimeLeft(0)
-    }
-    onOpenChange(isOpen)
-  }
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl gap-0 p-0">
         <DialogHeader className="flex-row items-center justify-between p-6 pb-4">
           <div className="flex items-center gap-3">
@@ -249,39 +210,21 @@ export function CompanyRequestDetailModal({
                       <span className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">
                         {detail.taxCode}
                       </span>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={
-                          taxMutation.isPending ||
-                          taxMutation.isSuccess ||
-                          (taxMutation.isError && !isRateLimitError) ||
-                          cooldownTimeLeft > 0
-                        }
-                        onClick={handleCheckTaxCode}
-                        className="h-7 px-2.5 text-xs text-zinc-600 hover:text-zinc-900 border-zinc-200 dark:border-zinc-800"
-                      >
-                        {cooldownTimeLeft > 0 ? (
-                          <>
-                            <Loader2Icon className="mr-1 h-3.5 w-3.5 animate-spin text-zinc-400" />
-                            Thử lại sau {cooldownTimeLeft}s
-                          </>
-                        ) : taxMutation.isPending ? (
-                          <>
-                            <Loader2Icon className="mr-1 h-3.5 w-3.5 animate-spin" />
-                            Đang tra cứu...
-                          </>
-                        ) : (
-                          <>
-                            <SearchIcon className="mr-1 h-3.5 w-3.5" />
-                            Kiểm tra thông tin thuế
-                          </>
-                        )}
-                      </Button>
+                      {taxQuery.isLoading && (
+                        <Loader2Icon className="h-3.5 w-3.5 animate-spin text-zinc-400" />
+                      )}
                     </div>
 
-                    {taxMutation.data?.data && (
+                    {taxQuery.isError && (
+                      <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 dark:border-red-900 dark:bg-red-950/20">
+                        <AlertCircleIcon className="h-4 w-4 text-red-500 shrink-0" />
+                        <span className="text-xs text-red-600 dark:text-red-400">
+                          Không thể tra cứu thông tin thuế.
+                        </span>
+                      </div>
+                    )}
+
+                    {taxQuery.data?.data && (
                       <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 space-y-2 dark:border-zinc-800 dark:bg-zinc-900/50">
                         <div className="flex justify-between items-center text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
                           <span>Thông tin Tổng cục Thuế</span>
@@ -289,15 +232,15 @@ export function CompanyRequestDetailModal({
                             variant="outline"
                             className="text-[10px] py-0 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900"
                           >
-                            {taxMutation.data.data.status}
+                            {taxQuery.data.data.status}
                           </Badge>
                         </div>
                         <div className="space-y-1">
                           <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                            {taxMutation.data.data.name}
+                            {taxQuery.data.data.name}
                           </p>
                           <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                            Địa chỉ: {taxMutation.data.data.address}
+                            Địa chỉ: {taxQuery.data.data.address}
                           </p>
                         </div>
                       </div>
