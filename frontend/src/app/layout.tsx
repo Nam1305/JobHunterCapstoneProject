@@ -9,10 +9,8 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils";
 import { StoreProvider } from "@/providers/store-provider";
 import { QueryProvider } from "@/providers/query-provider";
-import { AuthModalRoot } from "@/components/auth/auth-modal-root";
 import { Toaster } from "@/components/ui/sonner";
 import { GoogleOAuthProvider } from '@react-oauth/google'
-
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
@@ -39,7 +37,6 @@ export default function RootLayout({
               <ThemeProvider>
                 <TooltipProvider>
                   {children}
-                  <AuthModalRoot />
                   <Toaster position="bottom-right" richColors />
                 </TooltipProvider>
               </ThemeProvider>

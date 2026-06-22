@@ -4,6 +4,7 @@ using System.Text.Json;
 using JobHunter.Service.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pgvector;
@@ -13,9 +14,11 @@ using Pgvector;
 namespace JobHunter.Service.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(JobhunterContext))]
-    partial class JobhunterContextModelSnapshot : ModelSnapshot
+    [Migration("20260618034712_AddContactFieldsToApplications")]
+    partial class AddContactFieldsToApplications
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -159,16 +162,6 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                     b.Property<string>("Slug")
                         .HasColumnType("text")
                         .HasColumnName("slug");
-
-                    b.Property<bool>("Status")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("status");
-
-                    b.Property<string>("TaxCode")
-                        .HasColumnType("text")
-                        .HasColumnName("tax_code");
 
                     b.Property<JsonDocument>("TeamPhotoUrls")
                         .HasColumnType("jsonb")

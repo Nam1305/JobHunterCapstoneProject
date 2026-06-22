@@ -1,8 +1,8 @@
 import { BriefcaseIcon, Clock3, MapPin } from "lucide-react"
 import Link from "next/link"
 
+import { ApplyJobButton } from "@/components/application/apply-job-button"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { getImageUrl } from "@/lib/utils"
 import type { JobDetails } from "@/types/job"
@@ -105,7 +105,16 @@ export function SelectedJobDetail({ job }: { job: JobDetails | null }) {
                     </Badge>
                   ))}
                 </div>
-                <Button className="w-full sm:w-auto">Ứng tuyển ngay</Button>
+                <ApplyJobButton
+                  className="w-full sm:w-auto"
+                  job={{
+                    id: job.id,
+                    title: job.title ?? "Chưa cập nhật tiêu đề",
+                    companyName: job.companyName,
+                  }}
+                >
+                  Ứng tuyển ngay
+                </ApplyJobButton>
               </div>
             </div>
           </div>

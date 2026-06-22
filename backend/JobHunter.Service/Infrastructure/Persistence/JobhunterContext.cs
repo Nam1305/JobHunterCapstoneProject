@@ -31,8 +31,14 @@ public partial class JobhunterContext : DbContext
 
     public virtual DbSet<Job> Jobs { get; set; }
 
+    public virtual DbSet<Resume> Resumes { get; set; }
+
+    public virtual DbSet<Application> Applications { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasPostgresExtension("vector");
+
         modelBuilder.Entity<Company>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("companies_pkey");
@@ -321,6 +327,82 @@ public partial class JobhunterContext : DbContext
             entity.HasOne(d => d.Company).WithMany(p => p.Users)
                 .HasForeignKey(d => d.CompanyId)
                 .HasConstraintName("users_company_id_fkey");
+        });
+
+        modelBuilder.Entity<Resume>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("resumes_pkey");
+
+            entity.ToTable("resumes");
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+            entity.Property(e => e.FileName).HasColumnName("file_name");
+            entity.Property(e => e.FileUrl).HasColumnName("file_url");
+            entity.Property(e => e.IsPublic).HasColumnName("is_public");
+            entity.Property(e => e.ResumeEmbedding)
+                .HasColumnType("vector")
+                .HasColumnName("resume_embedding");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Resumes)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("resumes_user_id_fkey");
+        });
+
+        modelBuilder.Entity<Application>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("applications_pkey");
+
+            entity.ToTable("applications");
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("id");
+            entity.Property(e => e.AiSuggestion).HasColumnName("ai_suggestion");
+            entity.Property(e => e.AppliedAt).HasColumnName("applied_at");
+            entity.Property(e => e.CoverLetter).HasColumnName("cover_letter");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+            entity.Property(e => e.Email)
+                .HasMaxLength(255)
+                .HasColumnName("email");
+            entity.Property(e => e.JobId).HasColumnName("job_id");
+            entity.Property(e => e.MatchScore).HasColumnName("match_score");
+            entity.Property(e => e.Name)
+                .HasMaxLength(255)
+                .HasColumnName("name");
+            entity.Property(e => e.Phone)
+                .HasMaxLength(20)
+                .HasColumnName("phone");
+            entity.Property(e => e.ResumeId).HasColumnName("resume_id");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .HasConversion<string>()
+                .HasColumnName("status");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+
+            entity.HasOne(d => d.Job).WithMany(p => p.Applications)
+                .HasForeignKey(d => d.JobId)
+                .HasConstraintName("applications_job_id_fkey");
+
+            entity.HasOne(d => d.Resume).WithMany(p => p.Applications)
+                .HasForeignKey(d => d.ResumeId)
+                .HasConstraintName("applications_resume_id_fkey");
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -12,7 +12,7 @@ builder.Services.AddTransient<ExceptionMiddleware>();
 builder.Services.AddCorsConfig(builder.Configuration);
 builder.Services.AddJwtConfig(builder.Configuration);
 builder.Services.AddDbContext<JobhunterContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), x => x.UseVector()));
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
