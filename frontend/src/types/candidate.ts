@@ -30,3 +30,9 @@ export interface ApplicationResult {
   status: string | null;
   appliedAt: string | null;
 }
+
+export interface JobApplicationStatus {
+  status: string;
+  cvAppliedUrl: string;
+  appliedAt: string | null;
+}

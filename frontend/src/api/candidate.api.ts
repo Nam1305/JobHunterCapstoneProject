@@ -2,6 +2,7 @@ import { ResponseEntity } from "@/types/base";
 import {
   ApplicationResult,
   ApplyJobRequest,
+  JobApplicationStatus,
   Resume,
   UpdateResumeStatusRequest,
 } from "@/types/candidate";
@@ -13,6 +14,8 @@ type ApiError = AxiosError<ResponseEntity<null>>;
 
 export const candidateQueryKeys = {
   resumes: ["candidate", "resumes"] as const,
+  applicationStatus: (jobId: string) =>
+    ["candidate", "applications", jobId, "status"] as const,
 };
 
 export interface UpdateResumeStatusVariables {
@@ -69,12 +72,22 @@ export const candidateApi = {
     );
     return res.data;
   },
+
+  async getApplicationStatus(
+    jobId: string
+  ): Promise<ResponseEntity<JobApplicationStatus>> {
+    const res = await api.get<ResponseEntity<JobApplicationStatus>>(
+      `candidate/applications/${jobId}/status`
+    );
+    return res.data;
+  },
 };
 
-export function useCandidateResumesQuery() {
+export function useCandidateResumesQuery(enabled = true) {
   return useQuery<ResponseEntity<Resume[]>, ApiError>({
     queryKey: candidateQueryKeys.resumes,
     queryFn: candidateApi.getResumes,
+    enabled,
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -109,5 +122,14 @@ export function useApplyJobMutation() {
     ApplyJobRequest
   >({
     mutationFn: candidateApi.applyJob,
+  });
+}
+
+export function useApplicationStatusQuery(jobId: string, enabled = true) {
+  return useQuery<ResponseEntity<JobApplicationStatus>, ApiError>({
+    queryKey: candidateQueryKeys.applicationStatus(jobId),
+    queryFn: () => candidateApi.getApplicationStatus(jobId),
+    enabled: enabled && Boolean(jobId),
+    staleTime: 5 * 60 * 1000,
   });
 }
