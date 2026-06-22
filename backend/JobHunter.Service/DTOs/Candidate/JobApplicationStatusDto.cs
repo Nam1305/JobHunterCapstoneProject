@@ -10,6 +10,9 @@ public class JobApplicationStatusDto
     [JsonPropertyName("cvAppliedUrl")]
     public string CVAppliedURL { get; set; } = string.Empty;
 
+    [JsonPropertyName("fileName")]
+    public string? FileName { get; set; }
+
     [JsonPropertyName("appliedAt")]
     public DateTimeOffset? AppliedAt { get; set; }
 }

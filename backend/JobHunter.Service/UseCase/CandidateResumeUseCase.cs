@@ -130,6 +130,7 @@ public class CandidateResumeUseCase : ICandidateResumeUseCase
             {
                 Status = "NotApplied",
                 CVAppliedURL = string.Empty,
+                FileName = null,
                 AppliedAt = null
             };
         }
@@ -138,6 +139,7 @@ public class CandidateResumeUseCase : ICandidateResumeUseCase
         {
             Status = application.Status?.ToString() ?? string.Empty,
             CVAppliedURL = application.Resume?.FileUrl ?? string.Empty,
+            FileName = application.Resume?.FileName,
             AppliedAt = application.AppliedAt
         };
     }

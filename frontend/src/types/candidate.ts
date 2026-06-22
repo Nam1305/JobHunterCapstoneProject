@@ -34,5 +34,6 @@ export interface ApplicationResult {
 export interface JobApplicationStatus {
   status: string;
   cvAppliedUrl: string;
+  fileName: string | null;
   appliedAt: string | null;
 }
