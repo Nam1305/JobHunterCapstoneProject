@@ -3,6 +3,7 @@ using JobHunter.Service.DTOs;
 using JobHunter.Service.DTOs.Company;
 using JobHunter.Service.Interface.Persistence;
 using JobHunter.Service.Interface.Service;
+using JobHunter.Service.Interface.UseCase;
 using Microsoft.AspNetCore.Http;
 
 public class HrCompanyUseCase : IHrCompanyUseCase
@@ -393,4 +394,5 @@ public class HrCompanyUseCase : IHrCompanyUseCase
         company.LogoUrl = newLogoUrl;
         await _hrCompanyRepository.UpdateLogoAsync(company.Id, company.LogoUrl);
     }
+
 }

@@ -13,6 +13,16 @@ public class CompanyRepository : ICompanyRepository
         _context = context;
     }
 
+    public async Task<User> AddCompanyWithHrUser(Company company, User hrUser)
+    {
+        await _context.Companies.AddAsync(company);
+        hrUser.Company = company;
+        await _context.Users.AddAsync(hrUser);
+        await _context.SaveChangesAsync();
+
+        return hrUser;
+    }
+
     public async Task<List<(Company Company, int OpeningVacancies)>> GetTopCompanies(int limit)
     {
         var now = DateTimeOffset.UtcNow;

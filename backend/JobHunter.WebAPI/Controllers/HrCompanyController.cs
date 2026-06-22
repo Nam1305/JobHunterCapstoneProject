@@ -1,5 +1,6 @@
 using JobHunter.Service.DTOs;
 using JobHunter.Service.DTOs.Company;
+using JobHunter.Service.Interface.UseCase;
 using JobHunter.Service.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

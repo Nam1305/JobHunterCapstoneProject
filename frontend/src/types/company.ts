@@ -36,7 +36,7 @@ export interface TeamImages {
 
 export interface BrandingResponseDto extends BrandingRequestDto {
 
-    teamPhotoUrls?: string[];
+  teamPhotoUrls?: string[];
 }
 
 export interface BrandingRequestDto {
@@ -60,10 +60,39 @@ export interface CompanyGeneralResponseDto extends CompanyGeneralRequestDto {
 
 export interface CompanyBranchReponseDto {
   name: string;
-  address:string;
+  address: string;
   city: string;
 }
 
 export interface CompanyBranchRequestDto extends CompanyBranchReponseDto {
   id: string;
 }
+
+export interface CompanyRegistrationRequest {
+  id: string
+  hrName: string
+  phone: string
+  email: string
+  companyName: string
+  websiteUrl: string
+  status: string
+  createdAt: string
+}
+
+export interface CompanyRegistrationRequestDetail extends CompanyRegistrationRequest {
+  taxCode: string | null
+  country: string | null
+  companyType: string | null
+  teamSize: string | null
+  overview: string | null
+}
+
+export interface CompanyTaxInfo {
+  name: string
+  internationalName: string | null
+  shortName: string | null
+  address: string
+  status: string
+}
+
+

@@ -23,6 +23,7 @@ import {
 import { toast } from "sonner"
 
 import { useCreateUserMutation, useDeleteUserMutation, useUsersQuery } from "@/api/user.api"
+import { useDebounce } from "@/hooks/use-debounce"
 import {
   UserModal,
   type UserModalValues,
@@ -187,28 +188,23 @@ export function UserInfoDataTable() {
   })
   const queryClient = useQueryClient()
   const [search, setSearch] = React.useState("")
-  const [debouncedSearch, setDebouncedSearch] = React.useState("")
+  const debouncedSearch = useDebounce(search, 1000)
   const [isUserModalOpen, setIsUserModalOpen] = React.useState(false)
   const [userToDelete, setUserToDelete] = React.useState<Userinfo | null>(null)
   const deleteUserMutation = useDeleteUserMutation()
   const createUserMutation = useCreateUserMutation()
 
   React.useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      setDebouncedSearch(search)
-      setPagination((current) => ({ ...current, pageIndex: 0 }))
-    }, 1000)
+    setPagination((current) => ({ ...current, pageIndex: 0 }))
+  }, [debouncedSearch])
 
-    return () => window.clearTimeout(timeoutId)
-  }, [search])
-
-  function handleCreate() { 
+  const handleCreate = React.useCallback(() => {
     setIsUserModalOpen(true)
-  }
+  }, [])
 
-  const handleDelete = (user: Userinfo) => {
+  const handleDelete = React.useCallback((user: Userinfo) => {
     setUserToDelete(user)
-  }
+  }, [])
 
   const handleSubmitUser = 
     (values: UserModalValues) => {

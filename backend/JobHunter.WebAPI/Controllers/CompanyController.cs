@@ -16,6 +16,13 @@ public class CompanyController : ControllerBase
         _companyUseCase = companyUseCase;
     }
 
+    [HttpPost("register")]
+    public async Task<ActionResult<ResponseBase<string>>> RegisterHrCompany([FromBody] RegisterHrCompanyRequest request)
+    {
+        await _companyUseCase.RegisterHrCompany(request);
+        return new ResponseBase<string>("Gửi thông tin đăng ký thành công. Vui lòng chờ xét duyệt từ Admin");
+    }
+
     [HttpGet("top")]
     public async Task<ActionResult<ResponseBase<List<CompanyCardDto>>>> GetTopCompanies(
         [FromQuery] int limit = 10)

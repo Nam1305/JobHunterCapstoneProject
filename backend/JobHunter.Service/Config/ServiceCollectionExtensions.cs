@@ -20,6 +20,7 @@ public static class ServiceCollectionExtensions
                 services.AddScoped<ITokenRepository, TokenRepository>();
                 services.AddScoped<IUserRepository, UserRepository>();
                 services.AddScoped<ICompanyRepository, CompanyRepository>();
+                services.AddScoped<IAdminCompanyRepository, AdminCompanyRepository>();
                 services.AddScoped<IJobRepository, JobRepository>();
                 services.AddScoped<IHrJobRepository, HrJobRepository>();
                 services.AddScoped<IHrCompanyRepository, HrCompanyRepository>();
@@ -34,8 +35,13 @@ public static class ServiceCollectionExtensions
                 services.AddScoped<IHrJobUseCase, HrJobUseCase>();
                 services.AddScoped<IJobUseCase, JobUseCase>();
                 services.AddScoped<ICompanyUseCase, CompanyUseCase>();
+                services.AddScoped<IAdminCompanyUseCase, AdminCompanyUseCase>();
                 // Services
                 services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
+                services.AddHttpClient<IVietQrBusinessService, VietQrBusinessService>(client =>
+                {
+                        client.BaseAddress = new Uri("https://api.vietqr.io/");
+                });
                 services.AddSingleton<IAmazonS3>(_ =>
                 {
                         var accessKey = GetRequiredConfigValue(configuration, "S3Credential:ACCESS_KEY");

@@ -4,111 +4,27 @@ using System.Text.Json;
 using JobHunter.Service.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Pgvector;
 
 #nullable disable
 
 namespace JobHunter.Service.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(JobhunterContext))]
-    partial class JobhunterContextModelSnapshot : ModelSnapshot
+    [Migration("20260617170042_AddCompanyStatusAndTaxCode")]
+    partial class AddCompanyStatusAndTaxCode
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "10.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "vector");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("JobHunter.Domain.Entities.Application", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<string>("AiSuggestion")
-                        .HasColumnType("text")
-                        .HasColumnName("ai_suggestion");
-
-                    b.Property<DateTimeOffset?>("AppliedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("applied_at");
-
-                    b.Property<string>("CoverLetter")
-                        .HasColumnType("text")
-                        .HasColumnName("cover_letter");
-
-                    b.Property<DateTimeOffset?>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("created_by");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("email");
-
-                    b.Property<Guid>("JobId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("job_id");
-
-                    b.Property<decimal?>("MatchScore")
-                        .HasColumnType("numeric")
-                        .HasColumnName("match_score");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("name");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("phone");
-
-                    b.Property<Guid?>("ResumeId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("resume_id");
-
-                    b.Property<string>("Status")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("status");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("updated_by");
-
-                    b.HasKey("Id")
-                        .HasName("applications_pkey");
-
-                    b.HasIndex("JobId");
-
-                    b.HasIndex("ResumeId");
-
-                    b.ToTable("applications", (string)null);
-                });
 
             modelBuilder.Entity("JobHunter.Domain.Entities.Company", b =>
                 {
@@ -545,62 +461,6 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                     b.ToTable("refresh_tokens", (string)null);
                 });
 
-            modelBuilder.Entity("JobHunter.Domain.Entities.Resume", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<DateTimeOffset?>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("created_by");
-
-                    b.Property<string>("FileName")
-                        .HasColumnType("text")
-                        .HasColumnName("file_name");
-
-                    b.Property<string>("FileUrl")
-                        .HasColumnType("text")
-                        .HasColumnName("file_url");
-
-                    b.Property<bool>("IsPublic")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_public");
-
-                    b.Property<Vector>("ResumeEmbedding")
-                        .HasColumnType("vector")
-                        .HasColumnName("resume_embedding");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("updated_by");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("resumes_pkey");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("resumes", (string)null);
-                });
-
             modelBuilder.Entity("JobHunter.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -706,25 +566,6 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                     b.ToTable("job_level_mappings", (string)null);
                 });
 
-            modelBuilder.Entity("JobHunter.Domain.Entities.Application", b =>
-                {
-                    b.HasOne("JobHunter.Domain.Entities.Job", "Job")
-                        .WithMany("Applications")
-                        .HasForeignKey("JobId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("applications_job_id_fkey");
-
-                    b.HasOne("JobHunter.Domain.Entities.Resume", "Resume")
-                        .WithMany("Applications")
-                        .HasForeignKey("ResumeId")
-                        .HasConstraintName("applications_resume_id_fkey");
-
-                    b.Navigation("Job");
-
-                    b.Navigation("Resume");
-                });
-
             modelBuilder.Entity("JobHunter.Domain.Entities.CompanyBranch", b =>
                 {
                     b.HasOne("JobHunter.Domain.Entities.Company", "Company")
@@ -787,18 +628,6 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("JobHunter.Domain.Entities.Resume", b =>
-                {
-                    b.HasOne("JobHunter.Domain.Entities.User", "User")
-                        .WithMany("Resumes")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("resumes_user_id_fkey");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("JobHunter.Domain.Entities.User", b =>
                 {
                     b.HasOne("JobHunter.Domain.Entities.Company", "Company")
@@ -840,11 +669,6 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                     b.Navigation("Jobs");
                 });
 
-            modelBuilder.Entity("JobHunter.Domain.Entities.Job", b =>
-                {
-                    b.Navigation("Applications");
-                });
-
             modelBuilder.Entity("JobHunter.Domain.Entities.JobCategory", b =>
                 {
                     b.Navigation("JobSubcategories");
@@ -855,16 +679,9 @@ namespace JobHunter.Service.Infrastructure.Persistence.Migrations
                     b.Navigation("Jobs");
                 });
 
-            modelBuilder.Entity("JobHunter.Domain.Entities.Resume", b =>
-                {
-                    b.Navigation("Applications");
-                });
-
             modelBuilder.Entity("JobHunter.Domain.Entities.User", b =>
                 {
                     b.Navigation("RefreshTokens");
-
-                    b.Navigation("Resumes");
                 });
 #pragma warning restore 612, 618
         }
