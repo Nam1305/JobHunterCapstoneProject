@@ -1,11 +1,11 @@
 import {
-  BarChart3,
   BriefcaseBusiness,
   BriefcaseIcon,
   ClipboardCheck,
   Code2,
   ExternalLink,
   Gift,
+  GraduationCap,
   Heart,
   MapPin,
   Send,
@@ -22,13 +22,13 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { UserContainer } from "@/components/user/user-container"
 import { getCompanies } from "@/data/companies"
-import { getJobBySlug, getJobs } from "@/data/jobs"
+import { getJobBySlug, getJobSuggestions } from "@/data/jobs"
 import { getImageUrl } from "@/lib/utils"
 import type { CompanyCard as CompanyCardData } from "@/types/company"
 import type { JobCard, JobDetails } from "@/types/job"
 import { getCompanyMark } from "@/utils/company"
 import { getDisplayJobTags } from "@/utils/job-tags"
-import { formatDaysUntil, getEmptyJobsQuery } from "@/utils/jobs"
+import { formatDaysUntil } from "@/utils/jobs"
 
 /*
  * Component tree
@@ -49,8 +49,7 @@ import { formatDaysUntil, getEmptyJobsQuery } from "@/utils/jobs"
  *             └─ Suspense(CompanyCardSkeleton)
  *                └─ CompanySection
  *                   ├─ CompanyCard
- *                   └─ CompanyJobsCard
- *                      └─ CompanyLogo
+ *                   └─ GeneralInfoCard
  */
 
 // ─── Data fetching helpers ────────────────────────────────────────────────────
@@ -70,42 +69,8 @@ async function getCompanyForJob(
   )
 }
 
-/**
- * 
- * Fetch up to 3 other jobs from the same company, excluding the current job. We fetch
- * a few extras and filter client-side to avoid the case where the company has very few jobs and
- * the current job is the only one that shows up in the results, which would look a bit odd.
- */
-async function getCompanyJobs({
-  companySlug,
-  currentJobSlug,
-}: {
-  companySlug: string | null | undefined
-  currentJobSlug: string
-}): Promise<JobCard[]> {
-  if (!companySlug) return []
-
-  const result = await getJobs({
-    ...getEmptyJobsQuery(),
-    companySlug,
-    pageSize: 4,
-  })
-
-  return result.items.filter((job) => job.slug !== currentJobSlug).slice(0, 3)
-}
-
 async function getSimilarJobs(job: JobDetails): Promise<JobCard[]> {
-  if (!job.subcategorySlug) return []
-
-  const result = await getJobs({
-    ...getEmptyJobsQuery(),
-    subcategorySlugs: [job.subcategorySlug],
-    pageSize: 6,
-  })
-
-  return result.items
-    .filter((similarJob) => similarJob.slug !== job.slug)
-    .slice(0, 5)
+  return getJobSuggestions(job.id, 5)
 }
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
@@ -136,6 +101,16 @@ function getJobSections(job: JobDetails) {
       content: string
     } => Boolean(section.content)
   )
+}
+
+function formatDeadlineDate(expiredAt: string | null) {
+  if (!expiredAt) return "Chưa cập nhật"
+
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(expiredAt))
 }
 
 // ─── Shared UI components ─────────────────────────────────────────────────────
@@ -259,20 +234,14 @@ async function JobDetailsContent({ slug }: { slug: string }) {
 
 // ─── Async section components ─────────────────────────────────────────────────
 
-// Company card + company jobs are chained (jobs depend on company.slug),
-// so they share one Suspense boundary and one async component.
 // Fetches company context and renders the right sidebar cards.
 async function CompanySection({ job }: { job: JobDetails }) {
   const company = await getCompanyForJob(job)
-  const companyJobs = await getCompanyJobs({
-    companySlug: company?.slug,
-    currentJobSlug: job.slug,
-  })
 
   return (
     <>
       <CompanyCard company={company} job={job} />
-      <CompanyJobsCard companySlug={company?.slug} jobs={companyJobs} />
+      <GeneralInfoCard job={job} />
     </>
   )
 }
@@ -317,32 +286,17 @@ function JobHeaderCard({ job }: { job: JobDetails }) {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1.5">
-            <MapPin className="size-3.5 shrink-0" />
-            {job.city || "Chưa cập nhật địa điểm"}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <BarChart3 className="size-3.5 shrink-0" />
-            {job.jobLevels.join(", ") || "Chưa cập nhật cấp bậc"}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <BriefcaseBusiness className="size-3.5 shrink-0" />
-            {job.experienceRequirement ?? "Chưa cập nhật kinh nghiệm"}
-          </span>
-        </div>
-
         <Separator />
 
-        <div className="text-xs text-muted-foreground">
-          {formatDaysUntil(job.expiredAt)}
-          <span className="px-2" aria-hidden="true">
-            •
-          </span>
-          {job.applicants} ứng viên
+        <div className="text-muted-foreground">
+          Hạn nộp hồ sơ:{" "}
+          <span className="font-semibold text-foreground">
+            {formatDeadlineDate(job.expiredAt)}
+          </span>{" "}
+          ({formatDaysUntil(job.expiredAt)})
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-[7fr_3fr] gap-3">
           <ApplyJobButton
             size="lg"
             job={{
@@ -515,84 +469,50 @@ function CompanyCard({
   )
 }
 
-// Renders a sidebar list of other jobs from the same company.
-function CompanyJobsCard({
-  companySlug,
-  jobs,
-}: {
-  companySlug: string | null | undefined
-  jobs: JobCard[]
-}) {
+function GeneralInfoCard({ job }: { job: JobDetails }) {
+  const generalInfoItems = [
+    {
+      label: "Kinh nghiệm",
+      value: job.experienceRequirement ?? "Chưa cập nhật",
+      icon: BriefcaseBusiness,
+    },
+    {
+      label: "Trình độ",
+      value: job.jobLevels.join(", ") || "Chưa cập nhật",
+      icon: GraduationCap,
+    },
+    {
+      label: "Địa điểm",
+      value: job.city || "Chưa cập nhật",
+      icon: MapPin,
+    },
+    {
+      label: "Hình thức làm việc",
+      value: job.workType ?? "Chưa cập nhật",
+      icon: BriefcaseIcon,
+    },
+  ]
+
   return (
     <Card>
-      <CardContent>
-        <h2 className="text-sm font-semibold">
-          {jobs.length} việc làm cùng công ty
-        </h2>
+      <CardContent className="space-y-5">
+        <h2 className="text-lg font-semibold">Thông tin chung</h2>
 
-        {jobs.length > 0 ? (
-          <>
-            <div className="mt-4 space-y-4">
-              {jobs.map((job, index) => (
-                <div key={job.id}>
-                  <div className="grid grid-cols-[2rem_1fr_auto] gap-3">
-                    <CompanyLogo
-                      image={job.companyImage}
-                      name={job.companyName}
-                      sizeClassName="size-8"
-                    />
-
-                    <div className="min-w-0">
-                      <h3 className="line-clamp-2 text-sm leading-5 font-medium">
-                        <Link href={`/cong-viec/${job.slug}`}>
-                          {job.title ?? "Chưa cập nhật tiêu đề"}
-                        </Link>
-                      </h3>
-                      <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                        <WalletCards className="size-3 shrink-0" />
-                        {job.salaryRange ?? "Thương lượng"}
-                      </p>
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {getDisplayJobTags(job.tags).map((tag, index) => (
-                          <Badge
-                            key={`${tag.label}-${index}`}
-                            variant="outline"
-                          >
-                            {tag.label}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    <Button
-                      aria-label="Lưu công việc"
-                      size="icon-xs"
-                      variant="ghost"
-                    >
-                      <Heart />
-                    </Button>
-                  </div>
-                  {index < jobs.length - 1 ? (
-                    <Separator className="mt-4" />
-                  ) : null}
-                </div>
-              ))}
+        <div className="space-y-5">
+          {generalInfoItems.map((item) => (
+            <div key={item.label} className="grid grid-cols-[2.75rem_1fr] gap-4">
+              <div className="flex size-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                <item.icon className="size-5" />
+              </div>
+              <div className="min-w-0 space-y-1">
+                <p className="text-sm text-muted-foreground">{item.label}</p>
+                <p className="text-sm leading-5 font-semibold text-foreground">
+                  {item.value}
+                </p>
+              </div>
             </div>
-
-            {companySlug ? (
-              <Button asChild className="mt-4 w-full" variant="ghost" size="sm">
-                <Link href={`/cong-viec`}>
-                  Xem thêm việc làm
-                  <ExternalLink className="size-3.5" />
-                </Link>
-              </Button>
-            ) : null}
-          </>
-        ) : (
-          <p className="mt-4 text-sm text-muted-foreground">
-            Chưa có việc làm khác cùng công ty.
-          </p>
-        )}
+          ))}
+        </div>
       </CardContent>
     </Card>
   )

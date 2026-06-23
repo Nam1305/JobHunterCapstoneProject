@@ -58,6 +58,32 @@ export async function getTopJobs(): Promise<JobCard[]> {
   }
 }
 
+export async function getJobSuggestions(
+  jobId: string,
+  limit = 9
+): Promise<JobCard[]> {
+  try {
+    const url = new URL(
+      `${API_BASE_URL}/jobs/${encodeURIComponent(jobId)}/suggestions`
+    )
+    url.searchParams.set("limit", String(limit))
+
+    const response = await fetch(url, {
+      cache: "no-store",
+    })
+
+    if (!response.ok) {
+      return []
+    }
+
+    const payload = (await response.json()) as ResponseEntity<JobCard[]>
+
+    return payload.data ?? []
+  } catch {
+    return []
+  }
+}
+
 export async function getJobFilterOptions(): Promise<JobFilterOptions> {
   try {
     const response = await fetch(`${API_BASE_URL}/jobs/filter-options`, {
