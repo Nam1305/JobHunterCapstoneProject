@@ -16,11 +16,14 @@ public class JobRepository : IJobRepository
 
     public Task<List<Job>> GetTopJobs(int limit)
     {
+        var now = DateTimeOffset.UtcNow;
+
         return _context.Jobs
             .AsNoTracking()
             .Include(j => j.Company)
             .Include(j => j.Branch)
             .Include(j => j.JobLevels)
+            .Where(j => j.ExpiredAt == null || j.ExpiredAt > now)
             .OrderByDescending(j => j.CreatedAt)
             .Take(limit)
             .ToListAsync();
@@ -37,6 +40,7 @@ public class JobRepository : IJobRepository
         int page,
         int pageSize)
     {
+        var now = DateTimeOffset.UtcNow;
         var query = _context.Jobs
             .AsNoTracking()
             .Include(j => j.Company)
@@ -44,6 +48,7 @@ public class JobRepository : IJobRepository
             .Include(j => j.JobLevels)
             .Include(j => j.Subcategory)
                 .ThenInclude(s => s != null ? s.Category : null)
+            .Where(j => j.ExpiredAt == null || j.ExpiredAt > now)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
@@ -79,13 +84,15 @@ public class JobRepository : IJobRepository
 
     public Task<Job?> GetJobBySlug(string slug)
     {
+        var now = DateTimeOffset.UtcNow;
+
         return _context.Jobs
             .AsNoTracking()
             .Include(j => j.Company)
             .Include(j => j.Branch)
             .Include(j => j.JobLevels)
             .Include(j => j.Subcategory)
-            .FirstOrDefaultAsync(j => j.Slug == slug);
+            .FirstOrDefaultAsync(j => j.Slug == slug && (j.ExpiredAt == null || j.ExpiredAt > now));
     }
 
     public async Task<JobFilterOptionsData> GetFilterOptions()
