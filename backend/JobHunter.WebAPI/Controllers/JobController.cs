@@ -56,4 +56,13 @@ public class JobController : ControllerBase
         var job = await _jobUseCase.GetJobBySlug(slug);
         return new ResponseBase<JobDetailsDto>(job);
     }
+
+    [HttpGet("{jobId:guid}/suggestions")]
+    public async Task<ActionResult<ResponseBase<List<JobCardDto>>>> GetJobSuggestions(
+        Guid jobId,
+        [FromQuery] int limit = 9)
+    {
+        var jobs = await _jobUseCase.GetJobSuggestions(jobId, limit);
+        return new ResponseBase<List<JobCardDto>>(jobs);
+    }
 }

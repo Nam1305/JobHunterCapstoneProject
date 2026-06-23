@@ -17,6 +17,7 @@ public interface IJobRepository
         int page,
         int pageSize);
     Task<Job?> GetJobBySlug(string slug);
+    Task<List<Job>?> GetJobSuggestions(Guid jobId, int limit);
     Task<JobFilterOptionsData> GetFilterOptions();
     Task<List<JobItemDto>> GetHrJobs(Guid companyId, string? search, string? status, int page, int pageSize);
     Task<int> CountHrJobs(Guid companyId, string? search, string? status);
