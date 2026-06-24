@@ -9,6 +9,7 @@ import { COMPANY_PAGE_SIZE, getCompanies } from "@/data/companies"
 import { getImageUrl } from "@/lib/utils"
 import type { CompanyCard as CompanyCardData } from "@/types/company"
 
+import { CompanyFollowButton } from "./company-follow-button"
 import { CompanyPagination } from "./company-pagination"
 
 type CompaniesSearchParams = Promise<{
@@ -53,14 +54,22 @@ function getPaginationItems(
 
 function CompanyCard({
   company,
+  companyIds,
 }: {
   company: CompanyCardData
+  companyIds: string[]
 }) {
   const coverPhotoUrl = getImageUrl(company.coverPhotoUrl)
   const logoUrl = getImageUrl(company.logoUrl)
 
   return (
-    <article className="overflow-hidden rounded-lg border bg-card text-card-foreground">
+    <article className="relative overflow-hidden rounded-lg border bg-card text-card-foreground transition-colors hover:border-primary/40">
+      <Link
+        aria-label={`Xem công ty ${company.name}`}
+        className="absolute inset-0 z-10"
+        href={`/cong-ty/${company.slug}`}
+      />
+
       <div className="flex h-36 items-center justify-center bg-muted px-6 text-center text-sm text-muted-foreground">
         {coverPhotoUrl ? (
           <span
@@ -114,12 +123,13 @@ function CompanyCard({
         </dl>
 
         <div className="mt-4 flex items-center gap-3 border-t pt-3">
-          <Button asChild variant="outline">
-            <Link href={`/cong-ty/${company.slug}`}>Xem công ty</Link>
-          </Button>
-          <Button variant="outline" type="button">
-            Theo dõi
-          </Button>
+          <CompanyFollowButton
+            className="relative z-20"
+            companyId={company.id}
+            companyIds={companyIds}
+            stopPropagation
+            variant="outline"
+          />
           <span className="ml-auto inline-flex items-center gap-1 text-sm text-muted-foreground">
             {company.openingVacancies} việc làm
             <ArrowRight className="size-4" />
@@ -154,6 +164,7 @@ export default async function CompaniesPage({
     currentPage * COMPANY_PAGE_SIZE,
     companies.totalCount
   )
+  const companyIds = companies.items.map((company) => company.id)
   const paginationItems = getPaginationItems(currentPage, totalPages)
 
   return (
@@ -192,7 +203,11 @@ export default async function CompaniesPage({
         {companies.items.length > 0 ? (
           <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {companies.items.map((company) => (
-              <CompanyCard key={company.id} company={company} />
+              <CompanyCard
+                key={company.id}
+                company={company}
+                companyIds={companyIds}
+              />
             ))}
           </div>
         ) : (

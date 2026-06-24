@@ -6,7 +6,6 @@ import {
   ChevronRight,
   Clock,
   FileText,
-  Heart,
   MapPin,
   MessageSquare,
   UserCheck,
@@ -332,14 +331,6 @@ export default async function UserHomePage() {
                         {formatDaysUntil(job.expiredAt)}
                       </p>
                       <div className="flex items-center gap-3">
-                        <Button
-                          aria-label="Lưu việc làm"
-                          className="relative z-10"
-                          size="icon-sm"
-                          variant="ghost"
-                        >
-                          <Heart />
-                        </Button>
                         <ApplyJobButton
                           className="relative z-10"
                           job={{
