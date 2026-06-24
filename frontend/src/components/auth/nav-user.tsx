@@ -112,6 +112,10 @@ function getUserDashboardUrl(role: NavUserData["role"]) {
     return "/hr"
   }
 
+  if (role === "Candidate"){
+    return "/tai-khoan"
+  }
+
   return null
 }
 
