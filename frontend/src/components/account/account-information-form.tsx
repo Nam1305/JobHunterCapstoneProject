@@ -86,7 +86,13 @@ function getInitials(name?: string) {
     .toUpperCase()
 }
 
-export function AccountInformationForm() {
+interface AccountInformationFormProps {
+  hideAvatarSection?: boolean
+}
+
+export function AccountInformationForm({
+  hideAvatarSection = false,
+}: AccountInformationFormProps) {
   const { user } = useCurrentUser()
   const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
@@ -208,10 +214,11 @@ export function AccountInformationForm() {
   return (
   <Card className="w-full border-border/60 shadow-sm">
     <CardContent className="p-6 md:p-8">
-      <div className="grid gap-10 lg:grid-cols-[240px_1fr]">
+      <div className={hideAvatarSection ? "" : "grid gap-10 lg:grid-cols-[240px_1fr]"}>
         {/* Avatar Section */}
-        <div className="flex flex-col items-center rounded-2xl border bg-muted/20 p-6 text-center">
-          <Avatar className="size-28 border shadow-sm">
+        {!hideAvatarSection && (
+          <div className="flex flex-col items-center rounded-2xl border bg-muted/20 p-6 text-center">
+            <Avatar className="size-28 border shadow-sm">
             {user?.avatar ? (
               <AvatarImage src={user.avatar} alt={user.name} />
             ) : null}
@@ -265,6 +272,7 @@ export function AccountInformationForm() {
             </p>
           </div>
         </div>
+      )}
 
         {/* Form Section */}
         <div className="min-w-0">

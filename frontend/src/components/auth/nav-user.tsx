@@ -113,7 +113,7 @@ function getUserDashboardUrl(role: NavUserData["role"]) {
   }
 
   if (role === "Candidate"){
-    return "/tai-khoan"
+    return "/tai-khoan-cua-toi"
   }
 
   return null
