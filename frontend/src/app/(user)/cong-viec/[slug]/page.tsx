@@ -28,6 +28,7 @@ import type { JobCard, JobDetails } from "@/types/job"
 import { getCompanyMark } from "@/utils/company"
 import { getDisplayJobTags } from "@/utils/job-tags"
 import { formatDaysUntil } from "@/utils/jobs"
+import { SaveJobButton } from "./_components/save-job-button"
 
 /*
  * Component tree
@@ -295,7 +296,7 @@ function JobHeaderCard({ job }: { job: JobDetails }) {
           ({formatDaysUntil(job.expiredAt)})
         </div>
 
-        <div>
+        <div className="grid grid-cols-[7fr_3fr] gap-3">
           <ApplyJobButton
             size="lg"
             job={{
@@ -307,6 +308,7 @@ function JobHeaderCard({ job }: { job: JobDetails }) {
             <Send />
             Ứng tuyển ngay
           </ApplyJobButton>
+          <SaveJobButton jobId={job.id} size="lg" />
         </div>
       </CardContent>
     </Card>
