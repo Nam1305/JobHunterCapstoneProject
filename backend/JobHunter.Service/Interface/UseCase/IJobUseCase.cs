@@ -17,5 +17,6 @@ public interface IJobUseCase
         int page,
         int pageSize);
     Task<JobDetailsDto> GetJobBySlug(string slug);
+    Task<List<JobCardDto>> GetJobSuggestions(Guid jobId, int limit);
     Task<JobFilterOptionsDto> GetFilterOptions();
 }

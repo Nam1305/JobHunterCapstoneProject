@@ -27,7 +27,7 @@ import { useDebounce } from "@/hooks/use-debounce"
 import {
   UserModal,
   type UserModalValues,
-} from "@/components/dashboard/user-modal"
+} from "@/app/admin/quan-li-tai-khoan/_components/user-modal"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -130,18 +130,6 @@ export function getUserColumns({
         <span className="block max-w-48 truncate text-muted-foreground">
           {row.original.avatar ?? "Không có"}
         </span>
-      ),
-    },
-    {
-      accessorKey: "isDeleted",
-      header: "Trạng thái",
-      cell: ({ row }) => (
-        <Badge
-          variant={row.original.isDeleted ? "destructive" : "outline"}
-          className="px-2"
-        >
-          {row.original.isDeleted ? "Đã xóa" : "Hoạt động"}
-        </Badge>
       ),
     },
     {

@@ -57,6 +57,15 @@ public class JobUseCase : IJobUseCase
         return ToJobDetails(job);
     }
 
+    public async Task<List<JobCardDto>> GetJobSuggestions(Guid jobId, int limit)
+    {
+        if (limit < 1) throw new ArgumentException("Limit must be greater than 0");
+
+        var jobs = await _jobRepository.GetJobSuggestions(jobId, limit);
+        if (jobs == null) throw new KeyNotFoundException("Job not found");
+        return jobs.Select(ToJobCard).ToList();
+    }
+
     public async Task<JobFilterOptionsDto> GetFilterOptions()
     {
         var data = await _jobRepository.GetFilterOptions();

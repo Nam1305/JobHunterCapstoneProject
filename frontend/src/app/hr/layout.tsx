@@ -7,7 +7,6 @@ import {
   Building2Icon,
   LayoutDashboardIcon,
   MessageSquareIcon,
-  SparklesIcon,
   UserRoundIcon,
   UsersIcon,
 } from "lucide-react"
@@ -17,11 +16,6 @@ const hrMenuItems = [
     title: "Dashboard",
     url: "/hr",
     icon: <LayoutDashboardIcon />,
-  },
-  {
-    title: "Tìm ứng viên tiềm năng",
-    url: "/hr/tim-ung-vien-tiem-nang",
-    icon: <SparklesIcon />,
   },
   {
     title: "Quản lí ứng viên",

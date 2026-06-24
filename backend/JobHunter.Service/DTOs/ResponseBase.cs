@@ -16,8 +16,16 @@ namespace JobHunter.Service.DTOs
         {
             Success = true;
             Status = 200;
-            Message = "Success.";
+            Message = "Thành công.";
             Data = data;
+        }
+
+        public ResponseBase(string message)
+        {
+            Success = true;
+            Status = 200;
+            Message = message;
+            Data = default(T);
         }
 
         [JsonPropertyName("success")]
