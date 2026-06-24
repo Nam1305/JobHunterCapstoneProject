@@ -3,7 +3,6 @@ import {
   Clock,
   Globe,
   MapPin,
-  Plus,
   Users,
   WalletCards,
 } from "lucide-react"
@@ -23,6 +22,7 @@ import { getCompanyMark } from "@/utils/company"
 import { getDisplayJobTags } from "@/utils/job-tags"
 import { getEmptyJobsQuery } from "@/utils/jobs"
 
+import { CompanyFollowButton } from "../company-follow-button"
 import { TeamPhotoGallery } from "./team-photo-gallery"
 
 /*
@@ -165,10 +165,7 @@ function CompanyHero({ company }: { company: Company }) {
               "LOGO"
             )}
           </div>
-          <Button variant="outline">
-            <Plus />
-            Theo dõi
-          </Button>
+          <CompanyFollowButton companyId={company.id} variant="outline" />
         </div>
 
         <div className="space-y-2">
