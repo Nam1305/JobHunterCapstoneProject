@@ -6,7 +6,6 @@ import {
   ExternalLink,
   Gift,
   GraduationCap,
-  Heart,
   MapPin,
   Send,
   Sparkles,
@@ -29,6 +28,7 @@ import type { JobCard, JobDetails } from "@/types/job"
 import { getCompanyMark } from "@/utils/company"
 import { getDisplayJobTags } from "@/utils/job-tags"
 import { formatDaysUntil } from "@/utils/jobs"
+import { SaveJobButton } from "./_components/save-job-button"
 
 /*
  * Component tree
@@ -308,10 +308,7 @@ function JobHeaderCard({ job }: { job: JobDetails }) {
             <Send />
             Ứng tuyển ngay
           </ApplyJobButton>
-          <Button size="lg" variant="outline">
-            <Heart />
-            Lưu công việc
-          </Button>
+          <SaveJobButton jobId={job.id} size="lg" />
         </div>
       </CardContent>
     </Card>
@@ -530,26 +527,14 @@ function SimilarJobRow({ job }: { job: JobCard }) {
         />
 
         <div className="min-w-0">
-          <div className="flex items-start justify-between gap-3 sm:block">
-            <div>
-              <h3 className="leading-5 font-medium">
-                <Link href={`/cong-viec/${job.slug}`}>
-                  {job.title ?? "Chưa cập nhật tiêu đề"}
-                </Link>
-              </h3>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {job.companyName}
-              </p>
-            </div>
-            <Button
-              aria-label="Lưu công việc"
-              className="sm:hidden"
-              size="icon-sm"
-              variant="ghost"
-            >
-              <Heart />
-            </Button>
-          </div>
+          <h3 className="leading-5 font-medium">
+            <Link href={`/cong-viec/${job.slug}`}>
+              {job.title ?? "Chưa cập nhật tiêu đề"}
+            </Link>
+          </h3>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {job.companyName}
+          </p>
 
           <p className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
             <WalletCards className="size-3.5 shrink-0" />
@@ -565,10 +550,7 @@ function SimilarJobRow({ job }: { job: JobCard }) {
           </div>
         </div>
 
-        <div className="hidden items-center gap-4 sm:flex">
-          <Button aria-label="Lưu công việc" size="icon-sm" variant="ghost">
-            <Heart />
-          </Button>
+        <div className="hidden sm:block">
           <ApplyJobButton
             size="sm"
             job={{

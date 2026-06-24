@@ -12,10 +12,48 @@ import { AxiosError } from "axios";
 
 type ApiError = AxiosError<ResponseEntity<null>>;
 
+function toRepeatedQueryParams(key: string, values: string[]) {
+  const params = new URLSearchParams();
+  values.forEach((value) => params.append(key, value));
+  return params;
+}
+
+export interface LikedJobsStatus {
+  likedJobIds: string[];
+}
+
+export interface LikedCompaniesStatus {
+  likedCompanyIds: string[];
+}
+
+export interface FollowingToggleResult {
+  isLiked: boolean;
+}
+
+const likedJobsStatusRoot = [
+  "candidate",
+  "following",
+  "jobs",
+  "liked-status",
+] as const;
+
+const likedCompaniesStatusRoot = [
+  "candidate",
+  "following",
+  "companies",
+  "liked-status",
+] as const;
+
 export const candidateQueryKeys = {
   resumes: ["candidate", "resumes"] as const,
   applicationStatus: (jobId: string) =>
     ["candidate", "applications", jobId, "status"] as const,
+  likedJobsStatusRoot,
+  likedJobsStatus: (jobIds: string[]) =>
+    [...likedJobsStatusRoot, jobIds] as const,
+  likedCompaniesStatusRoot,
+  likedCompaniesStatus: (companyIds: string[]) =>
+    [...likedCompaniesStatusRoot, companyIds] as const,
 };
 
 export interface UpdateResumeStatusVariables {
@@ -81,6 +119,48 @@ export const candidateApi = {
     );
     return res.data;
   },
+
+  async toggleJobLike(
+    jobId: string
+  ): Promise<ResponseEntity<FollowingToggleResult>> {
+    const res = await api.post<ResponseEntity<FollowingToggleResult>>(
+      `candidate/following/jobs/${jobId}`
+    );
+    return res.data;
+  },
+
+  async toggleCompanyLike(
+    companyId: string
+  ): Promise<ResponseEntity<FollowingToggleResult>> {
+    const res = await api.post<ResponseEntity<FollowingToggleResult>>(
+      `candidate/following/companies/${companyId}`
+    );
+    return res.data;
+  },
+
+  async getLikedJobsStatus(
+    jobIds: string[]
+  ): Promise<ResponseEntity<LikedJobsStatus>> {
+    const res = await api.get<ResponseEntity<LikedJobsStatus>>(
+      "candidate/following/jobs/liked-status",
+      {
+        params: toRepeatedQueryParams("jobIds", jobIds),
+      }
+    );
+    return res.data;
+  },
+
+  async getLikedCompaniesStatus(
+    companyIds: string[]
+  ): Promise<ResponseEntity<LikedCompaniesStatus>> {
+    const res = await api.get<ResponseEntity<LikedCompaniesStatus>>(
+      "candidate/following/companies/liked-status",
+      {
+        params: toRepeatedQueryParams("companyIds", companyIds),
+      }
+    );
+    return res.data;
+  },
 };
 
 export function useCandidateResumesQuery(enabled = true) {
@@ -130,6 +210,39 @@ export function useApplicationStatusQuery(jobId: string, enabled = true) {
     queryKey: candidateQueryKeys.applicationStatus(jobId),
     queryFn: () => candidateApi.getApplicationStatus(jobId),
     enabled: enabled && Boolean(jobId),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useToggleJobLikeMutation() {
+  return useMutation<ResponseEntity<FollowingToggleResult>, ApiError, string>({
+    mutationFn: candidateApi.toggleJobLike,
+  });
+}
+
+export function useToggleCompanyLikeMutation() {
+  return useMutation<ResponseEntity<FollowingToggleResult>, ApiError, string>({
+    mutationFn: candidateApi.toggleCompanyLike,
+  });
+}
+
+export function useLikedJobsStatusQuery(jobIds: string[], enabled = true) {
+  return useQuery<ResponseEntity<LikedJobsStatus>, ApiError>({
+    queryKey: candidateQueryKeys.likedJobsStatus(jobIds),
+    queryFn: () => candidateApi.getLikedJobsStatus(jobIds),
+    enabled: enabled && jobIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useLikedCompaniesStatusQuery(
+  companyIds: string[],
+  enabled = true
+) {
+  return useQuery<ResponseEntity<LikedCompaniesStatus>, ApiError>({
+    queryKey: candidateQueryKeys.likedCompaniesStatus(companyIds),
+    queryFn: () => candidateApi.getLikedCompaniesStatus(companyIds),
+    enabled: enabled && companyIds.length > 0,
     staleTime: 5 * 60 * 1000,
   });
 }

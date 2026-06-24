@@ -9,14 +9,17 @@ import {
   MapPin,
 } from "lucide-react"
 
+import { useLikedJobsStatusQuery } from "@/api/candidate.api"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn, getImageUrl } from "@/lib/utils"
+import { useAppSelector } from "@/store/hooks"
 import type { JobCard } from "@/types/job"
 import { PageResult } from "@/types/base"
 import { getCompanyMark } from "@/utils/company"
 import { getDisplayJobTags } from "@/utils/job-tags"
 import { formatDaysUntil } from "@/utils/jobs"
+import { JobLikeButton } from "./job-like-button"
 
 function getPaginationItems(currentPage: number, totalPages: number) {
   if (totalPages <= 5) {
@@ -67,10 +70,12 @@ function shortLocation(location: string | null | undefined) {
 
 function JobListCard({
   job,
+  isLiked,
   selected,
   onSelect,
 }: {
   job: JobCard
+  isLiked: boolean
   selected: boolean
   onSelect: () => void
 }) {
@@ -124,6 +129,13 @@ function JobListCard({
       </div>
       <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
         <span>{formatDaysUntil(job.expiredAt)}</span>
+        <JobLikeButton
+          jobId={job.id}
+          isLiked={isLiked}
+          variant="ghost"
+          size="icon-sm"
+          stopPropagation
+        />
       </div>
     </article>
   )
@@ -139,7 +151,12 @@ export function JobCardList({
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const user = useAppSelector((state) => state.auth.user)
   const jobs = result.items
+  const jobIds = jobs.map((job) => job.id)
+  const isCandidate = user?.role === "Candidate"
+  const likedJobsStatusQuery = useLikedJobsStatusQuery(jobIds, isCandidate)
+  const likedJobIds = likedJobsStatusQuery.data?.data?.likedJobIds ?? []
   const totalPages = Math.max(1, result.totalPage)
   const currentPage = Math.min(result.page, totalPages)
   const pageStart = (result.page - 1) * result.pageSize
@@ -188,6 +205,7 @@ export function JobCardList({
           <JobListCard
             key={job.id}
             job={job}
+            isLiked={likedJobIds.includes(job.id)}
             selected={selectedSlug === job.slug}
             onSelect={() => selectJob(job.slug)}
           />

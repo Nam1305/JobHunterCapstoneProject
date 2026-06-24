@@ -327,6 +327,42 @@ public partial class JobhunterContext : DbContext
             entity.HasOne(d => d.Company).WithMany(p => p.Users)
                 .HasForeignKey(d => d.CompanyId)
                 .HasConstraintName("users_company_id_fkey");
+
+            entity.HasMany(d => d.FollowingCompanies).WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "following_companies",
+                    r => r.HasOne<Company>()
+                        .WithMany()
+                        .HasForeignKey("company_id")
+                        .HasConstraintName("following_companies_company_id_fkey"),
+                    l => l.HasOne<User>()
+                        .WithMany()
+                        .HasForeignKey("user_id")
+                        .HasConstraintName("following_companies_user_id_fkey"),
+                    j =>
+                    {
+                        j.HasKey("user_id", "company_id").HasName("following_companies_pkey");
+                        j.HasIndex("company_id");
+                        j.ToTable("following_companies");
+                    });
+
+            entity.HasMany(d => d.FollowingJobs).WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "following_jobs",
+                    r => r.HasOne<Job>()
+                        .WithMany()
+                        .HasForeignKey("job_id")
+                        .HasConstraintName("following_jobs_job_id_fkey"),
+                    l => l.HasOne<User>()
+                        .WithMany()
+                        .HasForeignKey("user_id")
+                        .HasConstraintName("following_jobs_user_id_fkey"),
+                    j =>
+                    {
+                        j.HasKey("job_id", "user_id").HasName("following_jobs_pkey");
+                        j.HasIndex("user_id");
+                        j.ToTable("following_jobs");
+                    });
         });
 
         modelBuilder.Entity<Resume>(entity =>

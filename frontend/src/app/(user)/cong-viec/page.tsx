@@ -141,6 +141,7 @@ async function JobsBrowserSection({
 }) {
   const jobsResult = await getJobs(query)
   const selectedSlug = jobSlug || jobsResult.items[0]?.slug || ""
+  const jobIds = jobsResult.items.map((job) => job.id)
 
   return (
     <>
@@ -149,7 +150,7 @@ async function JobsBrowserSection({
         key={`detail-${getListKey(query)}-${selectedSlug || "empty"}`}
         fallback={<SelectedJobDetailSkeleton />}
       >
-        <SelectedJobDetailSection jobSlug={selectedSlug} />
+        <SelectedJobDetailSection jobSlug={selectedSlug} jobIds={jobIds} />
       </Suspense>
     </>
   )
@@ -158,12 +159,14 @@ async function JobsBrowserSection({
 // Fetches and renders the currently selected job details.
 async function SelectedJobDetailSection({
   jobSlug,
+  jobIds,
 }: {
   jobSlug: string
+  jobIds: string[]
 }) {
   const selectedJob = jobSlug ? await getJobBySlug(jobSlug) : null
 
-  return <SelectedJobDetail job={selectedJob} />
+  return <SelectedJobDetail job={selectedJob} jobIds={jobIds} />
 }
 
 // Server page that parses URL filters and renders the jobs browser shell.

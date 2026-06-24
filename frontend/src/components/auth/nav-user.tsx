@@ -32,6 +32,7 @@ import { logout as clearAuthUser } from "@/store/auth.slice"
 import { useAppDispatch } from "@/store/hooks"
 import { toast } from "sonner"
 import { useCurrentUser } from "@/hooks/use-current-user"
+import { useQueryClient } from "@tanstack/react-query"
 
 type NavUserData = Pick<CurrentUser, "name" | "email" | "avatar" | "role">
 
@@ -124,6 +125,7 @@ function UserDropdownContent({
   side: React.ComponentProps<typeof DropdownMenuContent>["side"]
   className?: string
 }) {
+  const queryClient = useQueryClient()
   const dispatch = useAppDispatch()
   const router = useRouter()
   const logoutMutation = useLogout()
@@ -135,14 +137,16 @@ function UserDropdownContent({
         dispatch(clearAuthUser())
         toast.success("Đăng xuất thành công")
         router.push("/")
+        queryClient.clear()
       },
       onError: (error) => {
         dispatch(clearAuthUser())
         toast.error(
           error.response?.data.message ||
-            "Không thể đăng xuất trên máy chủ. Phiên cục bộ đã được xoá."
+          "Không thể đăng xuất trên máy chủ. Phiên cục bộ đã được xoá."
         )
         router.push("/")
+        queryClient.clear()
       },
     })
   }

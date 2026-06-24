@@ -8,6 +8,7 @@ import { getImageUrl } from "@/lib/utils"
 import type { JobDetails } from "@/types/job"
 import { getCompanyMark, getCompanySlug } from "@/utils/company"
 import { getDisplayJobTags } from "@/utils/job-tags"
+import { SelectedJobLikeButton } from "./selected-job-like-button"
 
 function CompanyMark({
   image,
@@ -57,7 +58,16 @@ function getJobSections(job: JobDetails) {
   ]
 }
 
-export function SelectedJobDetail({ job }: { job: JobDetails | null }) {
+export function SelectedJobDetail({
+  job,
+  jobIds,
+}: {
+  job: JobDetails | null
+  jobIds: string[]
+}) {
+  const likeStatusJobIds =
+    job && !jobIds.includes(job.id) ? [...jobIds, job.id] : jobIds
+
   return (
     <main className="min-w-0 py-5 lg:sticky lg:top-16 lg:pl-7">
       {job ? (
@@ -105,16 +115,22 @@ export function SelectedJobDetail({ job }: { job: JobDetails | null }) {
                     </Badge>
                   ))}
                 </div>
-                <ApplyJobButton
-                  className="w-full sm:w-auto"
-                  job={{
-                    id: job.id,
-                    title: job.title ?? "Chưa cập nhật tiêu đề",
-                    companyName: job.companyName,
-                  }}
-                >
-                  Ứng tuyển ngay
-                </ApplyJobButton>
+                <div className="flex w-full gap-2 sm:w-auto">
+                  <ApplyJobButton
+                    className="flex-1 sm:flex-none"
+                    job={{
+                      id: job.id,
+                      title: job.title ?? "Chưa cập nhật tiêu đề",
+                      companyName: job.companyName,
+                    }}
+                  >
+                    Ứng tuyển ngay
+                  </ApplyJobButton>
+                  <SelectedJobLikeButton
+                    jobId={job.id}
+                    jobIds={likeStatusJobIds}
+                  />
+                </div>
               </div>
             </div>
           </div>

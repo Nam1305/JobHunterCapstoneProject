@@ -13,10 +13,14 @@ namespace JobHunter.WebAPI.Controllers;
 public class CandidateController : ControllerBase
 {
     private readonly ICandidateResumeUseCase _candidateResumeUseCase;
+    private readonly IFollowingUseCase _followingUseCase;
 
-    public CandidateController(ICandidateResumeUseCase candidateResumeUseCase)
+    public CandidateController(
+        ICandidateResumeUseCase candidateResumeUseCase,
+        IFollowingUseCase followingUseCase)
     {
         _candidateResumeUseCase = candidateResumeUseCase;
+        _followingUseCase = followingUseCase;
     }
 
     //get all resumes of current candidate
@@ -56,7 +60,7 @@ public class CandidateController : ControllerBase
         await _candidateResumeUseCase.DeleteResume(userId, resumeId);
         return new ResponseBase<object>(null);
     }
-    
+
     [HttpPost("applications")]
     public async Task<ActionResult<ResponseBase<ApplicationResultDto>>> ApplyJob(
         [FromBody] ApplyJobRequestDto request)
@@ -73,5 +77,39 @@ public class CandidateController : ControllerBase
         var userId = User.GetUserId();
         var result = await _candidateResumeUseCase.GetApplicationStatus(userId, jobId);
         return new ResponseBase<JobApplicationStatusDto>(result);
+    }
+
+    [HttpPost("following/jobs/{jobId:guid}")]
+    public async Task<ActionResult<ResponseBase<FollowingToggleResultDto>>> ToggleJobLike(Guid jobId)
+    {
+        var userId = User.GetUserId();
+        var result = await _followingUseCase.ToggleJobLike(userId, jobId);
+        return new ResponseBase<FollowingToggleResultDto>(result);
+    }
+
+    [HttpGet("following/jobs/liked-status")]
+    public async Task<ActionResult<ResponseBase<FollowingJobsLikedStatusDto>>> GetLikedJobStatus(
+        [FromQuery] List<Guid> jobIds)
+    {
+        var userId = User.GetUserId();
+        var result = await _followingUseCase.GetLikedJobStatus(userId, jobIds);
+        return new ResponseBase<FollowingJobsLikedStatusDto>(result);
+    }
+
+    [HttpPost("following/companies/{companyId:guid}")]
+    public async Task<ActionResult<ResponseBase<FollowingToggleResultDto>>> ToggleCompanyLike(Guid companyId)
+    {
+        var userId = User.GetUserId();
+        var result = await _followingUseCase.ToggleCompanyLike(userId, companyId);
+        return new ResponseBase<FollowingToggleResultDto>(result);
+    }
+
+    [HttpGet("following/companies/liked-status")]
+    public async Task<ActionResult<ResponseBase<FollowingCompaniesLikedStatusDto>>> GetLikedCompanyStatus(
+        [FromQuery] List<Guid> companyIds)
+    {
+        var userId = User.GetUserId();
+        var result = await _followingUseCase.GetLikedCompanyStatus(userId, companyIds);
+        return new ResponseBase<FollowingCompaniesLikedStatusDto>(result);
     }
 }
