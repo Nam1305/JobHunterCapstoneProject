@@ -60,7 +60,7 @@ public class CandidateController : ControllerBase
         await _candidateResumeUseCase.DeleteResume(userId, resumeId);
         return new ResponseBase<object>(null);
     }
-    
+
     [HttpPost("applications")]
     public async Task<ActionResult<ResponseBase<ApplicationResultDto>>> ApplyJob(
         [FromBody] ApplyJobRequestDto request)
@@ -80,11 +80,11 @@ public class CandidateController : ControllerBase
     }
 
     [HttpPost("following/jobs/{jobId:guid}")]
-    public async Task<ActionResult<ResponseBase<object>>> FollowJob(Guid jobId)
+    public async Task<ActionResult<ResponseBase<FollowingToggleResultDto>>> ToggleJobLike(Guid jobId)
     {
         var userId = User.GetUserId();
-        await _followingUseCase.FollowJob(userId, jobId);
-        return new ResponseBase<object>("Followed job successfully.");
+        var result = await _followingUseCase.ToggleJobLike(userId, jobId);
+        return new ResponseBase<FollowingToggleResultDto>(result);
     }
 
     [HttpGet("following/jobs/liked-status")]
@@ -97,11 +97,11 @@ public class CandidateController : ControllerBase
     }
 
     [HttpPost("following/companies/{companyId:guid}")]
-    public async Task<ActionResult<ResponseBase<object>>> FollowCompany(Guid companyId)
+    public async Task<ActionResult<ResponseBase<FollowingToggleResultDto>>> ToggleCompanyLike(Guid companyId)
     {
         var userId = User.GetUserId();
-        await _followingUseCase.FollowCompany(userId, companyId);
-        return new ResponseBase<object>("Followed company successfully.");
+        var result = await _followingUseCase.ToggleCompanyLike(userId, companyId);
+        return new ResponseBase<FollowingToggleResultDto>(result);
     }
 
     [HttpGet("following/companies/liked-status")]

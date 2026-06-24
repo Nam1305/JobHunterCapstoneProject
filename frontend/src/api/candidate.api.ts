@@ -26,6 +26,10 @@ export interface LikedCompaniesStatus {
   likedCompanyIds: string[];
 }
 
+export interface FollowingToggleResult {
+  isLiked: boolean;
+}
+
 export const candidateQueryKeys = {
   resumes: ["candidate", "resumes"] as const,
   applicationStatus: (jobId: string) =>
@@ -106,15 +110,19 @@ export const candidateApi = {
     return res.data;
   },
 
-  async followJob(jobId: string): Promise<ResponseEntity<null>> {
-    const res = await api.post<ResponseEntity<null>>(
+  async toggleJobLike(
+    jobId: string
+  ): Promise<ResponseEntity<FollowingToggleResult>> {
+    const res = await api.post<ResponseEntity<FollowingToggleResult>>(
       `candidate/following/jobs/${jobId}`
     );
     return res.data;
   },
 
-  async followCompany(companyId: string): Promise<ResponseEntity<null>> {
-    const res = await api.post<ResponseEntity<null>>(
+  async toggleCompanyLike(
+    companyId: string
+  ): Promise<ResponseEntity<FollowingToggleResult>> {
+    const res = await api.post<ResponseEntity<FollowingToggleResult>>(
       `candidate/following/companies/${companyId}`
     );
     return res.data;
@@ -196,15 +204,15 @@ export function useApplicationStatusQuery(jobId: string, enabled = true) {
   });
 }
 
-export function useFollowJobMutation() {
-  return useMutation<ResponseEntity<null>, ApiError, string>({
-    mutationFn: candidateApi.followJob,
+export function useToggleJobLikeMutation() {
+  return useMutation<ResponseEntity<FollowingToggleResult>, ApiError, string>({
+    mutationFn: candidateApi.toggleJobLike,
   });
 }
 
-export function useFollowCompanyMutation() {
-  return useMutation<ResponseEntity<null>, ApiError, string>({
-    mutationFn: candidateApi.followCompany,
+export function useToggleCompanyLikeMutation() {
+  return useMutation<ResponseEntity<FollowingToggleResult>, ApiError, string>({
+    mutationFn: candidateApi.toggleCompanyLike,
   });
 }
 

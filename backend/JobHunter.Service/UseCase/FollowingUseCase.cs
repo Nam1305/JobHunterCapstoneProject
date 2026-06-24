@@ -14,7 +14,7 @@ public class FollowingUseCase : IFollowingUseCase
         _context = context;
     }
 
-    public async Task FollowJob(Guid userId, Guid jobId)
+    public async Task<FollowingToggleResultDto> ToggleJobLike(Guid userId, Guid jobId)
     {
         var user = await _context.Users
             .Include(u => u.FollowingJobs)
@@ -25,9 +25,12 @@ public class FollowingUseCase : IFollowingUseCase
             throw new KeyNotFoundException("User not found");
         }
 
-        if (user.FollowingJobs.Any(job => job.Id == jobId))
+        var followedJob = user.FollowingJobs.FirstOrDefault(job => job.Id == jobId);
+        if (followedJob != null)
         {
-            return;
+            user.FollowingJobs.Remove(followedJob);
+            await _context.SaveChangesAsync();
+            return new FollowingToggleResultDto { IsLiked = false };
         }
 
         var job = await _context.Jobs.FirstOrDefaultAsync(j => j.Id == jobId);
@@ -38,9 +41,11 @@ public class FollowingUseCase : IFollowingUseCase
 
         user.FollowingJobs.Add(job);
         await _context.SaveChangesAsync();
+
+        return new FollowingToggleResultDto { IsLiked = true };
     }
 
-    public async Task FollowCompany(Guid userId, Guid companyId)
+    public async Task<FollowingToggleResultDto> ToggleCompanyLike(Guid userId, Guid companyId)
     {
         var user = await _context.Users
             .Include(u => u.FollowingCompanies)
@@ -51,9 +56,12 @@ public class FollowingUseCase : IFollowingUseCase
             throw new KeyNotFoundException("User not found");
         }
 
-        if (user.FollowingCompanies.Any(company => company.Id == companyId))
+        var followedCompany = user.FollowingCompanies.FirstOrDefault(company => company.Id == companyId);
+        if (followedCompany != null)
         {
-            return;
+            user.FollowingCompanies.Remove(followedCompany);
+            await _context.SaveChangesAsync();
+            return new FollowingToggleResultDto { IsLiked = false };
         }
 
         var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == companyId);
@@ -64,6 +72,8 @@ public class FollowingUseCase : IFollowingUseCase
 
         user.FollowingCompanies.Add(company);
         await _context.SaveChangesAsync();
+
+        return new FollowingToggleResultDto { IsLiked = true };
     }
 
     public async Task<FollowingJobsLikedStatusDto> GetLikedJobStatus(Guid userId, List<Guid> jobIds)

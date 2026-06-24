@@ -4,8 +4,8 @@ namespace JobHunter.Service.Interface.UseCase;
 
 public interface IFollowingUseCase
 {
-    Task FollowJob(Guid userId, Guid jobId);
-    Task FollowCompany(Guid userId, Guid companyId);
+    Task<FollowingToggleResultDto> ToggleJobLike(Guid userId, Guid jobId);
+    Task<FollowingToggleResultDto> ToggleCompanyLike(Guid userId, Guid companyId);
     Task<FollowingJobsLikedStatusDto> GetLikedJobStatus(Guid userId, List<Guid> jobIds);
     Task<FollowingCompaniesLikedStatusDto> GetLikedCompanyStatus(Guid userId, List<Guid> companyIds);
 }

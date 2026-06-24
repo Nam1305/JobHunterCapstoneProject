@@ -29,6 +29,7 @@ import type { JobCard, JobDetails } from "@/types/job"
 import { getCompanyMark } from "@/utils/company"
 import { getDisplayJobTags } from "@/utils/job-tags"
 import { formatDaysUntil } from "@/utils/jobs"
+import { SaveJobButton } from "./_components/save-job-button"
 
 /*
  * Component tree
@@ -308,10 +309,7 @@ function JobHeaderCard({ job }: { job: JobDetails }) {
             <Send />
             Ứng tuyển ngay
           </ApplyJobButton>
-          <Button size="lg" variant="outline">
-            <Heart />
-            Lưu công việc
-          </Button>
+          <SaveJobButton jobId={job.id} size="lg" />
         </div>
       </CardContent>
     </Card>
