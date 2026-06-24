@@ -30,20 +30,30 @@ export interface FollowingToggleResult {
   isLiked: boolean;
 }
 
+const likedJobsStatusRoot = [
+  "candidate",
+  "following",
+  "jobs",
+  "liked-status",
+] as const;
+
+const likedCompaniesStatusRoot = [
+  "candidate",
+  "following",
+  "companies",
+  "liked-status",
+] as const;
+
 export const candidateQueryKeys = {
   resumes: ["candidate", "resumes"] as const,
   applicationStatus: (jobId: string) =>
     ["candidate", "applications", jobId, "status"] as const,
+  likedJobsStatusRoot,
   likedJobsStatus: (jobIds: string[]) =>
-    ["candidate", "following", "jobs", "liked-status", jobIds] as const,
+    [...likedJobsStatusRoot, jobIds] as const,
+  likedCompaniesStatusRoot,
   likedCompaniesStatus: (companyIds: string[]) =>
-    [
-      "candidate",
-      "following",
-      "companies",
-      "liked-status",
-      companyIds,
-    ] as const,
+    [...likedCompaniesStatusRoot, companyIds] as const,
 };
 
 export interface UpdateResumeStatusVariables {
