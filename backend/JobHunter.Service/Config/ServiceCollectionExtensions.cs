@@ -36,6 +36,7 @@ public static class ServiceCollectionExtensions
                 services.AddScoped<IJobUseCase, JobUseCase>();
                 services.AddScoped<ICompanyUseCase, CompanyUseCase>();
                 services.AddScoped<IAdminCompanyUseCase, AdminCompanyUseCase>();
+                services.AddScoped<IFollowingUseCase, FollowingUseCase>();
                 // Services
                 services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
                 services.AddHttpClient<IVietQrBusinessService, VietQrBusinessService>(client =>
