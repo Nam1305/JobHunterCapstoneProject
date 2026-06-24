@@ -24,6 +24,10 @@ public partial class User : BaseEntity
 
     public virtual Company? Company { get; set; }
 
+    public virtual ICollection<Job> FollowingJobs { get; set; } = new List<Job>();
+
+    public virtual ICollection<Company> FollowingCompanies { get; set; } = new List<Company>();
+
     public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
     public virtual ICollection<Resume> Resumes { get; set; } = new List<Resume>();
