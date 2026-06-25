@@ -20,7 +20,7 @@ export default function UserLayout({
   children: React.ReactNode
 }>) {
   return (
-    <div className="min-h-svh bg-background text-foreground">
+    <div className="flex flex-col min-h-svh bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
         <UserContainer
           as="nav"
@@ -51,7 +51,7 @@ export default function UserLayout({
         </UserContainer>
       </header>
 
-      <main>
+      <main className="flex-1">
         {children}
         <AuthModalRoot />
         <ApplicationModalRoot />
