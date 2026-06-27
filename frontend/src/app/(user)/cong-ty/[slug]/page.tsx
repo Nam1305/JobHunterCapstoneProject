@@ -325,8 +325,13 @@ function CompanyJobCard({
   const companyImage = getImageUrl(job.companyImage)
 
   return (
-    <article className="rounded-xl border p-4">
-      <div className="grid grid-cols-[2.5rem_1fr] gap-3">
+    <article className="relative cursor-pointer rounded-xl border p-4">
+      <Link
+        aria-label={`Xem việc làm ${job.title ?? ""}`}
+        className="absolute inset-0 z-0 rounded-xl focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+        href={`/cong-viec/${job.slug ?? job.id}`}
+      />
+      <div className="pointer-events-none relative z-10 grid grid-cols-[2.5rem_1fr] gap-3">
         <div className="flex size-10 items-center justify-center overflow-hidden rounded-md border bg-muted text-xs text-muted-foreground">
           {companyImage ? (
             <span
@@ -342,12 +347,7 @@ function CompanyJobCard({
 
         <div className="min-w-0">
           <h3 className="line-clamp-2 text-sm font-semibold leading-5">
-            <Link
-              className="hover:text-primary focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
-              href={`/cong-viec/${job.slug ?? job.id}`}
-            >
-              {job.title ?? "Chưa cập nhật tiêu đề"}
-            </Link>
+            {job.title ?? "Chưa cập nhật tiêu đề"}
           </h3>
           <p className="mt-1 text-xs text-muted-foreground">
             {job.companyName}
@@ -355,12 +355,12 @@ function CompanyJobCard({
         </div>
       </div>
 
-      <p className="mt-4 flex items-center gap-2 text-sm">
+      <p className="pointer-events-none relative z-10 mt-4 flex items-center gap-2 text-sm">
         <WalletCards className="size-3.5 shrink-0" />
         {job.salaryRange ?? "Thương lượng"}
       </p>
 
-      <div className="mt-3 grid gap-x-4 gap-y-2 text-xs text-muted-foreground sm:grid-cols-2">
+      <div className="pointer-events-none relative z-10 mt-3 grid gap-x-4 gap-y-2 text-xs text-muted-foreground sm:grid-cols-2">
         <span className="flex items-center gap-1.5">
           <MapPin className="size-3.5 shrink-0" />
           {job.city}
@@ -379,7 +379,7 @@ function CompanyJobCard({
         </span>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-1.5">
+      <div className="pointer-events-none relative z-10 mt-3 flex flex-wrap gap-1.5">
         {getDisplayJobTags(job.tags).map((tag, index) => (
           <span
             key={`${tag.label}-${index}`}

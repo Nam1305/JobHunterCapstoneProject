@@ -518,8 +518,13 @@ function GeneralInfoCard({ job }: { job: JobDetails }) {
 // Renders one similar-job row inside the similar jobs card.
 function SimilarJobRow({ job }: { job: JobCard }) {
   return (
-    <div className="rounded-xl border p-4">
-      <div className="grid gap-4 sm:grid-cols-[3rem_1fr_auto] sm:items-center">
+    <div className="relative cursor-pointer rounded-xl border p-4">
+      <Link
+        aria-label={`Xem việc làm ${job.title ?? ""}`}
+        className="absolute inset-0 z-0 rounded-xl focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+        href={`/cong-viec/${job.slug ?? job.id}`}
+      />
+      <div className="pointer-events-none relative z-10 grid gap-4 sm:grid-cols-[3rem_1fr_auto] sm:items-center">
         <CompanyLogo
           image={job.companyImage}
           name={job.companyName}
@@ -528,9 +533,7 @@ function SimilarJobRow({ job }: { job: JobCard }) {
 
         <div className="min-w-0">
           <h3 className="leading-5 font-medium">
-            <Link href={`/cong-viec/${job.slug}`}>
-              {job.title ?? "Chưa cập nhật tiêu đề"}
-            </Link>
+            {job.title ?? "Chưa cập nhật tiêu đề"}
           </h3>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {job.companyName}
@@ -552,6 +555,7 @@ function SimilarJobRow({ job }: { job: JobCard }) {
 
         <div className="hidden sm:block">
           <ApplyJobButton
+            className="pointer-events-auto relative z-20"
             size="sm"
             job={{
               id: job.id,
@@ -562,7 +566,7 @@ function SimilarJobRow({ job }: { job: JobCard }) {
         </div>
 
         <ApplyJobButton
-          className="w-full sm:hidden"
+          className="pointer-events-auto relative z-20 w-full sm:hidden"
           size="sm"
           job={{
             id: job.id,
