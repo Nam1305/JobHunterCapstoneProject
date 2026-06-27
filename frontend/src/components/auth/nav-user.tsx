@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/sidebar"
 import { useLogout } from "@/api/auth.api"
 import {
-  EllipsisVerticalIcon,
   LayoutDashboardIcon,
   Loader2Icon,
   LogOutIcon,
@@ -205,7 +204,6 @@ function SidebarNavUser({ user }: { user: NavUserData }) {
             >
               <UserAvatar user={user} grayscale />
               <UserLabel user={user} />
-              <EllipsisVerticalIcon className="ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <UserDropdownContent
@@ -232,7 +230,6 @@ function HeaderNavUser({ user }: { user: NavUserData }) {
         >
           <UserAvatar user={user} />
           <span className="hidden truncate sm:inline">{displayName}</span>
-          <EllipsisVerticalIcon className="size-4 text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
       <UserDropdownContent

@@ -11,6 +11,7 @@ import { StoreProvider } from "@/providers/store-provider";
 import { QueryProvider } from "@/providers/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { GoogleOAuthProvider } from '@react-oauth/google'
+import ProgressBarProvider from "@/providers/progress-bar-provider"
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
@@ -36,7 +37,7 @@ export default function RootLayout({
             <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string}>
               <ThemeProvider>
                 <TooltipProvider>
-                  {children}
+                  <ProgressBarProvider>{children}</ProgressBarProvider>
                   <Toaster position="bottom-right" richColors />
                 </TooltipProvider>
               </ThemeProvider>
