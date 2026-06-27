@@ -163,15 +163,15 @@ export default async function UserHomePage() {
                 return (
                   <CarouselItem
                     key={company.id}
-                    className="basis-4/5 sm:basis-1/2 md:basis-1/3 lg:basis-1/6"
+                    className="basis-11/12 sm:basis-2/3 md:basis-1/2 lg:basis-1/4 xl:basis-1/5"
                   >
                     <Link
                       className="block h-full rounded-lg focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
                       href={`/cong-ty/${company.slug || getCompanySlug(company.name)}`}
                     >
-                      <Card size="sm" className="h-full">
-                        <CardContent className="flex h-full flex-col items-center space-y-4 text-center">
-                          <div className="flex size-14 items-center justify-center overflow-hidden rounded-lg border bg-muted text-xs font-semibold text-muted-foreground">
+                      <Card className="h-full min-h-62">
+                        <CardContent className="flex h-full flex-col items-center justify-center space-y-4 px-7 text-center">
+                          <div className="flex size-28 items-center justify-center overflow-hidden rounded-lg border bg-muted text-xs font-semibold text-muted-foreground">
                             {logoUrl ? (
                               <span
                                 aria-label={`${company.name} logo`}
@@ -184,12 +184,14 @@ export default async function UserHomePage() {
                             )}
                           </div>
                           <div>
-                            <h3 className="font-semibold">{company.name}</h3>
+                            <h3 className="text-sm font-semibold leading-tight">
+                              {company.name}
+                            </h3>
                             <Badge variant="secondary" className="mt-2">
                               {company.companyType ?? "Chưa cập nhật"}
                             </Badge>
                           </div>
-                          <p className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                          <p className="flex items-center justify-center gap-1.5 text-xs leading-tight text-muted-foreground">
                             <BriefcaseBusiness className="size-4" />
                             {company.openingVacancies} vị trí
                           </p>
@@ -231,16 +233,16 @@ export default async function UserHomePage() {
               const companyImage = getImageUrl(job.companyImage)
 
               return (
-                <Card key={job.id} className="group relative h-full">
+                <Card key={job.id} className="group relative h-full cursor-pointer">
                   <Link
                     aria-label={`Xem việc làm ${job.title ?? ""}`}
                     className="absolute inset-0 rounded-lg focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
                     href={`/cong-viec/${job.slug ?? job.id}`}
                   />
-                  <CardContent className="relative flex h-full flex-col">
+                  <CardContent className="pointer-events-none relative flex h-full flex-col">
                     <div className="flex items-start gap-3">
                       <Link
-                        className="relative z-10 flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-background text-xs font-semibold text-muted-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                        className="pointer-events-auto relative z-10 flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-background text-xs font-semibold text-muted-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
                         href={`/cong-ty/${getCompanySlug(job.companyName)}`}
                         aria-label={`Xem công ty ${job.companyName}`}
                       >
@@ -260,16 +262,11 @@ export default async function UserHomePage() {
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="font-semibold leading-5 text-foreground">
-                            <Link
-                              className="relative z-10 hover:text-primary focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
-                              href={`/cong-viec/${job.slug ?? job.id}`}
-                            >
-                              {job.title ?? "Chưa cập nhật tiêu đề"}
-                            </Link>
+                            {job.title ?? "Chưa cập nhật tiêu đề"}
                           </h3>
                         </div>
                         <Link
-                          className="relative z-10 mt-0.5 inline-block text-xs text-muted-foreground hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                          className="pointer-events-auto relative z-10 mt-0.5 inline-block text-xs text-muted-foreground hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
                           href={`/cong-ty/${getCompanySlug(job.companyName)}`}
                         >
                           {job.companyName}
@@ -332,7 +329,7 @@ export default async function UserHomePage() {
                       </p>
                       <div className="flex items-center gap-3">
                         <ApplyJobButton
-                          className="relative z-10"
+                          className="pointer-events-auto relative z-10"
                           job={{
                             id: job.id,
                             title: job.title ?? "Chưa cập nhật tiêu đề",
